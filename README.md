@@ -1,4 +1,4 @@
-# RegIQ UI (remix-of-ui-design-assistant)
+# Niyo360 — Change Intelligence
 
 Small setup guide to run this project locally.
 
@@ -19,7 +19,7 @@ npm -v
 From project root:
 
 ```bash
-cd /home/balaji-s/j2w/remix-of-ui-design-assistant
+cd niyo360
 npm install
 ```
 

@@ -1,5 +1,5 @@
 // Regulatory Change Intelligence (Pillar 01) — full spec data set.
-// Mirrors section 9 of the RegIQ Regulatory Change Intelligence Module spec.
+// Mirrors section 9 of the Niyo360 Regulatory Change Intelligence Module spec.
 
 export type AuthorityCode = "FDA" | "EMA" | "MHRA" | "CDSCO" | "TGA" | "ANVISA";
 export type FilingType = "IA" | "IB" | "II" | "NDA" | "None" | "TBD";

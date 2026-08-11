@@ -1,16 +1,17 @@
 import { useApp } from '@/context/AppContext';
 import { Bell, Building2, Sparkles, Sun, Moon } from 'lucide-react';
-import j2wLogo from '@/assets/j2w-logo.png';
+import niyo360Logo from '@/assets/niyo360-logo.svg';
+import niyo360LogoDark from '@/assets/niyo360-logo-dark.svg';
 
 export function TopBar() {
   const { showToast, toggleAssistant, theme, toggleTheme } = useApp();
   return (
     <header className="fixed top-0 inset-x-0 h-14 z-50 bg-card border-b border-border flex items-center px-4 gap-4">
       <div className="flex items-center gap-3">
-        <img src={j2wLogo} alt="Joules to Watts Business Solutions" className="h-8 w-auto" />
+        <img src={theme === 'dark' ? niyo360LogoDark : niyo360Logo} alt="Niyo360" className="h-7 w-auto" />
         <div className="h-6 w-px bg-border" />
         <div className="flex items-baseline gap-1.5">
-          <h1 className="font-display text-[16px] font-semibold text-foreground leading-none">RegIQ</h1>
+          <h1 className="font-display text-[16px] font-semibold text-foreground leading-none">Niyo360</h1>
           <span className="font-display text-[16px] font-semibold leading-none" style={{ color: 'var(--pillar-01)' }}>
             Change Intelligence
           </span>

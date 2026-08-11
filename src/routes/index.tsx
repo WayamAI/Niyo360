@@ -6,11 +6,11 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "RegIQ Change Intelligence" },
+      { title: "Niyo360 Change Intelligence" },
       {
         name: "description",
         content:
-          "RegIQ Change Intelligence — regulatory feed monitor, Impact Delta Reports, and the Regulatory Intelligence Agent.",
+          "Niyo360 Change Intelligence — regulatory feed monitor, Impact Delta Reports, and the Regulatory Intelligence Agent.",
       },
     ],
   }),

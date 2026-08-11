@@ -72,28 +72,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RegIQ Change Intelligence — Regulatory Feed & Impact Delta Reports" },
+      { title: "Niyo360 Change Intelligence — Regulatory Feed & Impact Delta Reports" },
       {
         name: "description",
         content:
-          "RegIQ Change Intelligence by Joules to Watts: monitors global regulatory authority feeds, maps new guidelines to the active product-market portfolio, and generates structured Impact Delta Reports for RA specialist review.",
+          "Niyo360 Change Intelligence by Wayam AI: monitors global regulatory authority feeds, maps new guidelines to the active product-market portfolio, and generates structured Impact Delta Reports for RA specialist review.",
       },
-      { name: "author", content: "Joules to Watts Business Solutions" },
-      { property: "og:title", content: "RegIQ Change Intelligence — Regulatory Feed & Impact Delta Reports" },
+      { name: "author", content: "Wayam AI" },
+      { property: "og:title", content: "Niyo360 Change Intelligence — Regulatory Feed & Impact Delta Reports" },
       {
         property: "og:description",
         content:
           "Pharmaceutical regulatory change intelligence: live feed monitoring across FDA, EMA, MHRA, CDSCO, TGA, ANVISA, automated Impact Delta Reports, and the Regulatory Intelligence Agent.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "/j2w-logo.png" },
+      { property: "og:image", content: "/favicon.svg" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:image", content: "/j2w-logo.png" },
+      { name: "twitter:image", content: "/favicon.svg" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/png", href: "/j2w-logo.png" },
-      { rel: "apple-touch-icon", href: "/j2w-logo.png" },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "apple-touch-icon", href: "/favicon.svg" },
     ],
   }),
 

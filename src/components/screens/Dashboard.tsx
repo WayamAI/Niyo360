@@ -307,9 +307,8 @@ export function Dashboard() {
       <Card className="flex items-start gap-3" style={{ borderLeft: "3px solid var(--pillar-02)" }}>
         <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--pillar-02)" }} />
         <p className="text-[12px] text-muted-foreground">
-          Built by Joules To Watts Business Solutions. RegIQ is a pre-sales proof-of-concept
-          demonstrating four AI accelerators working alongside Veeva Vault RIM. All data shown is
-          illustrative.
+          Built by Wayam AI. Niyo360 is a pre-sales proof-of-concept demonstrating four AI
+          accelerators working alongside Veeva Vault RIM. All data shown is illustrative.
         </p>
       </Card>
     </div>
