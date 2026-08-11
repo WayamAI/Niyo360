@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppProvider } from "@/context/AppContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Shell } from "@/components/Shell";
+import { Login } from "@/components/screens/Login";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -17,6 +19,16 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  return (
+    <AuthProvider>
+      <Gate />
+    </AuthProvider>
+  );
+}
+
+function Gate() {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Login />;
   return (
     <AppProvider>
       <Shell />

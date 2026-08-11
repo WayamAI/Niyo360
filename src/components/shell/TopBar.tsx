@@ -1,10 +1,19 @@
 import { useApp } from '@/context/AppContext';
-import { Bell, Building2, Sparkles, Sun, Moon } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Bell, Building2, Sparkles, Sun, Moon, LogOut } from 'lucide-react';
 import niyo360Logo from '@/assets/niyo360-logo.svg';
 import niyo360LogoDark from '@/assets/niyo360-logo-dark.svg';
 
 export function TopBar() {
   const { showToast, toggleAssistant, theme, toggleTheme } = useApp();
+  const { session, logout } = useAuth();
+  const initials = (session?.email ?? '?')
+    .split('@')[0]
+    .split(/[._-]/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase())
+    .join('') || '?';
   return (
     <header className="fixed top-0 inset-x-0 h-14 z-50 bg-card border-b border-border flex items-center px-4 gap-4">
       <div className="flex items-center gap-3">
@@ -62,9 +71,18 @@ export function TopBar() {
             borderColor: 'color-mix(in oklab, var(--pillar-03) 30%, transparent)',
             color: 'var(--pillar-03)',
           }}
+          title={session?.email}
         >
-          <span className="text-[12px] font-medium">RO</span>
+          <span className="text-[12px] font-medium">{initials}</span>
         </div>
+        <button
+          onClick={logout}
+          className="w-8 h-8 rounded-md hover:bg-accent grid place-items-center text-muted-foreground hover:text-foreground transition"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </header>
   );
