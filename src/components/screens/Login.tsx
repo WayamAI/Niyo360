@@ -28,7 +28,7 @@ export function Login() {
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <img src={niyo360Logo} alt="Niyo360" className="h-9 w-auto mb-4" />
+          <img src={niyo360Logo} alt="Niyo360" className="h-24 w-auto mb-4" />
           <h1 className="font-display text-xl font-semibold text-foreground">Niyo360</h1>
           <p className="text-[13px] text-muted-foreground mt-1">Change Intelligence</p>
         </div>
