@@ -1,3 +1,4 @@
+import { AppIcon, type IconName } from "@/components/icons";
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, Eyebrow } from '@/components/shared/Card';
@@ -7,10 +8,6 @@ import {
   filingTypeExplanation, daysUntil, deadlineColor,
 } from '@/data/regulatoryData';
 import { AuthorityBadge, FilingTypeBadge, StatusPill, ConfidenceRing, ConfidenceBreakdownBars, MarketBadge } from '@/components/regulatory/atoms';
-import {
-  ChevronLeft, Copy, ExternalLink, FileText, Sparkles, ChevronDown, ChevronRight,
-  CheckCircle2, Edit3, UserPlus, Share2, Download, AlertTriangle, Bot, User, Bell, Cog, Inbox,
-} from 'lucide-react';
 
 export function ReportDetail() {
   const { selectedReportId, navigateTo, showToast, logAudit } = useApp();
@@ -31,11 +28,11 @@ export function ReportDetail() {
       <div>
         <button
           onClick={() => navigateTo('delta-reports')}
-          className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground mb-3"
+          className="inline-flex items-center gap-1 text-xs text-fg-tertiary hover:text-fg-primary mb-3"
         >
-          <ChevronLeft className="w-3.5 h-3.5" /> Impact Delta Reports
-          <span className="text-muted-foreground/60 mx-1">/</span>
-          <span className="font-mono text-foreground">{event.reportId}</span>
+          <AppIcon name="chevronLeft" size="sm" /> Impact Delta Reports
+          <span className="text-fg-tertiary/60 mx-1">/</span>
+          <span className="font-mono text-fg-primary">{event.reportId}</span>
         </button>
 
         <Card className="border-l-4" style={{ borderLeftColor: authority.color }}>
@@ -46,26 +43,26 @@ export function ReportDetail() {
                 <FilingTypeBadge type={event.filingType} />
                 <StatusPill status={event.status} />
                 {event.urgencyFlag && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium" style={{ color: 'var(--status-red)' }}>
-                    <AlertTriangle className="w-3 h-3" /> Urgent
+                  <span className="inline-flex items-center gap-1 text-2xs font-medium" style={{ color: 'var(--feedback-error-icon)' }}>
+                    <AppIcon name="warning" size="xs" /> Urgent
                   </span>
                 )}
               </div>
-              <h1 className="font-display text-[22px] font-semibold text-foreground leading-snug max-w-3xl">{event.title}</h1>
-              <div className="flex items-center gap-4 mt-3 text-[12px] text-muted-foreground">
-                <span>Generated <span className="font-mono text-foreground">22 May 2025, 08:30</span></span>
+              <h1 className="type-display-page-sm text-fg-primary max-w-3xl">{event.title}</h1>
+              <div className="flex items-center gap-4 mt-3 text-xs text-fg-tertiary">
+                <span>Generated <span className="font-mono text-fg-primary">22 May 2025, 08:30</span></span>
                 <span className="opacity-50">·</span>
-                <span>Confidence <span className="font-mono" style={{ color: 'var(--status-green)' }}>{event.confidenceScore ?? '—'}%</span></span>
+                <span>Confidence <span className="font-mono" style={{ color: 'var(--feedback-success-icon)' }}>{event.confidenceScore ?? '—'}%</span></span>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button variant="secondary" size="sm" onClick={() => { logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: '01', action: `Approved ${event.reportId}` }); showToast(`${event.reportId} approved.`, 'success'); }}>
-                <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                <AppIcon name="success" size="sm" /> Approve
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => showToast('Override editor opened.')}><Edit3 className="w-3.5 h-3.5" /> Override</Button>
-              <Button variant="ghost" size="sm" onClick={() => showToast('Reassign dialog opened.')}><UserPlus className="w-3.5 h-3.5" /> Reassign</Button>
-              <Button variant="ghost" size="sm" onClick={() => showToast('PDF exported.', 'success')}><Download className="w-3.5 h-3.5" /> Export PDF</Button>
-              <Button variant="ghost" size="sm" onClick={() => showToast('Share link copied.', 'success')}><Share2 className="w-3.5 h-3.5" /> Share</Button>
+              <Button variant="ghost" size="sm" onClick={() => showToast('Override editor opened.')}><AppIcon name="edit" size="sm" /> Override</Button>
+              <Button variant="ghost" size="sm" onClick={() => showToast('Reassign dialog opened.')}><AppIcon name="assign" size="sm" /> Reassign</Button>
+              <Button variant="ghost" size="sm" onClick={() => showToast('PDF exported.', 'success')}><AppIcon name="download" size="sm" /> Export PDF</Button>
+              <Button variant="ghost" size="sm" onClick={() => showToast('Share link copied.', 'success')}><AppIcon name="share" size="sm" /> Share</Button>
             </div>
           </div>
         </Card>
@@ -77,27 +74,27 @@ export function ReportDetail() {
           {/* 1. Event Reference */}
           <ReportField label="Event Reference" number="01">
             <button onClick={() => copy(event.id)}
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 font-mono text-[13px] text-foreground hover:bg-accent transition">
-              {event.id} <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+              className="inline-flex items-center gap-2 rounded-md border border-stroke-default bg-action px-3 py-1.5 font-mono text-sm text-fg-primary hover:bg-action-tertiary-hover transition">
+              {event.id} <AppIcon name="copy" size="sm" className="text-fg-tertiary" />
             </button>
           </ReportField>
 
           {/* 2. Source Authority */}
           <ReportField label="Source Authority" number="02">
             <div className="flex items-center gap-3">
-              <div className="rounded-md p-3 border-l-[3px]" style={{ borderLeftColor: authority.color, background: `color-mix(in oklab, ${authority.color} 6%, var(--card))` }}>
-                <div className="text-[15px] font-semibold text-foreground">{authority.name}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{authority.country} · <a href={authority.url} target="_blank" rel="noreferrer" className="hover:underline inline-flex items-center gap-1">Source document <ExternalLink className="w-3 h-3" /></a></div>
+              <div className="rounded-md p-3 border-l-[3px]" style={{ borderLeftColor: authority.color, background: `color-mix(in oklab, ${authority.color} 6%, var(--surface-raised))` }}>
+                <div className="text-md font-semibold text-fg-primary">{authority.name}</div>
+                <div className="text-2xs text-fg-tertiary mt-0.5">{authority.country} · <a href={authority.url} target="_blank" rel="noreferrer" className="hover:underline inline-flex items-center gap-1">Source document <AppIcon name="external" size="xs" /></a></div>
               </div>
             </div>
           </ReportField>
 
           {/* 3. Guideline Summary */}
           <ReportField label="Guideline Summary" number="03">
-            <div className="rounded-md border-l-[3px] p-3" style={{ borderLeftColor: 'var(--status-amber)', background: 'color-mix(in oklab, var(--status-amber) 4%, var(--card))' }}>
-              <p className="text-[13px] text-foreground leading-relaxed">{event.summary}</p>
-              <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wider">
-                <Sparkles className="w-3 h-3" style={{ color: 'var(--pillar-02)' }} />
+            <div className="rounded-md border-l-[3px] p-3" style={{ borderLeftColor: 'var(--feedback-warning-icon)', background: 'color-mix(in oklab, var(--feedback-warning-icon) 4%, var(--surface-raised))' }}>
+              <p className="text-sm text-fg-primary leading-relaxed">{event.summary}</p>
+              <div className="mt-2 inline-flex items-center gap-1.5 text-3xs text-fg-tertiary uppercase tracking-wider">
+                <AppIcon name="agent" size="xs" className="text-pillar-02" />
                 Generated by Regulatory Intelligence Agent
               </div>
             </div>
@@ -106,27 +103,27 @@ export function ReportDetail() {
           {/* 4. Affected Products */}
           <ReportField label="Affected Products" number="04">
             {products.length === 0 ? (
-              <p className="text-[12px] text-muted-foreground">No products in the active portfolio are impacted by this guideline.</p>
+              <p className="text-xs text-fg-tertiary">No products in the active portfolio are impacted by this guideline.</p>
             ) : products.length <= 5 ? (
               <div className="flex flex-wrap gap-2">
                 {products.map(p => (
-                  <span key={p.id} className="inline-flex items-center gap-1.5 rounded-md bg-muted border border-border px-2.5 py-1 text-[12px] text-foreground hover:bg-accent cursor-pointer transition" title={p.therapeuticArea}>
-                    {p.name} <span className="text-[10px] text-muted-foreground">· {p.therapeuticArea.split(' ')[0]}</span>
+                  <span key={p.id} className="inline-flex items-center gap-1.5 rounded-md bg-action border border-stroke-default px-2.5 py-1 text-xs text-fg-primary hover:bg-action-tertiary-hover cursor-pointer transition" title={p.therapeuticArea}>
+                    {p.name} <span className="text-3xs text-fg-tertiary">· {p.therapeuticArea.split(' ')[0]}</span>
                   </span>
                 ))}
               </div>
             ) : (
-              <div className="overflow-hidden rounded-md border border-border">
-                <table className="w-full text-[12px]">
-                  <thead><tr className="bg-muted text-[11px] uppercase tracking-wider text-muted-foreground">
+              <div className="overflow-hidden rounded-md border border-stroke-default">
+                <table className="w-full text-xs">
+                  <thead><tr className="bg-action text-2xs uppercase tracking-wider text-fg-tertiary">
                     <th className="text-left px-3 py-2">Product</th><th className="text-left px-3 py-2">Therapeutic Area</th><th className="text-left px-3 py-2">Dossier</th>
                   </tr></thead>
                   <tbody>
                     {products.map(p => (
-                      <tr key={p.id} className="border-t border-border hover:bg-accent/50">
-                        <td className="px-3 py-2 text-foreground">{p.name}</td>
-                        <td className="px-3 py-2 text-muted-foreground">{p.therapeuticArea}</td>
-                        <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{p.dossierVersion}</td>
+                      <tr key={p.id} className="border-t border-stroke-muted transition-colors duration-200 hover:bg-raised-2">
+                        <td className="px-3 py-2 text-fg-primary">{p.name}</td>
+                        <td className="px-3 py-2 text-fg-tertiary">{p.therapeuticArea}</td>
+                        <td className="px-3 py-2 font-mono text-2xs text-fg-tertiary">{p.dossierVersion}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -139,7 +136,7 @@ export function ReportDetail() {
           <ReportField label="Affected Markets" number="05">
             <div className="flex flex-wrap gap-2">
               {event.affectedMarkets.length === 0
-                ? <span className="text-[12px] text-muted-foreground">—</span>
+                ? <span className="text-xs text-fg-tertiary">—</span>
                 : event.affectedMarkets.map(m => <MarketBadge key={m} code={m} />)}
             </div>
           </ReportField>
@@ -149,15 +146,15 @@ export function ReportDetail() {
             <div className="flex items-start gap-4 flex-wrap">
               <FilingTypeBadge type={event.filingType} large />
               <div className="flex-1 min-w-[200px]">
-                <p className="text-[12px] text-foreground leading-relaxed">{filingTypeExplanation(event.filingType)}</p>
+                <p className="text-xs text-fg-primary leading-relaxed">{filingTypeExplanation(event.filingType)}</p>
                 {event.confidenceScore !== null && (
                   <div className="mt-2.5">
-                    <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-muted-foreground">AI classification confidence</span>
-                      <span className="font-mono" style={{ color: 'var(--status-green)' }}>{event.confidenceBreakdown?.filingTypeClassification ?? event.confidenceScore}%</span>
+                    <div className="flex justify-between text-2xs mb-1">
+                      <span className="text-fg-tertiary">AI classification confidence</span>
+                      <span className="font-mono" style={{ color: 'var(--feedback-success-icon)' }}>{event.confidenceBreakdown?.filingTypeClassification ?? event.confidenceScore}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${event.confidenceBreakdown?.filingTypeClassification ?? event.confidenceScore}%`, background: 'var(--status-green)' }} />
+                    <div className="h-1.5 rounded-full bg-action overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${event.confidenceBreakdown?.filingTypeClassification ?? event.confidenceScore}%`, background: 'var(--feedback-success-icon)' }} />
                     </div>
                   </div>
                 )}
@@ -170,23 +167,23 @@ export function ReportDetail() {
             {event.deadlineDate ? (
               <div className="flex items-center gap-5">
                 <div className="grid place-items-center rounded-full border-2 w-20 h-20" style={{ borderColor: deadlineColor(dDays) }}>
-                  <span className="font-mono text-[20px] font-semibold" style={{ color: deadlineColor(dDays) }}>{dDays! < 0 ? '!' : dDays}</span>
-                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{dDays! < 0 ? 'overdue' : 'days'}</span>
+                  <span className="type-display-metric-xs" style={{ color: deadlineColor(dDays) }}>{dDays! < 0 ? '!' : dDays}</span>
+                  <span className="text-3xs uppercase tracking-wider text-fg-tertiary">{dDays! < 0 ? 'overdue' : 'days'}</span>
                 </div>
                 <div>
-                  <div className="text-[13px] font-medium text-foreground">{event.deadlineDate}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1">Per-jurisdiction deadlines:</div>
-                  <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                  <div className="text-sm font-medium text-fg-primary">{event.deadlineDate}</div>
+                  <div className="text-2xs text-fg-tertiary mt-1">Per-jurisdiction deadlines:</div>
+                  <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-2xs">
                     {event.affectedMarkets.map(m => (
                       <div key={m} className="flex items-center justify-between gap-3">
                         <span className="font-mono">{m}</span>
-                        <span className="font-mono text-muted-foreground">{event.deadlineDate}</span>
+                        <span className="font-mono text-fg-tertiary">{event.deadlineDate}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-            ) : <p className="text-[12px] text-muted-foreground">No filing deadline applies to this guideline.</p>}
+            ) : <p className="text-xs text-fg-tertiary">No filing deadline applies to this guideline.</p>}
           </ReportField>
 
           {/* 8. Responsible RA Affiliate */}
@@ -194,19 +191,19 @@ export function ReportDetail() {
             {affiliate ? (
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full grid place-items-center text-[13px] font-semibold"
+                  <div className="w-10 h-10 rounded-full grid place-items-center text-sm font-semibold"
                     style={{ background: 'color-mix(in oklab, var(--pillar-01) 14%, transparent)', color: 'var(--pillar-01)' }}>
                     {affiliate.initials}
                   </div>
                   <div>
-                    <div className="text-[13px] font-medium text-foreground">{affiliate.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{affiliate.lead} · {affiliate.location}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">Viewed 2 hours ago</div>
+                    <div className="text-sm font-medium text-fg-primary">{affiliate.name}</div>
+                    <div className="text-2xs text-fg-tertiary">{affiliate.lead} · {affiliate.location}</div>
+                    <div className="text-3xs text-fg-tertiary mt-0.5">Viewed 2 hours ago</div>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => showToast('Reassign people-picker opened.')}>Reassign</Button>
               </div>
-            ) : <p className="text-[12px] text-muted-foreground">Unassigned.</p>}
+            ) : <p className="text-xs text-fg-tertiary">Unassigned.</p>}
           </ReportField>
 
           {/* 9. Confidence Score */}
@@ -224,7 +221,7 @@ export function ReportDetail() {
                     ]}
                   />
                 )}
-                <p className="mt-3 text-[11px] text-muted-foreground italic">
+                <p className="mt-3 text-2xs text-fg-tertiary italic">
                   Score reflects AI certainty. Human review is required before filing.
                 </p>
               </div>
@@ -233,18 +230,18 @@ export function ReportDetail() {
 
           {/* 10. Source Citation */}
           <ReportField label="Source Citation" number="10">
-            <div className="rounded-md border border-border p-3">
-              <div className="font-mono text-[12px] text-foreground">{event.documentRef}</div>
-              <div className="text-[12px] text-muted-foreground mt-1">{event.title}</div>
+            <div className="rounded-md border border-stroke-default p-3">
+              <div className="font-mono text-xs text-fg-primary">{event.documentRef}</div>
+              <div className="text-xs text-fg-tertiary mt-1">{event.title}</div>
               <div className="mt-2 flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-3xs text-fg-tertiary uppercase tracking-wider">
                   <span className="font-mono normal-case">{event.publishedDate}</span>
                   <span className="opacity-50">·</span>
-                  <span className="rounded bg-muted px-1.5 py-0.5">Guideline</span>
+                  <span className="rounded bg-action px-1.5 py-0.5">Guideline</span>
                 </div>
                 <a href={event.documentUrl} target="_blank" rel="noreferrer"
-                   className="inline-flex items-center gap-1 text-[11px] hover:underline" style={{ color: 'var(--pillar-01)' }}>
-                  Open source document <ExternalLink className="w-3 h-3" />
+                   className="inline-flex items-center gap-1 text-2xs hover:underline" style={{ color: 'var(--pillar-01)' }}>
+                  Open source document <AppIcon name="external" size="xs" />
                 </a>
               </div>
             </div>
@@ -272,7 +269,7 @@ function ReportField({ label, number, children }: { label: string; number: strin
     <Card>
       <div className="flex items-center justify-between mb-3">
         <Eyebrow className="!mb-0">{label}</Eyebrow>
-        <span className="font-mono text-[10px] text-muted-foreground/70">FIELD {number}</span>
+        <span className="font-mono text-3xs text-fg-quaternary">FIELD {number}</span>
       </div>
       {children}
     </Card>
@@ -282,7 +279,7 @@ function ReportField({ label, number, children }: { label: string; number: strin
 function RecommendedAction({ event, onAct }: { event: ReturnType<typeof FEED_EVENTS['find']> & {}; onAct: (msg: string) => void }) {
   const isHigh = event!.filingType === 'IB' || event!.filingType === 'II' || event!.filingType === 'NDA';
   const priority = event!.urgencyFlag || isHigh ? 'High' : event!.filingType === 'IA' ? 'Medium' : 'Low';
-  const priColor = priority === 'High' ? 'var(--status-red)' : priority === 'Medium' ? 'var(--status-amber)' : 'var(--status-green)';
+  const priColor = priority === 'High' ? 'var(--feedback-error-icon)' : priority === 'Medium' ? 'var(--feedback-warning-icon)' : 'var(--feedback-success-icon)';
   const headline =
     event!.filingType === 'None'
       ? 'No filing required. Log the impact assessment in the regulatory QMS.'
@@ -297,16 +294,16 @@ function RecommendedAction({ event, onAct }: { event: ReturnType<typeof FEED_EVE
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+        <span className="rounded-full px-2 py-0.5 text-3xs font-semibold uppercase tracking-wider"
           style={{ background: `color-mix(in oklab, ${priColor} 14%, transparent)`, color: priColor }}>
           {priority} Priority
         </span>
-        <span className="text-[13px] font-medium text-foreground">{headline}</span>
+        <span className="text-sm font-medium text-fg-primary">{headline}</span>
       </div>
       <ol className="space-y-1.5 mt-3">
         {steps.map((s, i) => (
-          <li key={i} className="flex gap-2 text-[12px] text-foreground">
-            <span className="font-mono text-[11px] text-muted-foreground shrink-0 w-5">{String(i + 1).padStart(2, '0')}</span>
+          <li key={i} className="flex gap-2 text-xs text-fg-primary">
+            <span className="font-mono text-2xs text-fg-tertiary shrink-0 w-5">{String(i + 1).padStart(2, '0')}</span>
             <span>{s}</span>
           </li>
         ))}
@@ -315,8 +312,8 @@ function RecommendedAction({ event, onAct }: { event: ReturnType<typeof FEED_EVE
         <Button variant="secondary" size="sm" onClick={() => onAct('Veeva Vault task created from recommended action.')}>Create  Task</Button>
         <Button variant="ghost" size="sm" onClick={() => onAct('Affiliate assignment dialog opened.')}>Assign to Affiliate</Button>
       </div>
-      <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wider">
-        <Sparkles className="w-3 h-3" style={{ color: 'var(--pillar-02)' }} />
+      <div className="mt-2 inline-flex items-center gap-1.5 text-3xs text-fg-tertiary uppercase tracking-wider">
+        <AppIcon name="agent" size="xs" className="text-pillar-02" />
         Recommended by Regulatory Intelligence Agent
       </div>
     </div>
@@ -329,10 +326,10 @@ function ReasoningTrace({ confidence }: { confidence: number }) {
     <Card className="border-l-[3px]" style={{ borderLeftColor: 'var(--pillar-02)' }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4" style={{ color: 'var(--pillar-02)' }} />
-          <span className="text-[13px] font-medium text-foreground">Reasoning Trace</span>
+          <AppIcon name="agent" className="text-pillar-02" />
+          <span className="text-sm font-medium text-fg-primary">Reasoning Trace</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">08:30 today</span>
+        <span className="text-2xs text-fg-tertiary">08:30 today</span>
       </div>
       <div className="divide-y divide-border">
         {DEFAULT_REASONING.map(step => {
@@ -343,51 +340,51 @@ function ReasoningTrace({ confidence }: { confidence: number }) {
                 const next = new Set(prev);
                 isOpen ? next.delete(step.stepNumber) : next.add(step.stepNumber);
                 return next;
-              })} className="w-full flex items-center gap-2 text-left hover:text-foreground transition">
-                {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
-                <span className="font-mono text-[11px] text-muted-foreground">Step {step.stepNumber}</span>
-                <span className="text-[12px] font-medium text-foreground">{step.title}</span>
+              })} className="w-full flex items-center gap-2 text-left hover:text-fg-primary transition">
+                {isOpen ? <AppIcon name="chevronDown" size="sm" className="text-fg-tertiary shrink-0" /> : <AppIcon name="chevronRight" size="sm" className="text-fg-tertiary shrink-0" />}
+                <span className="font-mono text-2xs text-fg-tertiary">Step {step.stepNumber}</span>
+                <span className="text-xs font-medium text-fg-primary">{step.title}</span>
                 {step.confidence !== null && (
-                  <span className="ml-auto font-mono text-[11px]" style={{ color: 'var(--status-green)' }}>{step.confidence}%</span>
+                  <span className="ml-auto font-mono text-2xs" style={{ color: 'var(--feedback-success-icon)' }}>{step.confidence}%</span>
                 )}
               </button>
-              {isOpen && <p className="mt-2 pl-6 text-[12px] text-muted-foreground leading-relaxed">{step.detail}</p>}
+              {isOpen && <p className="mt-2 pl-6 text-xs text-fg-tertiary leading-relaxed">{step.detail}</p>}
             </div>
           );
         })}
       </div>
-      <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-        <span className="text-[11px] text-muted-foreground uppercase tracking-wider">Overall confidence</span>
-        <span className="font-mono text-[14px] font-semibold" style={{ color: 'var(--status-green)' }}>{confidence}%</span>
+      <div className="mt-3 pt-3 border-t border-stroke-default flex items-center justify-between">
+        <span className="text-2xs text-fg-tertiary uppercase tracking-wider">Overall confidence</span>
+        <span className="font-mono text-base font-semibold" style={{ color: 'var(--feedback-success-icon)' }}>{confidence}%</span>
       </div>
     </Card>
   );
 }
 
 function AuditTimeline() {
-  const ICONS = { agent: Bot, user: User, system: Cog, notification: Bell, ingestion: Inbox } as const;
+  const ICONS = { agent: "bot", user: "user", system: "settings", notification: "notification", ingestion: "inbox" } as const satisfies Record<string, IconName>;
   return (
     <Card>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[13px] font-medium text-foreground">Audit Timeline</span>
-        <span className="text-[11px] text-muted-foreground">{REPORT_AUDIT_TRAIL.length} events</span>
+        <span className="text-sm font-medium text-fg-primary">Audit Timeline</span>
+        <span className="text-2xs text-fg-tertiary">{REPORT_AUDIT_TRAIL.length} events</span>
       </div>
       <div className="space-y-3 max-h-[420px] overflow-y-auto scrollbar-thin pr-1">
         {REPORT_AUDIT_TRAIL.map((evt, i) => {
-          const Icon = ICONS[evt.type] ?? FileText;
-          const color = evt.type === 'agent' ? 'var(--pillar-02)' : evt.type === 'user' ? 'var(--pillar-01)' : 'var(--muted-foreground)';
+          const iconName: IconName = ICONS[evt.type] ?? "document";
+          const color = evt.type === 'agent' ? 'var(--pillar-02)' : evt.type === 'user' ? 'var(--pillar-01)' : 'var(--fg-tertiary)';
           return (
             <div key={i} className="flex gap-3">
               <div className="shrink-0 w-7 h-7 rounded-full grid place-items-center mt-0.5"
                 style={{ background: `color-mix(in oklab, ${color} 14%, transparent)`, color }}>
-                <Icon className="w-3.5 h-3.5" />
+                <AppIcon name={iconName} size="sm" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-[12px] font-medium text-foreground">{evt.actor}</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">{evt.ts}</span>
+                  <span className="text-xs font-medium text-fg-primary">{evt.actor}</span>
+                  <span className="font-mono text-3xs text-fg-tertiary">{evt.ts}</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{evt.message}</p>
+                <p className="text-2xs text-fg-tertiary mt-0.5 leading-relaxed">{evt.message}</p>
               </div>
             </div>
           );
@@ -404,16 +401,16 @@ function RelatedReports({ authority, excludeId, onOpen }: { authority: string; e
     <Card>
       <Eyebrow>Related Reports</Eyebrow>
       <div className="space-y-2">
-        {related.length === 0 && <p className="text-[12px] text-muted-foreground">No related reports from this authority.</p>}
+        {related.length === 0 && <p className="text-xs text-fg-tertiary">No related reports from this authority.</p>}
         {related.map(e => (
           <button key={e.id} onClick={() => { setSelectedReportId(e.reportId!); navigateTo('report-detail'); }}
-            className="w-full text-left rounded-md border border-border p-2.5 hover:bg-accent/50 transition">
+            className="w-full text-left rounded-md border border-stroke-default p-2.5 hover:bg-action-tertiary-hover/50 transition">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <span className="font-mono text-[10px]" style={{ color: 'var(--pillar-01)' }}>{e.reportId}</span>
+              <span className="font-mono text-3xs" style={{ color: 'var(--pillar-01)' }}>{e.reportId}</span>
               <FilingTypeBadge type={e.filingType} />
             </div>
-            <div className="text-[12px] text-foreground line-clamp-2">{e.title}</div>
-            <div className="text-[10px] text-muted-foreground mt-1 font-mono">{e.publishedDate}</div>
+            <div className="text-xs text-fg-primary line-clamp-2">{e.title}</div>
+            <div className="text-3xs text-fg-tertiary mt-1 font-mono">{e.publishedDate}</div>
           </button>
         ))}
       </div>

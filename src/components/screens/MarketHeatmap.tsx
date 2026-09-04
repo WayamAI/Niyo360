@@ -33,7 +33,7 @@ export function MarketHeatmap() {
     acc[m.variationType] = (acc[m.variationType] || 0) + 1; return acc;
   }, {});
   const variationData = Object.entries(variationCounts).map(([name, value]) => ({ name, value }));
-  const VAR_COLORS = ['var(--status-red)', 'var(--status-amber)', 'var(--status-green)', 'var(--status-blue)', 'var(--pillar-02)'];
+  const VAR_COLORS = ['var(--feedback-error-icon)', 'var(--feedback-warning-icon)', 'var(--feedback-success-icon)', 'var(--feedback-info-icon)', 'var(--pillar-02)'];
 
   const zoneCounts = Object.entries(MARKET_IMPACT_CHG_0047.reduce<Record<string, number>>((acc, m) => { acc[m.zone] = (acc[m.zone] || 0) + 1; return acc; }, {})).map(([zone, count]) => ({ zone, count }));
 
@@ -42,12 +42,12 @@ export function MarketHeatmap() {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-[26px] font-semibold text-foreground">Market Impact Heatmap</h1>
+            <h1 className="type-display-page text-fg-primary">Market Impact Heatmap</h1>
             <Badge variant="pillar-04">Pillar 04</Badge>
           </div>
-          <p className="text-[13px] text-muted-foreground mt-1">{change.id}, {change.title}</p>
+          <p className="text-sm text-fg-tertiary mt-1">{change.id}, {change.title}</p>
         </div>
-        <select value={selectedChangeId || ''} onChange={e => setSelectedChangeId(e.target.value)} className="h-9 rounded-md bg-muted border border-border px-3 text-[12px]">
+        <select value={selectedChangeId || ''} onChange={e => setSelectedChangeId(e.target.value)} className="h-9 rounded-md bg-action border border-stroke-default px-3 text-xs">
           {CHANGES.map(c => <option key={c.id} value={c.id}>{c.id}</option>)}
         </select>
       </div>
@@ -57,11 +57,11 @@ export function MarketHeatmap() {
           { l: 'MARKETS IMPACTED', v: '47' },
           { l: 'HA QUERY RISK FLAGS', v: '6' },
           { l: 'FILING WINDOW', v: '4 to 18mo' },
-          { l: 'CASCADE CONFIDENCE', v: '94%', c: 'var(--status-green)' },
+          { l: 'CASCADE CONFIDENCE', v: '94%', c: 'var(--feedback-success-icon)' },
         ].map(k => (
           <Card key={k.l}>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">{k.l}</div>
-            <div className="font-mono text-[28px] leading-none" style={{ color: k.c || 'var(--foreground)' }}>{k.v}</div>
+            <div className="text-2xs uppercase tracking-wider text-fg-tertiary mb-2">{k.l}</div>
+            <div className="type-display-metric-md" style={{ color: k.c || 'var(--fg-primary)' }}>{k.v}</div>
           </Card>
         ))}
       </div>
@@ -77,10 +77,10 @@ export function MarketHeatmap() {
 
       <AgentCard pillar="04">
         <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
-          <span className="text-[13px] font-medium text-foreground">Cascade Agent</span>
+          <span className="text-sm font-medium text-fg-primary">Cascade Agent</span>
           <ConfidencePill value={94} pillar="04" />
         </div>
-        <p className="text-[13px] text-foreground leading-relaxed">
+        <p className="text-sm text-fg-primary leading-relaxed">
           The proposed manufacturing site addition triggers variation obligations in 47 markets. The recommended filing sequence is: EU Centralised first (12 to 18 month review), Japan PMDA in parallel (estimated 14 months), then Brazil ANVISA after GMP renewal completes. Six markets carry a High HA query risk based on historical correspondence.
         </p>
         <div className="flex gap-2 mt-3">
@@ -92,10 +92,10 @@ export function MarketHeatmap() {
 
       <Card>
         <div className="flex flex-wrap gap-2">
-          <select value={zone} onChange={e => setZone(e.target.value)} className="h-9 rounded-md bg-muted border border-border px-3 text-[12px]">
+          <select value={zone} onChange={e => setZone(e.target.value)} className="h-9 rounded-md bg-action border border-stroke-default px-3 text-xs">
             {ZONES.map(z => <option key={z}>{z}</option>)}
           </select>
-          <select value={risk} onChange={e => setRisk(e.target.value)} className="h-9 rounded-md bg-muted border border-border px-3 text-[12px]">
+          <select value={risk} onChange={e => setRisk(e.target.value)} className="h-9 rounded-md bg-action border border-stroke-default px-3 text-xs">
             {['All', 'High', 'Medium', 'Low'].map(r => <option key={r}>Risk: {r}</option>)}
           </select>
         </div>
@@ -111,17 +111,17 @@ export function MarketHeatmap() {
                   <button
                     key={m.market}
                     onClick={() => { setOpen(m); logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: '04', action: `Opened market detail: ${m.market}` }); }}
-                    className="text-left rounded-lg border border-border bg-card p-3 hover:border-primary/50 transition-colors"
-                    style={{ borderLeft: `3px solid var(--pillar-04)`, background: `color-mix(in oklab, var(--pillar-04) 3%, var(--card))` }}
+                    className="text-left rounded-lg border border-stroke-default bg-raised p-3 hover:border-brand/50 transition-colors"
+                    style={{ borderLeft: `3px solid var(--pillar-04)`, background: `color-mix(in oklab, var(--pillar-04) 3%, var(--surface-raised))` }}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <div className="text-[13px] font-medium text-foreground truncate">{m.market}</div>
+                      <div className="text-sm font-medium text-fg-primary truncate">{m.market}</div>
                       <Badge variant={badgeForRisk(m.haQueryRisk)}>{m.haQueryRisk}</Badge>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mb-1.5">{m.authority}</div>
+                    <div className="text-2xs text-fg-tertiary mb-1.5">{m.authority}</div>
                     <div className="flex items-center justify-between">
                       <Badge variant={badgeForVariation(m.variationType)}>{m.variationType}</Badge>
-                      <span className="font-mono text-[10px] text-muted-foreground">{m.filingDeadline}</span>
+                      <span className="font-mono text-3xs text-fg-tertiary">{m.filingDeadline}</span>
                     </div>
                   </button>
                 ))}
@@ -139,7 +139,7 @@ export function MarketHeatmap() {
                   <Pie data={variationData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={36} outerRadius={70}>
                     {variationData.map((_, i) => <Cell key={i} fill={VAR_COLORS[i % VAR_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
+                  <Tooltip contentStyle={{ background: 'var(--surface-raised)', border: '1px solid var(--stroke-default)', boxShadow: 'var(--elevation-popover)', borderRadius: 8, fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -149,9 +149,9 @@ export function MarketHeatmap() {
             <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={zoneCounts}>
-                  <XAxis dataKey="zone" stroke="var(--muted-foreground)" fontSize={9} tickFormatter={(v) => v.split(' ')[0]} />
-                  <YAxis stroke="var(--muted-foreground)" fontSize={10} />
-                  <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
+                  <XAxis dataKey="zone" stroke="var(--fg-quaternary)" fontSize={9} tickFormatter={(v) => v.split(' ')[0]} />
+                  <YAxis stroke="var(--fg-quaternary)" fontSize={10} />
+                  <Tooltip contentStyle={{ background: 'var(--surface-raised)', border: '1px solid var(--stroke-default)', boxShadow: 'var(--elevation-popover)', borderRadius: 8, fontSize: 12 }} />
                   <Bar dataKey="count" fill="var(--pillar-04)" />
                 </BarChart>
               </ResponsiveContainer>
@@ -182,7 +182,7 @@ export function MarketHeatmap() {
       >
         {open && (
           <>
-            <div className="grid grid-cols-2 gap-3 text-[12px]">
+            <div className="grid grid-cols-2 gap-3 text-xs">
               <Item label="Variation Type">{open.variationType}</Item>
               <Item label="Filing Deadline" mono>{open.filingDeadline}</Item>
               <Item label="HA Query Risk">{open.haQueryRisk} ({open.riskScore})</Item>
@@ -192,15 +192,15 @@ export function MarketHeatmap() {
             </div>
 
             <AgentCard pillar="04">
-              <span className="text-[12px] font-medium text-foreground">HA Query Prediction</span>
-              <p className="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">
+              <span className="text-xs font-medium text-fg-primary">HA Query Prediction</span>
+              <p className="text-xs text-fg-tertiary mt-1.5 leading-relaxed">
                 Based on {open.priorHACorrespondenceCount} prior correspondence records, the {open.authority} is likely to request additional comparability batch data and analytical method bridging. Estimated review timeline: {open.zone === 'EU/EEA' ? '12 to 18 months' : open.zone === 'Asia Pacific' ? '10 to 14 months' : '6 to 10 months'}.
               </p>
             </AgentCard>
 
             <section>
               <Eyebrow>Documentation Requirements</Eyebrow>
-              <ul className="text-[12px] text-muted-foreground space-y-1 list-disc pl-4">
+              <ul className="text-xs text-fg-tertiary space-y-1 list-disc pl-4">
                 <li>Updated Module 3.2.S.2.1 (Manufacturer)</li>
                 <li>Comparability study report (3 batches)</li>
                 <li>GMP certificate, valid scope</li>
@@ -216,9 +216,9 @@ export function MarketHeatmap() {
 
 function Item({ label, children, mono }: { label: string; children: React.ReactNode; mono?: boolean }) {
   return (
-    <div className="rounded-md bg-muted p-2.5">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`text-foreground mt-1 ${mono ? 'font-mono text-[12px]' : 'text-[13px]'}`}>{children}</div>
+    <div className="rounded-md bg-action p-2.5">
+      <div className="text-3xs uppercase tracking-wider text-fg-tertiary">{label}</div>
+      <div className={`text-fg-primary mt-1 ${mono ? 'font-mono text-xs' : 'text-sm'}`}>{children}</div>
     </div>
   );
 }

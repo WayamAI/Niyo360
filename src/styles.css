@@ -1,16 +1,443 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
+/* ==========================================================================
+   TIER 1 — REFERENCE TOKENS
+   Raw palette. Theme-independent. NEVER consumed directly by a component.
+   Components must route through the semantic tokens in Tier 2.
+   ========================================================================== */
+:root {
+  /* icon size scale — consumed by <AppIcon> */
+  --icon-size-xs: 12px;
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 18px;
+  --icon-size-xl: 20px;
+  --icon-size-2xl: 24px;
+  --icon-size-3xl: 28px;
 
+  --ref-white: #ffffff;
+  --ref-black: #000000;
+
+  --ref-gray-50:  #fafafa;
+  --ref-gray-100: #f4f4f5;
+  --ref-gray-200: #e4e4e7;
+  --ref-gray-300: #d4d4d8;
+  --ref-gray-400: #a1a1aa;
+  --ref-gray-500: #71717a;
+  --ref-gray-550: #62626b;
+  --ref-gray-600: #52525b;
+  --ref-gray-650: #47474e;
+  --ref-gray-700: #3f3f46;
+  --ref-gray-750: #333338;
+  --ref-gray-800: #27272a;
+  --ref-gray-825: #212124;
+  --ref-gray-850: #1c1c1f;
+  --ref-gray-900: #18181b;
+  --ref-gray-950: #101012;
+
+  --ref-red-50:  #fef2f2; --ref-red-100: #fee2e2; --ref-red-200: #fecaca;
+  --ref-red-300: #fca5a5; --ref-red-400: #f87171; --ref-red-500: #ef4444;
+  --ref-red-600: #dc2626; --ref-red-700: #b91c1c; --ref-red-800: #991b1b;
+  --ref-red-900: #7f1d1d; --ref-red-950: #450a0a;
+
+  --ref-purple-50:  #faf5ff; --ref-purple-100: #f3e8ff; --ref-purple-200: #e9d5ff;
+  --ref-purple-300: #d8b4fe; --ref-purple-400: #c084fc; --ref-purple-500: #a855f7;
+  --ref-purple-600: #9333ea; --ref-purple-700: #7e22ce; --ref-purple-800: #6b21a8;
+  --ref-purple-900: #581c87; --ref-purple-950: #3b0764;
+
+  --ref-blue-50:  #eff6ff; --ref-blue-100: #dbeafe; --ref-blue-200: #bfdbfe;
+  --ref-blue-300: #93c5fd; --ref-blue-400: #60a5fa; --ref-blue-500: #3b82f6;
+  --ref-blue-600: #2563eb; --ref-blue-700: #1d4ed8; --ref-blue-800: #1e40af;
+  --ref-blue-900: #1e3a8a; --ref-blue-950: #172554;
+
+  --ref-cyan-50:  #ecfeff; --ref-cyan-100: #cffafe; --ref-cyan-200: #a5f3fc;
+  --ref-cyan-300: #67e8f9; --ref-cyan-400: #22d3ee; --ref-cyan-500: #06b6d4;
+  --ref-cyan-600: #0891b2; --ref-cyan-700: #0e7490; --ref-cyan-800: #155e75;
+  --ref-cyan-900: #164e63; --ref-cyan-950: #083344;
+
+  --ref-teal-50:  #f0fdfa; --ref-teal-100: #ccfbf1; --ref-teal-200: #99f6e4;
+  --ref-teal-300: #5eead4; --ref-teal-400: #2dd4bf; --ref-teal-500: #14b8a6;
+  --ref-teal-600: #0d9488; --ref-teal-700: #0f766e; --ref-teal-800: #115e59;
+  --ref-teal-900: #134e4a; --ref-teal-950: #042f2e;
+
+  --ref-green-50:  #f0fdf4; --ref-green-100: #dcfce7; --ref-green-200: #bbf7d0;
+  --ref-green-300: #86efac; --ref-green-400: #4ade80; --ref-green-500: #22c55e;
+  --ref-green-600: #16a34a; --ref-green-700: #15803d; --ref-green-800: #166534;
+  --ref-green-900: #14532d; --ref-green-950: #052e16;
+
+  --ref-yellow-50:  #fefce8; --ref-yellow-100: #fef9c3; --ref-yellow-200: #fef08a;
+  --ref-yellow-300: #fde047; --ref-yellow-400: #facc15; --ref-yellow-500: #eab308;
+  --ref-yellow-600: #ca8a04; --ref-yellow-700: #a16207; --ref-yellow-800: #854d0e;
+  --ref-yellow-900: #713f12; --ref-yellow-950: #422006;
+
+  --ref-amber-50:  #fffbeb; --ref-amber-100: #fef3c7; --ref-amber-200: #fde68a;
+  --ref-amber-300: #fcd34d; --ref-amber-400: #fbbf24; --ref-amber-500: #f59e0b;
+  --ref-amber-600: #d97706; --ref-amber-700: #b45309; --ref-amber-800: #92400e;
+  --ref-amber-900: #78350f; --ref-amber-950: #451a03;
+
+  --ref-orange-50:  #fff7ed; --ref-orange-100: #ffedd5; --ref-orange-200: #fed7aa;
+  --ref-orange-300: #fdba74; --ref-orange-400: #fb923c; --ref-orange-500: #f97316;
+  --ref-orange-600: #ea580c; --ref-orange-700: #c2410c; --ref-orange-800: #9a3412;
+  --ref-orange-900: #7c2d12; --ref-orange-950: #431407;
+
+  --ref-deep-orange-50:  #fff4ed; --ref-deep-orange-100: #ffe6d5; --ref-deep-orange-200: #ffc9aa;
+  --ref-deep-orange-300: #ffa574; --ref-deep-orange-400: #ff7a3c; --ref-deep-orange-500: #ff5722;
+  --ref-deep-orange-600: #f4511e; --ref-deep-orange-700: #e64a19; --ref-deep-orange-800: #d84315;
+  --ref-deep-orange-900: #bf360c; --ref-deep-orange-950: #7a2408;
+}
+
+/* ==========================================================================
+   TIER 2 — SEMANTIC TOKENS  (light)
+   Dark mode is the authoritative design target; light is re-derived from the
+   same taxonomy so components never branch on theme.
+   ========================================================================== */
+:root {
+  --radius: 0.5rem;
+
+  /* text */
+  --fg-primary:     var(--ref-gray-950);
+  --fg-secondary:   var(--ref-gray-700);
+  --fg-tertiary:    var(--ref-gray-550);
+  --fg-quaternary:  var(--ref-gray-400);
+  --fg-on-color:    var(--ref-white);
+
+  /* icon */
+  --icon-primary:     var(--ref-gray-900);
+  --icon-secondary:   var(--ref-gray-700);
+  --icon-tertiary:    var(--ref-gray-500);
+  --icon-quaternary:  var(--ref-gray-400);
+  --icon-on-color:    var(--ref-white);
+
+  /* stroke */
+  --stroke-default:   var(--ref-gray-200);
+  --stroke-active:    var(--ref-gray-400);
+  --stroke-muted:     var(--ref-gray-100);
+  --stroke-disabled:  var(--ref-gray-100);
+  --stroke-on-color:  color-mix(in oklab, var(--ref-white) 30%, transparent);
+
+  /* surface */
+  --surface-page:       var(--ref-gray-50);
+  --surface-container:  var(--ref-white);
+  --surface-raised:     var(--ref-white);
+  --surface-raised-2:   var(--ref-gray-50);
+  --surface-action:     var(--ref-gray-100);
+  --surface-scroll-bar: var(--ref-gray-300);
+  /* scrim behind modals/drawers */
+  --surface-scrim: color-mix(in oklab, var(--ref-black) 40%, transparent);
+  /* a surface sitting on top of a saturated brand/status fill (switch knobs,
+     dots) — reads light in both themes by design */
+  --surface-on-brand: var(--ref-white);
+  --elevation-popover: 0 4px 16px rgb(0 0 0 / 0.14);
+
+  /* action surfaces */
+  --action-primary-default:   var(--ref-gray-900);
+  --action-primary-hover:     var(--ref-gray-800);
+  --action-primary-focused:   var(--ref-gray-950);
+  --action-primary-disabled:  var(--ref-gray-200);
+  --on-action-primary:        var(--ref-white);
+
+  --action-secondary-default:  var(--ref-gray-100);
+  --action-secondary-hover:    var(--ref-gray-200);
+  --action-secondary-focused:  var(--ref-gray-300);
+  --action-secondary-disabled: var(--ref-gray-100);
+  --on-action-secondary:       var(--ref-gray-900);
+
+  --action-tertiary-default:   transparent;
+  --action-tertiary-hover:     var(--ref-gray-100);
+  --action-tertiary-focused:   var(--ref-gray-200);
+  --action-tertiary-disabled:  transparent;
+  --on-action-tertiary:        var(--ref-gray-700);
+
+  /* feedback */
+  --feedback-success-content: var(--ref-green-700);
+  --feedback-success-icon:    var(--ref-green-600);
+  --feedback-success-stroke:  var(--ref-green-200);
+  --feedback-success-bg:      var(--ref-green-50);
+
+  --feedback-info-content: var(--ref-blue-700);
+  --feedback-info-icon:    var(--ref-blue-600);
+  --feedback-info-stroke:  var(--ref-blue-200);
+  --feedback-info-bg:      var(--ref-blue-50);
+
+  --feedback-neutral-content: var(--ref-gray-700);
+  --feedback-neutral-icon:    var(--ref-gray-600);
+  --feedback-neutral-stroke:  var(--ref-gray-200);
+  --feedback-neutral-bg:      var(--ref-gray-100);
+
+  --feedback-warning-content: var(--ref-amber-700);
+  --feedback-warning-icon:    var(--ref-amber-600);
+  --feedback-warning-stroke:  var(--ref-amber-200);
+  --feedback-warning-bg:      var(--ref-amber-50);
+
+  --feedback-error-content: var(--ref-red-700);
+  --feedback-error-icon:    var(--ref-red-600);
+  --feedback-error-stroke:  var(--ref-red-200);
+  --feedback-error-bg:      var(--ref-red-50);
+
+  /* brand — orange is the established Niyo360 accent (kept per spec S9) */
+  --brand: var(--ref-orange-600);
+  --brand-hover: var(--ref-orange-700);
+  --on-brand: var(--ref-white);
+
+  /* pillar accents */
+  --pillar-01: var(--ref-orange-600);
+  --pillar-02: var(--ref-purple-600);
+  --pillar-03: var(--ref-amber-600);
+  --pillar-04: var(--ref-teal-600);
+
+  /* data-visualisation series + filing-type tones (light) */
+  --data-01: var(--ref-blue-600);
+  --data-02: var(--ref-cyan-600);
+  --data-03: var(--ref-purple-600);
+  --data-04: var(--ref-orange-600);
+  --data-05: var(--ref-green-600);
+  --data-06: var(--ref-yellow-600);
+  --data-accent: var(--ref-teal-600);
+
+  --filing-ia:  var(--ref-blue-500);
+  --filing-ib:  var(--ref-purple-500);
+  --filing-ii:  var(--ref-red-500);
+  --filing-nda: var(--ref-orange-500);
+  --filing-none: var(--ref-gray-500);
+  --filing-tbd:  var(--ref-gray-400);
+
+  /* ---- legacy shadcn surface: re-pointed at the semantic layer ----------
+     Everything already written as bg-card / text-muted-foreground /
+     border-border, plus all 46 components/ui/* files, adopts the new
+     palette through these aliases with zero file edits. ------------------ */
+  --background:            var(--surface-page);
+  --foreground:            var(--fg-primary);
+  --card:                  var(--surface-container);
+  --card-foreground:       var(--fg-primary);
+  --popover:               var(--surface-container);
+  --popover-foreground:    var(--fg-primary);
+  --primary:               var(--brand);
+  --primary-foreground:    var(--on-brand);
+  --secondary:             var(--action-secondary-default);
+  --secondary-foreground:  var(--on-action-secondary);
+  --muted:                 var(--surface-action);
+  --muted-foreground:      var(--fg-tertiary);
+  --accent:                var(--action-tertiary-hover);
+  --accent-foreground:     var(--fg-primary);
+  --destructive:           var(--feedback-error-icon);
+  --destructive-foreground:var(--fg-on-color);
+  --border:                var(--stroke-default);
+  --input:                 var(--stroke-default);
+  --ring:                  var(--brand);
+
+  --status-green: var(--feedback-success-icon);
+  --status-amber: var(--feedback-warning-icon);
+  --status-red:   var(--feedback-error-icon);
+  --status-blue:  var(--feedback-info-icon);
+}
+
+/* ==========================================================================
+   TIER 2 — SEMANTIC TOKENS  (dark — authoritative)
+   Page = pure black, container = gray-950, raised = gray-900,
+   raised-x2 = gray-850. Active nav = light-gray surface + near-black on-color.
+   ========================================================================== */
+.dark {
+  --fg-primary:     var(--ref-gray-50);
+  --fg-secondary:   var(--ref-gray-300);
+  --fg-tertiary:    var(--ref-gray-400);
+  /* gray-500, not gray-550: keeps the faintest metadata tier above 3:1
+     against surface.raised / raised-x2, not just against the page. */
+  --fg-quaternary:  var(--ref-gray-500);
+  --fg-on-color:    var(--ref-gray-950);
+
+  --icon-primary:     var(--ref-gray-100);
+  --icon-secondary:   var(--ref-gray-300);
+  --icon-tertiary:    var(--ref-gray-500);
+  --icon-quaternary:  var(--ref-gray-600);
+  --icon-on-color:    var(--ref-gray-950);
+
+  --stroke-default:   var(--ref-gray-800);
+  --stroke-active:    var(--ref-gray-650);
+  --stroke-muted:     var(--ref-gray-850);
+  --stroke-disabled:  var(--ref-gray-825);
+  --stroke-on-color:  color-mix(in oklab, var(--ref-black) 25%, transparent);
+
+  --surface-page:       var(--ref-black);
+  --surface-container:  var(--ref-gray-950);
+  --surface-raised:     var(--ref-gray-900);
+  --surface-raised-2:   var(--ref-gray-850);
+  --surface-action:     var(--ref-gray-825);
+  --surface-scroll-bar: var(--ref-gray-750);
+  --surface-scrim: color-mix(in oklab, var(--ref-black) 66%, transparent);
+  --surface-on-brand: var(--ref-white);
+  --elevation-popover: 0 4px 16px rgb(0 0 0 / 0.45);
+
+  --action-primary-default:   var(--ref-gray-100);
+  --action-primary-hover:     var(--ref-gray-50);
+  --action-primary-focused:   var(--ref-white);
+  --action-primary-disabled:  var(--ref-gray-800);
+  --on-action-primary:        var(--ref-gray-950);
+
+  --action-secondary-default:  var(--ref-gray-800);
+  --action-secondary-hover:    var(--ref-gray-750);
+  --action-secondary-focused:  var(--ref-gray-700);
+  --action-secondary-disabled: var(--ref-gray-850);
+  --on-action-secondary:       var(--ref-gray-50);
+
+  --action-tertiary-default:   transparent;
+  --action-tertiary-hover:     var(--ref-gray-850);
+  --action-tertiary-focused:   var(--ref-gray-800);
+  --action-tertiary-disabled:  transparent;
+  --on-action-tertiary:        var(--ref-gray-300);
+
+  --feedback-success-content: var(--ref-green-300);
+  --feedback-success-icon:    var(--ref-green-400);
+  --feedback-success-stroke:  color-mix(in oklab, var(--ref-green-500) 32%, transparent);
+  --feedback-success-bg:      color-mix(in oklab, var(--ref-green-500) 12%, transparent);
+
+  --feedback-info-content: var(--ref-blue-300);
+  --feedback-info-icon:    var(--ref-blue-400);
+  --feedback-info-stroke:  color-mix(in oklab, var(--ref-blue-500) 32%, transparent);
+  --feedback-info-bg:      color-mix(in oklab, var(--ref-blue-500) 12%, transparent);
+
+  --feedback-neutral-content: var(--ref-gray-300);
+  --feedback-neutral-icon:    var(--ref-gray-400);
+  --feedback-neutral-stroke:  var(--ref-gray-800);
+  --feedback-neutral-bg:      var(--ref-gray-850);
+
+  --feedback-warning-content: var(--ref-amber-300);
+  --feedback-warning-icon:    var(--ref-amber-400);
+  --feedback-warning-stroke:  color-mix(in oklab, var(--ref-amber-500) 32%, transparent);
+  --feedback-warning-bg:      color-mix(in oklab, var(--ref-amber-500) 12%, transparent);
+
+  --feedback-error-content: var(--ref-red-300);
+  --feedback-error-icon:    var(--ref-red-400);
+  --feedback-error-stroke:  color-mix(in oklab, var(--ref-red-500) 32%, transparent);
+  --feedback-error-bg:      color-mix(in oklab, var(--ref-red-500) 12%, transparent);
+
+  --brand: var(--ref-orange-500);
+  --brand-hover: var(--ref-orange-400);
+  --on-brand: var(--ref-gray-950);
+
+  --pillar-01: var(--ref-orange-400);
+  --pillar-02: var(--ref-purple-400);
+  --pillar-03: var(--ref-amber-400);
+  --pillar-04: var(--ref-teal-400);
+
+  /* data-visualisation series + filing-type tones (dark) */
+  --data-01: var(--ref-blue-400);
+  --data-02: var(--ref-cyan-400);
+  --data-03: var(--ref-purple-400);
+  --data-04: var(--ref-orange-400);
+  --data-05: var(--ref-green-400);
+  --data-06: var(--ref-yellow-400);
+  --data-accent: var(--ref-teal-400);
+
+  --filing-ia:  var(--ref-blue-400);
+  --filing-ib:  var(--ref-purple-400);
+  --filing-ii:  var(--ref-red-400);
+  --filing-nda: var(--ref-orange-400);
+  --filing-none: var(--ref-gray-500);
+  --filing-tbd:  var(--ref-gray-400);
+
+  --accent: var(--action-tertiary-hover);
+}
+
+/* ==========================================================================
+   TIER 3 — TAILWIND THEME
+   Semantic tokens exposed as utilities. Components consume only these.
+   ========================================================================== */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);  /* 16px — card radius */
+
+  /* surfaces  → bg-page bg-container bg-raised bg-raised-2 bg-action */
+  --color-page:       var(--surface-page);
+  --color-container:  var(--surface-container);
+  --color-raised:     var(--surface-raised);
+  --color-raised-2:   var(--surface-raised-2);
+  --color-action:     var(--surface-action);
+  --color-scroll-bar: var(--surface-scroll-bar);
+  --color-scrim:      var(--surface-scrim);
+  --color-on-brand-surface: var(--surface-on-brand);
+
+  /* text     → text-fg-primary text-fg-secondary … */
+  --color-fg-primary:    var(--fg-primary);
+  --color-fg-secondary:  var(--fg-secondary);
+  --color-fg-tertiary:   var(--fg-tertiary);
+  --color-fg-quaternary: var(--fg-quaternary);
+  --color-fg-on-color:   var(--fg-on-color);
+
+  /* icon     → text-icon-primary … */
+  --color-icon-primary:    var(--icon-primary);
+  --color-icon-secondary:  var(--icon-secondary);
+  --color-icon-tertiary:   var(--icon-tertiary);
+  --color-icon-quaternary: var(--icon-quaternary);
+  --color-icon-on-color:   var(--icon-on-color);
+
+  /* stroke   → border-stroke-default … */
+  --color-stroke-default:  var(--stroke-default);
+  --color-stroke-active:   var(--stroke-active);
+  --color-stroke-muted:    var(--stroke-muted);
+  --color-stroke-disabled: var(--stroke-disabled);
+  --color-stroke-on-color: var(--stroke-on-color);
+
+  /* action surfaces */
+  --color-action-primary:           var(--action-primary-default);
+  --color-action-primary-hover:     var(--action-primary-hover);
+  --color-action-primary-focused:   var(--action-primary-focused);
+  --color-action-primary-disabled:  var(--action-primary-disabled);
+  --color-on-action-primary:        var(--on-action-primary);
+  --color-action-secondary:          var(--action-secondary-default);
+  --color-action-secondary-hover:    var(--action-secondary-hover);
+  --color-action-secondary-focused:  var(--action-secondary-focused);
+  --color-action-secondary-disabled: var(--action-secondary-disabled);
+  --color-on-action-secondary:       var(--on-action-secondary);
+  --color-action-tertiary-hover:     var(--action-tertiary-hover);
+  --color-action-tertiary-focused:   var(--action-tertiary-focused);
+  --color-on-action-tertiary:        var(--on-action-tertiary);
+
+  /* feedback → text-success bg-success-bg border-success-stroke text-success-icon */
+  --color-success:         var(--feedback-success-content);
+  --color-success-icon:    var(--feedback-success-icon);
+  --color-success-stroke:  var(--feedback-success-stroke);
+  --color-success-bg:      var(--feedback-success-bg);
+  --color-info:            var(--feedback-info-content);
+  --color-info-icon:       var(--feedback-info-icon);
+  --color-info-stroke:     var(--feedback-info-stroke);
+  --color-info-bg:         var(--feedback-info-bg);
+  --color-neutral:         var(--feedback-neutral-content);
+  --color-neutral-icon:    var(--feedback-neutral-icon);
+  --color-neutral-stroke:  var(--feedback-neutral-stroke);
+  --color-neutral-bg:      var(--feedback-neutral-bg);
+  --color-warning:         var(--feedback-warning-content);
+  --color-warning-icon:    var(--feedback-warning-icon);
+  --color-warning-stroke:  var(--feedback-warning-stroke);
+  --color-warning-bg:      var(--feedback-warning-bg);
+  --color-error:           var(--feedback-error-content);
+  --color-error-icon:      var(--feedback-error-icon);
+  --color-error-stroke:    var(--feedback-error-stroke);
+  --color-error-bg:        var(--feedback-error-bg);
+
+  /* brand + pillars */
+  --color-brand:      var(--brand);
+  --color-on-brand:   var(--on-brand);
+  --color-pillar-01:  var(--pillar-01);
+  --color-pillar-02:  var(--pillar-02);
+  --color-pillar-03:  var(--pillar-03);
+  --color-pillar-04:  var(--pillar-04);
+  --color-data-01: var(--data-01);
+  --color-data-02: var(--data-02);
+  --color-data-03: var(--data-03);
+  --color-data-04: var(--data-04);
+  --color-data-05: var(--data-05);
+  --color-data-06: var(--data-06);
+  --color-data-accent: var(--data-accent);
+
+  /* legacy shadcn aliases — kept so existing markup and components/ui/* work */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -30,116 +457,108 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-overlay: var(--overlay);
-
-  --color-pillar-01: var(--pillar-01);
-  --color-pillar-02: var(--pillar-02);
-  --color-pillar-03: var(--pillar-03);
-  --color-pillar-04: var(--pillar-04);
-
   --color-status-green: var(--status-green);
   --color-status-amber: var(--status-amber);
   --color-status-red: var(--status-red);
   --color-status-blue: var(--status-blue);
 
-  --font-display: 'Playfair Display', serif;
-  --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  /* typography families */
+  --font-display: 'Michroma', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  /* display scale (Michroma) */
+  --text-display-6xl: 60px;  --text-display-6xl--line-height: 1;    --text-display-6xl--letter-spacing: -0.025em;
+  --text-display-5xl: 48px;  --text-display-5xl--line-height: 1;    --text-display-5xl--letter-spacing: -0.02em;
+  --text-display-4xl: 40px;  --text-display-4xl--line-height: 1.05; --text-display-4xl--letter-spacing: -0.02em;
+  --text-display-3xl: 34px;  --text-display-3xl--line-height: 1.05; --text-display-3xl--letter-spacing: -0.015em;
+  --text-display-2xl: 28px;  --text-display-2xl--line-height: 1.1;  --text-display-2xl--letter-spacing: -0.01em;
+  --text-display-xl:  24px;  --text-display-xl--line-height: 1.15;
+  --text-display-lg:  20px;  --text-display-lg--line-height: 1.2;
+  --text-display-md:  18px;  --text-display-md--line-height: 1.25;
+  --text-display-base:16px;  --text-display-base--line-height: 1.3;
+
+  /* UI scale (Geist) — denser than Tailwind's defaults, matching this app */
+  --text-5xl: 48px; --text-5xl--line-height: 1.05;
+  --text-4xl: 36px; --text-4xl--line-height: 1.1;
+  --text-3xl: 30px; --text-3xl--line-height: 1.15;
+  --text-2xl: 24px; --text-2xl--line-height: 1.25;
+  --text-xl:  20px; --text-xl--line-height: 1.3;
+  --text-lg:  16px; --text-lg--line-height: 1.45;
+  --text-md:  15px; --text-md--line-height: 1.45;
+  --text-base:14px; --text-base--line-height: 1.5;
+  --text-sm:  13px; --text-sm--line-height: 1.55;
+  --text-xs:  12px; --text-xs--line-height: 1.5;
+  --text-2xs: 11px; --text-2xs--line-height: 1.45;
+  --text-3xs: 10px; --text-3xs--line-height: 1.4;
 }
 
-:root {
-  --radius: 0.5rem;
-
-  /* Light: clean, user-friendly */
-  --background: oklch(0.99 0.002 250);
-  --foreground: oklch(0.18 0.02 260);
-  --surface: oklch(1 0 0);
-  --surface-raised: oklch(0.975 0.004 250);
-  --overlay: oklch(0.955 0.006 250);
-
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 260);
-
-  --primary: oklch(0.68 0.19 45);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.005 250);
-  --secondary-foreground: oklch(0.22 0.02 260);
-  --muted: oklch(0.955 0.006 250);
-  --muted-foreground: oklch(0.48 0.02 260);
-  --accent: oklch(0.94 0.03 45);
-  --accent-foreground: oklch(0.22 0.02 260);
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.99 0 0);
-
-  --border: oklch(0.91 0.008 250);
-  --input: oklch(0.93 0.008 250);
-  --ring: oklch(0.68 0.19 45);
-
-  /* Pillar accents (work in both themes) */
-  --pillar-01: oklch(0.68 0.19 45);    /* orange (brand) */
-  --pillar-02: oklch(0.58 0.22 295);   /* violet */
-  --pillar-03: oklch(0.72 0.16 70);    /* amber */
-  --pillar-04: oklch(0.66 0.15 165);   /* emerald */
-
-  --status-green: oklch(0.65 0.16 150);
-  --status-amber: oklch(0.72 0.16 70);
-  --status-red: oklch(0.6 0.22 25);
-  --status-blue: oklch(0.62 0.16 235);
+/* ==========================================================================
+   SEMANTIC TYPE UTILITIES
+   Each bundles family + size + weight + tracking + line-height, so callers
+   never hand-assemble a type style out of arbitrary values.
+   ========================================================================== */
+@utility type-display-page {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 400; line-height: 1.15; letter-spacing: -0.01em;
 }
-
-.dark {
-  --background: oklch(0.16 0.015 260);
-  --foreground: oklch(0.95 0.005 250);
-  --surface: oklch(0.20 0.018 260);
-  --surface-raised: oklch(0.235 0.02 260);
-  --overlay: oklch(0.265 0.022 260);
-
-  --card: oklch(0.20 0.018 260);
-  --card-foreground: oklch(0.95 0.005 250);
-  --popover: oklch(0.22 0.02 260);
-  --popover-foreground: oklch(0.95 0.005 250);
-
-  --primary: oklch(0.72 0.18 45);
-  --primary-foreground: oklch(0.16 0.015 260);
-  --secondary: oklch(0.26 0.02 260);
-  --secondary-foreground: oklch(0.95 0.005 250);
-  --muted: oklch(0.25 0.02 260);
-  --muted-foreground: oklch(0.68 0.015 255);
-  --accent: oklch(0.28 0.03 45);
-  --accent-foreground: oklch(0.95 0.005 250);
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.99 0 0);
-
-  --border: oklch(0.30 0.02 260);
-  --input: oklch(0.28 0.02 260);
-  --ring: oklch(0.72 0.18 45);
-
-  --pillar-01: oklch(0.72 0.18 45);
-  --pillar-02: oklch(0.7 0.20 295);
-  --pillar-03: oklch(0.78 0.16 75);
-  --pillar-04: oklch(0.72 0.15 165);
-
-  --status-green: oklch(0.72 0.17 150);
-  --status-amber: oklch(0.78 0.16 75);
-  --status-red: oklch(0.68 0.22 25);
-  --status-blue: oklch(0.72 0.16 235);
+@utility type-display-page-sm {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 400; line-height: 1.2; letter-spacing: -0.005em;
 }
+@utility type-display-section {
+  font-family: var(--font-display);
+  font-size: 14px; font-weight: 400; line-height: 1.25; letter-spacing: 0.01em;
+}
+@utility type-display-metric {
+  font-family: var(--font-display);
+  font-size: 34px; font-weight: 400; line-height: 1; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-display-metric-md {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 400; line-height: 1; letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-display-metric-sm {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 400; line-height: 1.05; letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-display-metric-xs {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 400; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-heading-lg { font-family: var(--font-sans); font-size: 17px; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; }
+@utility type-heading-md { font-family: var(--font-sans); font-size: 15px; font-weight: 600; line-height: 1.4; }
+@utility type-heading-sm { font-family: var(--font-sans); font-size: 13px; font-weight: 600; line-height: 1.45; }
+@utility type-body-lg   { font-family: var(--font-sans); font-size: 14px; font-weight: 400; line-height: 1.55; }
+@utility type-body-md   { font-family: var(--font-sans); font-size: 13px; font-weight: 400; line-height: 1.55; }
+@utility type-body-sm   { font-family: var(--font-sans); font-size: 12px; font-weight: 400; line-height: 1.5; }
+@utility type-label-md  { font-family: var(--font-sans); font-size: 12px; font-weight: 500; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; }
+@utility type-label-sm  { font-family: var(--font-sans); font-size: 10px; font-weight: 500; line-height: 1.4; letter-spacing: 0.1em; text-transform: uppercase; }
+@utility type-caption   { font-family: var(--font-sans); font-size: 11px; font-weight: 400; line-height: 1.45; }
+@utility tabular        { font-variant-numeric: tabular-nums; }
 
 @layer base {
   * { border-color: var(--color-border); }
   html, body { font-family: var(--font-sans); }
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--color-page);
+    color: var(--color-fg-primary);
     font-size: 13px;
     line-height: 1.55;
   }
-  h1, h2, h3, .font-display { font-family: var(--font-display); }
-  .font-mono, code, pre { font-family: var(--font-mono); }
+  /* Michroma is a display-only face — it is never applied implicitly to
+     h1/h2/h3. Headings opt in via .font-display or a type-display-* class. */
+  .font-display { font-family: var(--font-display); font-weight: 400; }
+  /* font-mono marks IDs, timestamps, dates, counts and percentages across the
+     app — i.e. exactly the telemetry values that must use tabular figures. */
+  .font-mono, code, pre {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer utilities {
@@ -170,5 +589,9 @@
     to { width: 100%; }
   }
   .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--surface-scroll-bar); border-radius: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--stroke-active); }
 }

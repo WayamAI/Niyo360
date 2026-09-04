@@ -1,3 +1,4 @@
+import { AppIcon } from "@/components/icons";
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, AgentCard, Eyebrow } from '@/components/shared/Card';
@@ -6,7 +7,6 @@ import { Button } from '@/components/shared/Button';
 import { ConfidencePill, HumanInLoopBanner } from '@/components/shared/Atoms';
 import { Drawer } from '@/components/shared/Drawer';
 import { HAQ_DRAFTS, PRODUCT_BY_ID } from '@/data/mockData';
-import { FileText } from 'lucide-react';
 
 export function HAQDrafts() {
   const { showToast, logAudit } = useApp();
@@ -18,10 +18,10 @@ export function HAQDrafts() {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-[26px] font-semibold text-foreground">HAQ Response Drafts</h1>
+            <h1 className="type-display-page text-fg-primary">HAQ Response Drafts</h1>
             <Badge variant="pillar-02">Pillar 02</Badge>
           </div>
-          <p className="text-[13px] text-muted-foreground mt-1 max-w-3xl">
+          <p className="text-sm text-fg-tertiary mt-1 max-w-3xl">
             AI-drafted Health Authority Query responses grounded in approved dossier content and current regulatory guidelines. All output requires human review before submission.
           </p>
         </div>
@@ -35,21 +35,21 @@ export function HAQDrafts() {
           { l: 'OPEN HAQS', v: '4', n: '2 High priority' },
           { l: 'DRAFTS READY', v: '2', n: 'Awaiting reviewer sign-off' },
           { l: 'UNDER REVIEW', v: '1' },
-          { l: 'OVERDUE', v: '1', c: 'var(--status-red)', red: true },
+          { l: 'OVERDUE', v: '1', c: 'var(--feedback-error-icon)', red: true },
         ].map(k => (
-          <Card key={k.l} className={k.red ? '' : ''} style={k.red ? { background: 'color-mix(in oklab, var(--status-red) 6%, var(--card))' } : undefined}>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-2">{k.l}</div>
-            <div className="font-mono text-[28px] leading-none" style={{ color: k.c || 'var(--foreground)' }}>{k.v}</div>
-            {k.n && <div className="text-[12px] text-muted-foreground mt-2">{k.n}</div>}
+          <Card key={k.l} className={k.red ? '' : ''} style={k.red ? { background: 'color-mix(in oklab, var(--feedback-error-icon) 6%, var(--surface-raised))' } : undefined}>
+            <div className="text-2xs font-medium uppercase tracking-wider text-fg-tertiary mb-2">{k.l}</div>
+            <div className="type-display-metric-md" style={{ color: k.c || 'var(--fg-primary)' }}>{k.v}</div>
+            {k.n && <div className="text-xs text-fg-tertiary mt-2">{k.n}</div>}
           </Card>
         ))}
       </div>
 
       <Card className="p-0 overflow-hidden">
         <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-[12px]">
+          <table className="w-full text-xs">
             <thead>
-              <tr className="bg-muted text-muted-foreground text-[11px] uppercase tracking-wider">
+              <tr className="bg-action text-fg-quaternary type-label-md sticky top-0 z-10">
                 {['HAQ ID', 'Product', 'Market / Authority', 'Deadline', 'Days', 'Status', 'Confidence', 'Actions'].map(h => (
                   <th key={h} className="text-left px-4 py-3 font-medium">{h}</th>
                 ))}
@@ -58,13 +58,13 @@ export function HAQDrafts() {
             <tbody>
               {HAQ_DRAFTS.map(h => {
                 const p = PRODUCT_BY_ID(h.productId)!;
-                const daysColor = h.daysRemaining < 1 ? 'var(--status-red)' : h.daysRemaining < 14 ? 'var(--status-red)' : h.daysRemaining < 30 ? 'var(--status-amber)' : 'var(--status-green)';
+                const daysColor = h.daysRemaining < 1 ? 'var(--feedback-error-icon)' : h.daysRemaining < 14 ? 'var(--feedback-error-icon)' : h.daysRemaining < 30 ? 'var(--feedback-warning-icon)' : 'var(--feedback-success-icon)';
                 return (
-                  <tr key={h.id} className="border-t border-border hover:bg-accent/50">
+                  <tr key={h.id} className="border-t border-stroke-muted transition-colors duration-200 hover:bg-raised-2">
                     <td className="px-4 py-3 font-mono" style={{ color: 'var(--pillar-02)' }}>{h.id}</td>
-                    <td className="px-4 py-3"><div className="text-foreground font-medium">{p.name}</div><div className="text-[11px] text-muted-foreground">{p.dosageForm}</div></td>
-                    <td className="px-4 py-3 text-foreground">{h.market}, {h.authority}</td>
-                    <td className="px-4 py-3 font-mono text-muted-foreground">{h.queryDeadline}</td>
+                    <td className="px-4 py-3"><div className="text-fg-primary font-medium">{p.name}</div><div className="text-2xs text-fg-tertiary">{p.dosageForm}</div></td>
+                    <td className="px-4 py-3 text-fg-primary">{h.market}, {h.authority}</td>
+                    <td className="px-4 py-3 font-mono text-fg-tertiary">{h.queryDeadline}</td>
                     <td className="px-4 py-3 font-mono" style={{ color: daysColor }}>{h.daysRemaining}</td>
                     <td className="px-4 py-3"><Badge variant={h.status === 'Draft Ready' ? 'complete' : h.status === 'Overdue' ? 'overdue' : 'in-progress'}>{h.status}</Badge></td>
                     <td className="px-4 py-3"><ConfidencePill value={h.aiConfidence} /></td>
@@ -101,9 +101,9 @@ export function HAQDrafts() {
           <>
             <section>
               <Eyebrow>Health Authority Query</Eyebrow>
-              <div className="rounded-md bg-muted p-3.5" style={{ borderLeft: '3px solid var(--status-red)' }}>
-                <p className="text-[13px] text-muted-foreground italic leading-relaxed">{open.queryText}</p>
-                <div className="text-[11px] text-muted-foreground mt-2 flex gap-3">
+              <div className="rounded-md bg-action p-3.5" style={{ borderLeft: '3px solid var(--feedback-error-icon)' }}>
+                <p className="text-sm text-fg-tertiary italic leading-relaxed">{open.queryText}</p>
+                <div className="text-2xs text-fg-tertiary mt-2 flex gap-3">
                   <span>Received: <span className="font-mono">{open.queryReceivedDate}</span></span>
                   <span>Deadline: <span className="font-mono">{open.queryDeadline}</span></span>
                 </div>
@@ -112,16 +112,16 @@ export function HAQDrafts() {
 
             <AgentCard pillar="02">
               <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                <span className="text-[13px] font-medium text-foreground">HAQ Drafting Agent</span>
+                <span className="text-sm font-medium text-fg-primary">HAQ Drafting Agent</span>
                 <div className="flex items-center gap-2">
                   <ConfidencePill value={open.aiConfidence} />
-                  <span className="font-mono text-[11px] text-muted-foreground">{open.draftWordCount} words</span>
+                  <span className="font-mono text-2xs text-fg-tertiary">{open.draftWordCount} words</span>
                 </div>
               </div>
-              <div className="text-[13px] text-foreground leading-relaxed space-y-2.5 whitespace-pre-line">{open.draftBody}</div>
+              <div className="text-sm text-fg-primary leading-relaxed space-y-2.5 whitespace-pre-line">{open.draftBody}</div>
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {open.ctdSectionsReferenced.map(c => (
-                  <span key={c} className="text-[11px] rounded bg-muted px-2 py-1 text-muted-foreground font-mono">{c}</span>
+                  <span key={c} className="text-2xs rounded bg-action px-2 py-1 text-fg-tertiary font-mono">{c}</span>
                 ))}
               </div>
             </AgentCard>
@@ -132,8 +132,8 @@ export function HAQDrafts() {
               <Eyebrow>Source Documents Referenced</Eyebrow>
               <ul className="space-y-1.5">
                 {open.ctdSectionsReferenced.map(s => (
-                  <li key={s} className="flex items-center gap-2 text-[12px] text-foreground">
-                    <FileText className="w-3.5 h-3.5 text-muted-foreground" /> {s}
+                  <li key={s} className="flex items-center gap-2 text-xs text-fg-primary">
+                    <AppIcon name="document" size="sm" className="text-fg-tertiary" /> {s}
                   </li>
                 ))}
               </ul>

@@ -27,42 +27,42 @@ export const AUTHORITIES: Record<AuthorityCode, AuthorityInfo> = {
     id: "FDA",
     name: "U.S. Food and Drug Administration",
     country: "United States",
-    color: "#3b82f6",
+    color: "var(--data-01)",
     url: "https://www.fda.gov",
   },
   EMA: {
     id: "EMA",
     name: "European Medicines Agency",
     country: "European Union",
-    color: "#0ea5e9",
+    color: "var(--data-02)",
     url: "https://www.ema.europa.eu",
   },
   MHRA: {
     id: "MHRA",
     name: "Medicines and Healthcare products Regulatory Agency",
     country: "United Kingdom",
-    color: "#8b5cf6",
+    color: "var(--data-03)",
     url: "https://www.gov.uk/government/organisations/mhra",
   },
   CDSCO: {
     id: "CDSCO",
     name: "Central Drugs Standard Control Organisation",
     country: "India",
-    color: "#f97316",
+    color: "var(--data-04)",
     url: "https://cdsco.gov.in",
   },
   TGA: {
     id: "TGA",
     name: "Therapeutic Goods Administration",
     country: "Australia",
-    color: "#10b981",
+    color: "var(--data-05)",
     url: "https://www.tga.gov.au",
   },
   ANVISA: {
     id: "ANVISA",
     name: "Agência Nacional de Vigilância Sanitária",
     country: "Brazil",
-    color: "#ec4899",
+    color: "var(--data-06)",
     url: "https://www.gov.br/anvisa",
   },
 };
@@ -813,18 +813,18 @@ export function daysUntil(dateStr: string | null): number | null {
 }
 
 export function deadlineColor(days: number | null): string {
-  if (days === null) return "var(--muted-foreground)";
-  if (days < 0) return "var(--status-red)";
-  if (days <= 30) return "var(--status-red)";
-  if (days <= 60) return "var(--status-amber)";
-  return "var(--status-green)";
+  if (days === null) return "var(--fg-tertiary)";
+  if (days < 0) return "var(--feedback-error-icon)";
+  if (days <= 30) return "var(--feedback-error-icon)";
+  if (days <= 60) return "var(--feedback-warning-icon)";
+  return "var(--feedback-success-icon)";
 }
 
 export function confidenceColor(score: number | null): string {
-  if (score === null) return "var(--muted-foreground)";
-  if (score >= 85) return "var(--status-green)";
-  if (score >= 65) return "var(--status-amber)";
-  return "var(--status-red)";
+  if (score === null) return "var(--fg-tertiary)";
+  if (score >= 85) return "var(--feedback-success-icon)";
+  if (score >= 65) return "var(--feedback-warning-icon)";
+  return "var(--feedback-error-icon)";
 }
 
 // ─── Section 10 — Regulatory Intelligence Agent definition ──────────────────

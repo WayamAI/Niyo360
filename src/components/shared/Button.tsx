@@ -8,22 +8,30 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
 }
 
+/**
+ * `primary` is the "inverse" treatment from the icon system: a light,
+ * near-white surface on dark, using action-surface.primary + on-color text.
+ */
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-primary text-primary-foreground hover:brightness-110',
-  secondary: 'bg-transparent border border-border text-foreground hover:border-primary hover:text-primary',
-  ghost: 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-accent',
-  danger: 'bg-transparent border border-[color:var(--status-red)] text-[color:var(--status-red)] hover:bg-[color:var(--status-red)]/10',
+  primary:
+    'bg-action-primary text-on-action-primary hover:bg-action-primary-hover active:bg-action-primary-focused disabled:bg-action-primary-disabled',
+  secondary:
+    'bg-transparent border border-stroke-default text-fg-secondary hover:border-stroke-active hover:text-fg-primary hover:bg-action-tertiary-hover',
+  ghost:
+    'bg-transparent text-fg-tertiary hover:text-fg-primary hover:bg-action-tertiary-hover active:bg-action-tertiary-focused',
+  danger:
+    'bg-transparent border border-error-stroke text-error hover:bg-error-bg',
 };
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'h-7 px-3 text-[12px]',
-  md: 'h-9 px-4 text-[13px]',
+  sm: 'h-7 px-3 text-xs',
+  md: 'h-9 px-4 text-sm',
 };
 
 export function Button({ variant = 'primary', size = 'md', className = '', children, ...rest }: Props) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all whitespace-nowrap disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       {...rest}
     >
       {children}

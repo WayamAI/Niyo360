@@ -1,6 +1,6 @@
+import { AppIcon } from "@/components/icons";
 import { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { X, Sparkles, Send } from 'lucide-react';
 import { ThinkingDots } from '@/components/shared/Atoms';
 import { AI_SUGGESTIONS } from '@/data/mockData';
 
@@ -57,26 +57,26 @@ export function AIAssistant() {
 
   return (
     <aside
-      className="fixed right-0 top-14 bottom-0 w-[420px] z-[100] bg-card border-l border-border flex flex-col shadow-2xl"
+      className="fixed right-0 top-14 bottom-0 w-[420px] z-[100] bg-raised border-l border-stroke-default flex flex-col shadow-2xl"
     >
-      <header className="p-4 border-b border-border flex items-start justify-between">
+      <header className="p-4 border-b border-stroke-default flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" style={{ color: 'var(--pillar-02)' }} />
-            <h2 className="font-display text-[16px] font-semibold text-foreground">Ask AI</h2>
+            <AppIcon name="agent" className="text-pillar-02" />
+            <h2 className="type-display-section text-fg-primary">Ask AI</h2>
           </div>
-          <p className="text-[12px] text-muted-foreground mt-1">Ask anything about your regulatory intelligence platform.</p>
+          <p className="text-xs text-fg-tertiary mt-1">Ask anything about your regulatory intelligence platform.</p>
         </div>
-        <button onClick={toggleAssistant} className="p-1 rounded hover:bg-accent text-muted-foreground"><X className="w-4 h-4" /></button>
+        <button onClick={toggleAssistant} aria-label="Close AI assistant" className="p-1 rounded hover:bg-action-tertiary-hover text-icon-tertiary hover:text-icon-primary transition-colors duration-200"><AppIcon name="close" /></button>
       </header>
 
-      <div className="p-3 border-b border-border">
+      <div className="p-3 border-b border-stroke-default">
         <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1">
           {AI_SUGGESTIONS.map(s => (
             <button
               key={s.q}
               onClick={() => ask(s.q)}
-              className="shrink-0 text-[11px] rounded-full border border-border bg-muted px-3 py-1.5 hover:bg-accent hover:border-primary/50 text-foreground transition"
+              className="shrink-0 text-2xs rounded-full border border-stroke-default bg-action px-3 py-1.5 hover:bg-action-tertiary-hover hover:border-brand/50 text-fg-primary transition"
             >
               {s.q}
             </button>
@@ -86,12 +86,12 @@ export function AIAssistant() {
 
       <div className="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-4">
         {conversation.length === 0 && (
-          <p className="text-[12px] text-muted-foreground italic">Pick a suggestion or type a question below.</p>
+          <p className="text-xs text-fg-tertiary italic">Pick a suggestion or type a question below.</p>
         )}
         {conversation.map((c, i) => (
           <div key={i} className="space-y-2">
-            <div className="text-[12px] text-foreground bg-muted rounded-lg p-3 ml-6">{c.q}</div>
-            <div className="text-[13px] text-foreground rounded-lg p-3 mr-6" style={{ background: 'color-mix(in oklab, var(--pillar-02) 6%, var(--card))', border: '1px solid color-mix(in oklab, var(--pillar-02) 20%, transparent)' }}>
+            <div className="text-xs text-fg-primary bg-action rounded-lg p-3 ml-6">{c.q}</div>
+            <div className="text-sm text-fg-primary rounded-lg p-3 mr-6" style={{ background: 'color-mix(in oklab, var(--pillar-02) 6%, var(--surface-raised))', border: '1px solid color-mix(in oklab, var(--pillar-02) 20%, transparent)' }}>
               {c.loading ? <ThinkingDots /> : <span className="leading-relaxed">{c.shown}</span>}
             </div>
           </div>
@@ -99,7 +99,7 @@ export function AIAssistant() {
       </div>
 
       <form
-        className="p-3 border-t border-border flex gap-2"
+        className="p-3 border-t border-stroke-default flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (!input.trim()) return;
@@ -111,10 +111,10 @@ export function AIAssistant() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type a question..."
-          className="flex-1 h-9 rounded-md bg-muted border border-border px-3 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex-1 h-9 rounded-md bg-action border border-stroke-default px-3 text-sm text-fg-primary placeholder:text-fg-tertiary focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        <button type="submit" className="h-9 px-3 rounded-md bg-primary text-primary-foreground grid place-items-center hover:brightness-110">
-          <Send className="w-4 h-4" />
+        <button type="submit" aria-label="Send message" className="h-9 px-3 rounded-md bg-action-primary text-on-action-primary grid place-items-center hover:bg-action-primary-hover transition-colors duration-200">
+          <AppIcon name="send" />
         </button>
       </form>
     </aside>

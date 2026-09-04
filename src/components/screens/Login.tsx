@@ -25,21 +25,21 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-page px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
           <img src={niyo360Logo} alt="Niyo360" className="h-24 w-auto mb-4" />
-          <h1 className="font-display text-xl font-semibold text-foreground">Niyo360</h1>
-          <p className="text-[13px] text-muted-foreground mt-1">Change Intelligence</p>
+          <h1 className="type-display-page-sm text-fg-primary">Niyo360</h1>
+          <p className="text-sm text-fg-tertiary mt-1">Change Intelligence</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-lg border border-border bg-card p-6 shadow-sm space-y-4"
+          className="rounded-lg border border-stroke-default bg-raised p-6 shadow-sm space-y-4"
         >
           <div>
-            <h2 className="text-[15px] font-semibold text-foreground">Sign in</h2>
-            <p className="text-[12px] text-muted-foreground mt-1">
+            <h2 className="text-md font-semibold text-fg-primary">Sign in</h2>
+            <p className="text-xs text-fg-tertiary mt-1">
               Demo build — any email address and password will sign you in.
             </p>
           </div>
@@ -71,7 +71,7 @@ export function Login() {
           </div>
 
           {error && (
-            <p className="text-[12px] text-destructive" role="alert">
+            <p className="text-xs text-destructive" role="alert">
               {error}
             </p>
           )}
@@ -80,7 +80,7 @@ export function Login() {
             Sign in
           </Button>
 
-          <p className="text-[11px] text-muted-foreground text-center pt-1">
+          <p className="text-2xs text-fg-tertiary text-center pt-1">
             This is a demo environment. No real credentials are required or stored.
           </p>
         </form>

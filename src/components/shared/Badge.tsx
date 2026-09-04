@@ -8,35 +8,40 @@ type BadgeVariant =
   | 'pillar-01' | 'pillar-02' | 'pillar-03' | 'pillar-04'
   | 'neutral' | 'critical' | 'major' | 'minor' | 'warning';
 
+/**
+ * Every status tone routes through the semantic feedback tokens
+ * (feedback.success/info/neutral/warning/error) — never a raw colour.
+ * This is the design system's StatusBadge.
+ */
 const styles: Record<BadgeVariant, string> = {
-  'type-ii':       'text-[color:var(--status-red)] bg-[color:var(--status-red)]/10',
-  'type-ib':       'text-[color:var(--status-amber)] bg-[color:var(--status-amber)]/10',
-  'type-ia':       'text-[color:var(--status-green)] bg-[color:var(--status-green)]/10',
-  'type-cbe':      'text-[color:var(--status-blue)] bg-[color:var(--status-blue)]/10',
-  'type-pas':      'text-[color:var(--pillar-02)] bg-[color:var(--pillar-02)]/10',
-  'high-risk':     'text-[color:var(--status-red)] bg-[color:var(--status-red)]/10',
-  'medium-risk':   'text-[color:var(--status-amber)] bg-[color:var(--status-amber)]/10',
-  'low-risk':      'text-[color:var(--status-green)] bg-[color:var(--status-green)]/10',
-  'complete':      'text-[color:var(--status-green)] bg-[color:var(--status-green)]/10',
-  'in-progress':   'text-[color:var(--status-amber)] bg-[color:var(--status-amber)]/10',
-  'pending':       'text-muted-foreground bg-muted',
-  'overdue':       'text-[color:var(--status-red)] bg-[color:var(--status-red)]/10',
-  'open':          'text-[color:var(--status-blue)] bg-[color:var(--status-blue)]/10',
-  'agent':         'text-[color:var(--pillar-02)] bg-[color:var(--pillar-02)]/10',
-  'pillar-01':     'text-[color:var(--pillar-01)] bg-[color:var(--pillar-01)]/10',
-  'pillar-02':     'text-[color:var(--pillar-02)] bg-[color:var(--pillar-02)]/10',
-  'pillar-03':     'text-[color:var(--pillar-03)] bg-[color:var(--pillar-03)]/10',
-  'pillar-04':     'text-[color:var(--pillar-04)] bg-[color:var(--pillar-04)]/10',
-  'neutral':       'text-muted-foreground bg-muted',
-  'critical':      'text-[color:var(--status-red)] bg-[color:var(--status-red)]/10',
-  'major':         'text-[color:var(--status-amber)] bg-[color:var(--status-amber)]/10',
-  'minor':         'text-[color:var(--status-blue)] bg-[color:var(--status-blue)]/10',
-  'warning':       'text-[color:var(--status-amber)] bg-[color:var(--status-amber)]/10',
+  'type-ii':       'text-error bg-error-bg',
+  'type-ib':       'text-warning bg-warning-bg',
+  'type-ia':       'text-success bg-success-bg',
+  'type-cbe':      'text-info bg-info-bg',
+  'type-pas':      'text-[color:var(--pillar-02)] bg-[color:color-mix(in_oklab,var(--pillar-02)_12%,transparent)]',
+  'high-risk':     'text-error bg-error-bg',
+  'medium-risk':   'text-warning bg-warning-bg',
+  'low-risk':      'text-success bg-success-bg',
+  'complete':      'text-success bg-success-bg',
+  'in-progress':   'text-warning bg-warning-bg',
+  'pending':       'text-neutral bg-neutral-bg',
+  'overdue':       'text-error bg-error-bg',
+  'open':          'text-info bg-info-bg',
+  'agent':         'text-[color:var(--pillar-02)] bg-[color:color-mix(in_oklab,var(--pillar-02)_12%,transparent)]',
+  'pillar-01':     'text-[color:var(--pillar-01)] bg-[color:color-mix(in_oklab,var(--pillar-01)_12%,transparent)]',
+  'pillar-02':     'text-[color:var(--pillar-02)] bg-[color:color-mix(in_oklab,var(--pillar-02)_12%,transparent)]',
+  'pillar-03':     'text-[color:var(--pillar-03)] bg-[color:color-mix(in_oklab,var(--pillar-03)_12%,transparent)]',
+  'pillar-04':     'text-[color:var(--pillar-04)] bg-[color:color-mix(in_oklab,var(--pillar-04)_12%,transparent)]',
+  'neutral':       'text-neutral bg-neutral-bg',
+  'critical':      'text-error bg-error-bg',
+  'major':         'text-warning bg-warning-bg',
+  'minor':         'text-info bg-info-bg',
+  'warning':       'text-warning bg-warning-bg',
 };
 
 export function Badge({ variant = 'neutral', children, className = '' }: { variant?: BadgeVariant; children: ReactNode; className?: string }) {
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider whitespace-nowrap ${styles[variant]} ${className}`}>
+    <span className={`inline-flex items-center rounded px-2 py-0.5 type-label-md whitespace-nowrap ${styles[variant]} ${className}`}>
       {children}
     </span>
   );

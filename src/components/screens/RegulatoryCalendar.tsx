@@ -15,21 +15,21 @@ export function RegulatoryCalendar() {
   return (
     <div className="page-enter space-y-5">
       <div>
-        <h1 className="font-display text-[26px] font-semibold text-foreground">Regulatory Calendar</h1>
-        <p className="text-[13px] text-muted-foreground mt-1">Filing deadlines, HA review windows, external regulatory milestones, and feed-driven obligations.</p>
+        <h1 className="type-display-page text-fg-primary">Regulatory Calendar</h1>
+        <p className="text-sm text-fg-tertiary mt-1">Filing deadlines, HA review windows, external regulatory milestones, and feed-driven obligations.</p>
       </div>
 
       <section>
         <Eyebrow>Upcoming Deadlines</Eyebrow>
         <div className="flex gap-3 overflow-x-auto scrollbar-thin pb-2">
           {sorted.map(e => {
-            const c = e.daysRemaining < 21 ? 'var(--status-red)' : e.daysRemaining < 60 ? 'var(--status-amber)' : 'var(--status-green)';
+            const c = e.daysRemaining < 21 ? 'var(--feedback-error-icon)' : e.daysRemaining < 60 ? 'var(--feedback-warning-icon)' : 'var(--feedback-success-icon)';
             return (
-              <div key={e.id} className="shrink-0 w-[220px] rounded-lg border border-border bg-card p-4">
-                <div className="font-mono text-[28px] leading-none" style={{ color: c }}>{e.daysRemaining}</div>
-                <div className="text-[11px] text-muted-foreground">days remaining</div>
-                <div className="text-[12px] text-foreground font-medium mt-2 line-clamp-2">{e.eventType}</div>
-                <div className="text-[11px] text-muted-foreground mt-1">{e.market}</div>
+              <div key={e.id} className="shrink-0 w-[220px] rounded-lg border border-stroke-default bg-raised p-4">
+                <div className="type-display-metric-md" style={{ color: c }}>{e.daysRemaining}</div>
+                <div className="text-2xs text-fg-tertiary">days remaining</div>
+                <div className="text-xs text-fg-primary font-medium mt-2 line-clamp-2">{e.eventType}</div>
+                <div className="text-2xs text-fg-tertiary mt-1">{e.market}</div>
                 {e.variationType && <Badge variant={badgeForVariation(e.variationType)} className="mt-2">{e.variationType}</Badge>}
               </div>
             );
@@ -40,17 +40,17 @@ export function RegulatoryCalendar() {
       <Card>
         <Eyebrow>Active Change Timeline (May to Dec 2025)</Eyebrow>
         <div className="relative">
-          <div className="flex border-b border-border pb-1 mb-3">
+          <div className="flex border-b border-stroke-default pb-1 mb-3">
             {monthLabels.map((m, i) => (
-              <div key={m} className="flex-1 text-[10px] uppercase tracking-wider text-muted-foreground font-mono">{m}</div>
+              <div key={m} className="flex-1 text-3xs uppercase tracking-wider text-fg-tertiary font-mono">{m}</div>
             ))}
           </div>
           <div className="relative space-y-2.5">
             <div
               className="absolute top-0 bottom-0 w-0.5 z-10"
-              style={{ background: 'var(--primary)', left: `${(today - start) / totalMs * 100}%` }}
+              style={{ background: 'var(--brand)', left: `${(today - start) / totalMs * 100}%` }}
             >
-              <span className="absolute -top-4 -translate-x-1/2 text-[10px] font-mono" style={{ color: 'var(--primary)' }}>Today</span>
+              <span className="absolute -top-4 -translate-x-1/2 text-3xs font-mono" style={{ color: 'var(--brand)' }}>Today</span>
             </div>
             {CHANGES.map(c => {
               const init = new Date(c.initiatedDate).getTime();
@@ -60,14 +60,14 @@ export function RegulatoryCalendar() {
               const overdue = c.status === 'Overdue';
               return (
                 <div key={c.id} className="flex items-center gap-3">
-                  <div className="w-[180px] truncate text-[12px] text-foreground">{c.id}</div>
-                  <div className="flex-1 relative h-6 rounded bg-muted overflow-hidden">
+                  <div className="w-[180px] truncate text-xs text-fg-primary">{c.id}</div>
+                  <div className="flex-1 relative h-6 rounded bg-action overflow-hidden">
                     <div
-                      className="absolute top-0 bottom-0 rounded flex items-center px-2 text-[10px] font-mono whitespace-nowrap"
+                      className="absolute top-0 bottom-0 rounded flex items-center px-2 text-3xs font-mono whitespace-nowrap"
                       style={{
                         left: `${left}%`,
                         width: `${width}%`,
-                        background: overdue ? 'var(--status-red)' : 'var(--pillar-04)',
+                        background: overdue ? 'var(--feedback-error-icon)' : 'var(--pillar-04)',
                         color: 'white',
                       }}
                       title={`${c.initiatedDate} → ${c.filingDeadline}`}
@@ -86,14 +86,14 @@ export function RegulatoryCalendar() {
         <Eyebrow>External Regulatory Milestones</Eyebrow>
         <div className="space-y-2">
           {EXTERNAL_MILESTONES.map(m => (
-            <div key={m.id} className="flex items-center justify-between border-b border-border last:border-0 py-2.5">
+            <div key={m.id} className="flex items-center justify-between border-b border-stroke-default last:border-0 py-2.5">
               <div>
-                <div className="text-[13px] font-medium text-foreground">{m.eventType}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{m.authority}</div>
+                <div className="text-sm font-medium text-fg-primary">{m.eventType}</div>
+                <div className="text-2xs text-fg-tertiary mt-0.5">{m.authority}</div>
               </div>
               <div className="text-right">
-                <div className="font-mono text-[12px]" style={{ color: 'var(--primary)' }}>{m.dueDate}</div>
-                <div className="font-mono text-[11px] text-muted-foreground">{m.daysRemaining} days</div>
+                <div className="font-mono text-xs" style={{ color: 'var(--brand)' }}>{m.dueDate}</div>
+                <div className="font-mono text-2xs text-fg-tertiary">{m.daysRemaining} days</div>
               </div>
             </div>
           ))}

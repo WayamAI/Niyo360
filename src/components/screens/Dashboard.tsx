@@ -1,9 +1,9 @@
+import { AppIcon } from "@/components/icons";
 import { useApp } from "@/context/AppContext";
 import { Card, PillarCard, Eyebrow, AgentCard } from "@/components/shared/Card";
 import { Button } from "@/components/shared/Button";
 import { ValueSignal, ConfidencePill } from "@/components/shared/Atoms";
 import { CHANGE_ACTIVITY_BY_MONTH, SEED_AUDIT_EVENTS } from "@/data/mockData";
-import { RefreshCw, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -65,7 +65,7 @@ const KPI = [
     value: "7",
     note: "3 pending simulation",
     trend: "up",
-    trendColor: "var(--status-amber)",
+    trendColor: "var(--feedback-warning-icon)",
     target: "simulator" as const,
     trendText: "+2 this week",
   },
@@ -74,7 +74,7 @@ const KPI = [
     value: "4",
     note: "2 approaching SLA deadline",
     trend: "down",
-    trendColor: "var(--status-green)",
+    trendColor: "var(--feedback-success-icon)",
     target: "haq-drafts" as const,
     trendText: "-1 vs last cycle",
   },
@@ -83,7 +83,7 @@ const KPI = [
     value: "14",
     note: "2 Critical, 4 Major",
     trend: "up",
-    trendColor: "var(--status-red)",
+    trendColor: "var(--feedback-error-icon)",
     target: "validation-reports" as const,
     trendText: "warning",
   },
@@ -92,7 +92,7 @@ const KPI = [
     value: "6",
     note: "3 require action",
     trend: "up",
-    trendColor: "var(--status-blue)",
+    trendColor: "var(--feedback-info-icon)",
     target: "feed-monitor" as const,
     trendText: "new this week",
   },
@@ -104,13 +104,18 @@ export function Dashboard() {
     <div className="page-enter space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="font-display text-[26px] font-semibold text-foreground">Command Centre</h1>
-          <p className="text-[13px] text-muted-foreground mt-1">
-             Regulatory Intelligence Platform
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 mb-1.5 text-2xs text-fg-quaternary">
+            <AppIcon name="home" size="xs" aria-label="Home" />
+            <span aria-hidden="true">/</span>
+            <span className="text-fg-tertiary">Command Centre</span>
+          </nav>
+          <h1 className="type-display-page text-fg-primary">Command Centre</h1>
+          <p className="text-sm text-fg-tertiary mt-1.5">
+            Regulatory Intelligence Platform
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-muted-foreground rounded-md border border-border bg-muted px-3 py-1.5 font-mono">
+          <span className="text-xs text-fg-tertiary rounded-md border border-stroke-default bg-action px-3 py-1.5 font-mono">
             22 May 2025
           </span>
           <Button
@@ -118,7 +123,7 @@ export function Dashboard() {
             size="sm"
             onClick={() => showToast("Refreshing platform state...", "success")}
           >
-            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+            <AppIcon name="refresh" size="sm" /> Refresh
           </Button>
         </div>
       </div>
@@ -130,18 +135,18 @@ export function Dashboard() {
             <PillarCard key={p.n} pillar={p.n}>
               <div className="flex items-center gap-2 mb-3">
                 <span
-                  className="font-mono text-[11px] font-medium"
+                  className="font-mono text-2xs font-medium"
                   style={{ color: `var(--pillar-${p.n})` }}
                 >
                   {p.n}
                 </span>
-                <h3 className="text-[14px] font-medium text-foreground">{p.name}</h3>
+                <h3 className="text-base font-medium text-fg-primary">{p.name}</h3>
               </div>
               <ValueSignal level={p.signal} />
-              <p className="text-[12px] text-muted-foreground mt-3 leading-relaxed line-clamp-3">
+              <p className="text-xs text-fg-tertiary mt-3 leading-relaxed line-clamp-3">
                 {p.problem}
               </p>
-              <p className="font-mono text-[11px] text-foreground mt-3 leading-relaxed">
+              <p className="font-mono text-2xs text-fg-primary mt-3 leading-relaxed">
                 {p.benchmark}
               </p>
               <div className="mt-4">
@@ -161,21 +166,21 @@ export function Dashboard() {
             <button
               key={k.label}
               onClick={() => navigateTo(k.target)}
-              className="text-left rounded-lg border border-border bg-card p-5 hover:border-primary/60 hover:bg-accent/50 transition-colors"
+              className="text-left rounded-2xl border border-stroke-default bg-raised p-5 shadow-sm hover:border-stroke-active hover:bg-raised-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-2">
+              <div className="type-label-md text-fg-quaternary mb-2.5">
                 {k.label}
               </div>
-              <div className="font-mono text-[34px] leading-none text-foreground">{k.value}</div>
-              <div className="text-[12px] text-muted-foreground mt-2">{k.note}</div>
+              <div className="type-display-metric text-fg-primary">{k.value}</div>
+              <div className="text-xs text-fg-tertiary mt-2.5">{k.note}</div>
               <div
-                className="text-[11px] mt-1 flex items-center gap-1"
+                className="text-2xs mt-1 flex items-center gap-1"
                 style={{ color: k.trendColor }}
               >
                 {k.trend === "up" ? (
-                  <TrendingUp className="w-3 h-3" />
+                  <AppIcon name="trendUp" size="xs" />
                 ) : (
-                  <TrendingDown className="w-3 h-3" />
+                  <AppIcon name="trendDown" size="xs" />
                 )}{" "}
                 {k.trendText}
               </div>
@@ -224,10 +229,10 @@ export function Dashboard() {
           ].map((a) => (
             <AgentCard key={a.name} pillar={a.p}>
               <div className="flex items-center justify-between mb-2 gap-2">
-                <h4 className="text-[13px] font-medium text-foreground">{a.name}</h4>
+                <h4 className="text-sm font-medium text-fg-primary">{a.name}</h4>
                 <ConfidencePill value={a.conf} pillar={a.p} />
               </div>
-              <p className="text-[12px] text-muted-foreground leading-relaxed line-clamp-4 mb-3">
+              <p className="text-xs text-fg-tertiary leading-relaxed line-clamp-4 mb-3">
                 {a.action}
               </p>
               <Button variant="secondary" size="sm" onClick={() => navigateTo(a.target)}>
@@ -244,13 +249,13 @@ export function Dashboard() {
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={CHANGE_ACTIVITY_BY_MONTH}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={11} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={11} />
+                <CartesianGrid strokeDasharray="2 4" stroke="var(--stroke-muted)" vertical={false} />
+                <XAxis dataKey="month" stroke="var(--fg-quaternary)" fontSize={11} />
+                <YAxis stroke="var(--fg-quaternary)" fontSize={11} />
                 <Tooltip
                   contentStyle={{
-                    background: "var(--card)",
-                    border: "1px solid var(--border)",
+                    background: "var(--surface-raised)",
+                    border: "1px solid var(--stroke-default)", boxShadow: "var(--elevation-popover)",
                     borderRadius: 8,
                     fontSize: 12,
                   }}
@@ -259,8 +264,8 @@ export function Dashboard() {
                 <Bar dataKey="Simulated" stackId="a" fill="var(--pillar-04)" />
                 <Bar dataKey="Classified" stackId="a" fill="var(--pillar-01)" />
                 <Bar dataKey="Filed" stackId="a" fill="var(--pillar-02)" />
-                <Bar dataKey="Approved" stackId="a" fill="var(--status-green)" />
-                <Bar dataKey="Overdue" stackId="a" fill="var(--status-red)" />
+                <Bar dataKey="Approved" stackId="a" fill="var(--feedback-success-icon)" />
+                <Bar dataKey="Overdue" stackId="a" fill="var(--feedback-error-icon)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -273,8 +278,8 @@ export function Dashboard() {
                 e.actorType === "agent"
                   ? "var(--pillar-02)"
                   : e.actorType === "user"
-                    ? "var(--status-green)"
-                    : "var(--status-blue)";
+                    ? "var(--feedback-success-icon)"
+                    : "var(--feedback-info-icon)";
               return (
                 <li key={i} className="flex items-start gap-2.5">
                   <span
@@ -283,14 +288,14 @@ export function Dashboard() {
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[12px] font-medium text-foreground truncate">
+                      <span className="text-xs font-medium text-fg-primary truncate">
                         {e.actor}
                       </span>
-                      <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+                      <span className="font-mono text-3xs text-fg-tertiary shrink-0">
                         {e.timestamp.split(" ")[1] || ""}
                       </span>
                     </div>
-                    <p className="text-[12px] text-muted-foreground line-clamp-1">{e.action}</p>
+                    <p className="text-xs text-fg-tertiary line-clamp-1">{e.action}</p>
                   </div>
                 </li>
               );
@@ -305,8 +310,8 @@ export function Dashboard() {
       </section>
 
       <Card className="flex items-start gap-3" style={{ borderLeft: "3px solid var(--pillar-02)" }}>
-        <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--pillar-02)" }} />
-        <p className="text-[12px] text-muted-foreground">
+        <AppIcon name="error" className="mt-0.5 shrink-0 text-pillar-02" />
+        <p className="text-xs text-fg-tertiary">
           Built by Wayam AI. Niyo360 is a pre-sales proof-of-concept demonstrating four AI
           accelerators working alongside Veeva Vault RIM. All data shown is illustrative.
         </p>
