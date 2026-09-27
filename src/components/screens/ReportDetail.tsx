@@ -430,14 +430,7 @@ export function ReportDetail() {
         <div className="space-y-4">
           <ReasoningTrace confidence={event.confidenceScore ?? 0} />
           <AuditTimeline />
-          <RelatedReports
-            authority={event.authority}
-            excludeId={event.reportId!}
-            onOpen={(id) => {
-              useApp();
-              navigateTo("report-detail"); /* selectedReportId handled in row click */
-            }}
-          />
+          <RelatedReports authority={event.authority} excludeId={event.reportId!} />
         </div>
       </div>
     </div>
@@ -560,7 +553,8 @@ function ReasoningTrace({ confidence }: { confidence: number }) {
                 onClick={() =>
                   setOpen((prev) => {
                     const next = new Set(prev);
-                    isOpen ? next.delete(step.stepNumber) : next.add(step.stepNumber);
+                    if (isOpen) next.delete(step.stepNumber);
+                    else next.add(step.stepNumber);
                     return next;
                   })
                 }
@@ -650,15 +644,7 @@ function AuditTimeline() {
   );
 }
 
-function RelatedReports({
-  authority,
-  excludeId,
-  onOpen,
-}: {
-  authority: string;
-  excludeId: string;
-  onOpen: (id: string) => void;
-}) {
+function RelatedReports({ authority, excludeId }: { authority: string; excludeId: string }) {
   const related = FEED_EVENTS.filter(
     (e) => e.authority === authority && e.reportId && e.reportId !== excludeId,
   ).slice(0, 4);
