@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { AppIcon } from "@/components/icons";
 import { Button } from "@/components/shared/Button";
-import niyo360Logo from "@/assets/niyo360-logo.svg";
+import { BrandLockup } from "@/components/shared/Logo";
 
 /**
  * Sign-in.
@@ -34,9 +34,12 @@ export function Login() {
     <main className="flex min-h-screen w-full items-center justify-center bg-page px-4 py-10">
       <div className="w-full max-w-[360px]">
         <div className="mb-6 flex flex-col items-center text-center">
-          <img src={niyo360Logo} alt="" aria-hidden="true" className="mb-3 h-14 w-auto" />
-          <h1 className="type-display-page-sm text-fg-primary">Niyo360</h1>
-          <p className="type-body-md mt-0.5 text-fg-tertiary">Change Intelligence</p>
+          {/* The lockup carries the product name, so there is no separate
+              wordmark heading here — that would print PARIVART twice. */}
+          <h1>
+            <BrandLockup height={84} />
+          </h1>
+          <p className="type-body-md text-fg-tertiary">Change Intelligence</p>
         </div>
 
         <form

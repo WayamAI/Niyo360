@@ -1,8 +1,7 @@
 import { AppIcon, IconButton } from "@/components/icons";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
-import niyo360Logo from "@/assets/niyo360-logo.svg";
-import niyo360LogoDark from "@/assets/niyo360-logo-dark.svg";
+import { BrandMark } from "@/components/shared/Logo";
 import { ESCALATIONS } from "@/data/mockData";
 
 /**
@@ -58,18 +57,19 @@ export function TopBar({
       </button>
 
       <div className="flex min-w-0 items-center gap-2.5">
-        <img
-          src={theme === "dark" ? niyo360LogoDark : niyo360Logo}
-          alt="Niyo360"
-          className="h-6 w-auto shrink-0"
-        />
+        {/* The square symbol rather than the full lockup: at this height the
+            lockup's wordmark would render around 5px per letter. The wordmark
+            is carried as Michroma text beside it instead. */}
+        <BrandMark size={26} />
         <span aria-hidden="true" className="hidden h-5 w-px bg-stroke-default sm:block" />
         {/* Michroma carries the product identity; the descriptor stays in Geist
             so the header reads as one line. The descriptor is the first thing
-            to go when space is tight — the logo already says the product. */}
-        <span className="hidden min-w-0 items-baseline gap-2 sm:flex">
-          <span className="type-display-section text-fg-primary">Niyo360</span>
-          <span className="type-body-sm truncate text-fg-tertiary">Change Intelligence</span>
+            to go when space is tight. */}
+        <span className="flex min-w-0 items-baseline gap-2">
+          <span className="type-display-section text-fg-primary">PARIVART</span>
+          <span className="type-body-sm hidden truncate text-fg-tertiary sm:inline">
+            Change Intelligence
+          </span>
         </span>
       </div>
 
