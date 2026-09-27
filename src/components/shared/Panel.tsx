@@ -101,7 +101,9 @@ export function KpiTile({
 }) {
   const body = (
     <>
-      <span className="type-label-md truncate text-fg-quaternary">{label}</span>
+      {/* Wraps, never truncates: at two-up on a 390px screen a truncated
+          label ("REPORTS GENERAT…") leaves the number unidentifiable. */}
+      <span className="type-label-md text-fg-quaternary">{label}</span>
       <span className={`type-display-metric-sm mt-2 block ${TONE_VALUE[tone]}`}>{value}</span>
       {note && <span className="type-body-sm mt-1.5 block text-fg-tertiary">{note}</span>}
       {trend && (

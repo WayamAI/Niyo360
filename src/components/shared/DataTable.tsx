@@ -368,7 +368,7 @@ export function DataTable<T>({
                         {fieldColumns.map((col) => (
                           <div key={col.key} className="min-w-0">
                             <dt className="type-label-sm text-fg-quaternary">{col.header}</dt>
-                            <dd className="type-body-sm mt-0.5 truncate text-fg-secondary">
+                            <dd className="type-body-sm mt-0.5 line-clamp-2 text-fg-secondary">
                               {col.render(row)}
                             </dd>
                           </div>

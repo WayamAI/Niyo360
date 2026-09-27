@@ -28,6 +28,11 @@
   --ref-gray-200: #e4e4e7;
   --ref-gray-300: #d4d4d8;
   --ref-gray-400: #a1a1aa;
+  /* gray-450/-475 exist only to carry the quaternary text tier: the nearest
+     standard stops miss WCAG AA against this palette's surfaces. */
+  --ref-gray-425: #8a8a93;
+  --ref-gray-450: #8f8f98;
+  --ref-gray-475: #6b6b74;
   --ref-gray-500: #71717a;
   --ref-gray-550: #62626b;
   --ref-gray-600: #52525b;
@@ -103,14 +108,20 @@
   --fg-primary:     var(--ref-gray-950);
   --fg-secondary:   var(--ref-gray-700);
   --fg-tertiary:    var(--ref-gray-550);
-  --fg-quaternary:  var(--ref-gray-400);
+  /* gray-400 here measured 2.33-2.56:1 against page/container/action — well
+     under the 4.5:1 AA floor for the 10-11px labels and timestamps that use
+     this tier. gray-475 clears 4.5 on all three and still reads a step
+     lighter than fg-secondary. */
+  --fg-quaternary:  var(--ref-gray-475);
   --fg-on-color:    var(--ref-white);
 
   /* icon */
   --icon-primary:     var(--ref-gray-900);
   --icon-secondary:   var(--ref-gray-700);
   --icon-tertiary:    var(--ref-gray-500);
-  --icon-quaternary:  var(--ref-gray-400);
+  /* 3:1 is the floor for non-text content (WCAG 1.4.11); gray-400 measured
+     2.33-2.56 here. gray-425 clears it on page, container and action. */
+  --icon-quaternary:  var(--ref-gray-425);
   --icon-on-color:    var(--ref-white);
 
   /* stroke */
@@ -245,15 +256,19 @@
   --fg-primary:     var(--ref-gray-50);
   --fg-secondary:   var(--ref-gray-300);
   --fg-tertiary:    var(--ref-gray-400);
-  /* gray-500, not gray-550: keeps the faintest metadata tier above 3:1
-     against surface.raised / raised-x2, not just against the page. */
-  --fg-quaternary:  var(--ref-gray-500);
+  /* Was gray-500, chosen to clear 3:1. That is the floor for *large* text;
+     this tier is used at 10-11px, where AA requires 4.5:1, and gray-500
+     measured 3.93 on container down to 3.32 on surface.action. gray-450
+     clears 4.5 on every dark surface (5.93 container, 5.01 action). */
+  --fg-quaternary:  var(--ref-gray-450);
   --fg-on-color:    var(--ref-gray-950);
 
   --icon-primary:     var(--ref-gray-100);
   --icon-secondary:   var(--ref-gray-300);
   --icon-tertiary:    var(--ref-gray-500);
-  --icon-quaternary:  var(--ref-gray-600);
+  /* gray-600 measured 2.08-2.46 against the dark surfaces, under the 3:1
+     non-text floor. gray-500 clears it (3.93 container, 3.32 action). */
+  --icon-quaternary:  var(--ref-gray-500);
   --icon-on-color:    var(--ref-gray-950);
 
   --stroke-default:   var(--ref-gray-800);
