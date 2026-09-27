@@ -29,10 +29,12 @@ export function Panel({
     <section
       className={`flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-stroke-default bg-container ${className}`}
     >
+      {/* Header wraps rather than truncating: a wide action (a chart legend, a
+          filter row) must not eat the panel's own title. */}
       {(title || action) && (
-        <header className="flex min-h-10 shrink-0 items-center justify-between gap-3 border-b border-stroke-muted px-4 py-2">
+        <header className="flex min-h-10 shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b border-stroke-muted px-4 py-2">
           <div className="min-w-0">
-            {title && <h2 className="type-label-md truncate text-fg-quaternary">{title}</h2>}
+            {title && <h2 className="type-label-md text-fg-quaternary">{title}</h2>}
             {description && (
               <p className="type-body-sm mt-0.5 truncate text-fg-tertiary">{description}</p>
             )}
