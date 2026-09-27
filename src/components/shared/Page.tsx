@@ -72,7 +72,7 @@ export function PageHeader({
 }) {
   return (
     <header className="shrink-0 border-b border-stroke-muted bg-page px-4 py-3.5 sm:px-5">
-      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
+      <div className="mx-auto flex max-w-[var(--page-max)] flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
         <div className="flex min-w-0 gap-2.5">
           {onBack && (
             <button
@@ -97,12 +97,17 @@ export function PageHeader({
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {children && <div className="mt-3 min-w-0">{children}</div>}
+      {children && <div className="mx-auto mt-3 min-w-0 max-w-[var(--page-max)]">{children}</div>}
     </header>
   );
 }
 
-/** The page's scroll container. Owns the only vertical scrollbar in <main>. */
+/**
+ * The page's scroll container. Owns the only vertical scrollbar in <main>, and
+ * caps content at --page-max so a 2560px monitor does not stretch a table to
+ * the point where the eye cannot track a row across it. The cap is applied
+ * inside the padding so the header's rule still spans the full width.
+ */
 export function PageBody({
   children,
   className = "",
@@ -111,10 +116,10 @@ export function PageBody({
   className?: string;
 }) {
   return (
-    <div
-      className={`scrollbar-thin min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-5 ${className}`}
-    >
-      {children}
+    <div className="scrollbar-thin min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-5">
+      <div className={`mx-auto flex min-h-full max-w-[var(--page-max)] flex-col ${className}`}>
+        {children}
+      </div>
     </div>
   );
 }

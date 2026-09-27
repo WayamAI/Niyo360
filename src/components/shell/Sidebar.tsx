@@ -1,6 +1,7 @@
 import { useApp, type ScreenId } from "@/context/AppContext";
 import { AppIcon, type IconName } from "@/components/icons";
 import { AUTHORITY_SYNC } from "@/data/regulatoryData";
+import { ESCALATIONS } from "@/data/mockData";
 
 /**
  * Primary navigation.
@@ -19,7 +20,13 @@ const SECTIONS: Array<{
   /** Short form shown in the collapsed icon rail as a group separator. */
   short: string;
   pillar?: "01" | "02" | "03" | "04";
-  items: Array<{ id: ScreenId; label: string; icon: IconName; badge?: string }>;
+  items: Array<{
+    id: ScreenId;
+    label: string;
+    icon: IconName;
+    /** Names a live count to show; never a literal, so it cannot go stale. */
+    badge?: "escalations";
+  }>;
 }> = [
   {
     label: "Overview",
@@ -69,7 +76,7 @@ const SECTIONS: Array<{
     items: [
       { id: "calendar", label: "Regulatory Calendar", icon: "calendar" },
       { id: "audit", label: "Audit Trail", icon: "audit" },
-      { id: "escalations", label: "Escalations", icon: "escalation", badge: "4" },
+      { id: "escalations", label: "Escalations", icon: "escalation", badge: "escalations" },
     ],
   },
 ];
@@ -90,7 +97,7 @@ export function Sidebar({
   onClose?: () => void;
   collapsed?: boolean;
 }) {
-  const { currentScreen, navigateTo } = useApp();
+  const { currentScreen, navigateTo, resolvedEscalations } = useApp();
   const activeId = PARENT_OF[currentScreen] ?? currentScreen;
   const unhealthy = AUTHORITY_SYNC.filter((a) => !a.isHealthy);
   const healthy = AUTHORITY_SYNC.length - unhealthy.length;
@@ -130,6 +137,10 @@ export function Sidebar({
               <ul className="flex flex-col gap-0.5">
                 {section.items.map((item) => {
                   const active = activeId === item.id;
+                  const badgeCount =
+                    item.badge === "escalations"
+                      ? ESCALATIONS.filter((e) => !resolvedEscalations.has(e.id)).length
+                      : 0;
                   return (
                     <li key={item.id}>
                       <button
@@ -164,13 +175,13 @@ export function Sidebar({
                         >
                           {item.label}
                         </span>
-                        {item.badge && (
+                        {badgeCount > 0 && (
                           <span
                             className={`type-caption tabular shrink-0 rounded px-1.5 font-mono ${
                               active ? "bg-action text-fg-secondary" : "bg-error-bg text-error-icon"
                             } ${collapsed ? "lg:hidden" : ""}`}
                           >
-                            {item.badge}
+                            {badgeCount}
                           </span>
                         )}
                       </button>

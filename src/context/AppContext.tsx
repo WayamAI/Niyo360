@@ -36,6 +36,9 @@ export interface Toast {
 
 type Theme = "light" | "dark";
 
+/** Namespaced to the current product name; "regiq-theme" predates the rebrand. */
+const THEME_KEY = "niyo360.theme";
+
 interface AppContextType {
   currentScreen: ScreenId;
   navigateTo: (s: ScreenId) => void;
@@ -71,12 +74,16 @@ const nowStamp = () => {
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>("agent-console");
+  const [currentScreen, setCurrentScreen] = useState<ScreenId>("dashboard");
   const [auditLog, setAuditLog] = useState<AuditEvent[]>(
     SEED_AUDIT_EVENTS.map((e, i) => ({ ...e, id: `seed-${i}` })),
   );
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [isRailOpen, setRailOpen] = useState(true);
+  // The context rail is inline at xl and overlays the page below it, so
+  // starting it open on a laptop or phone would cover the screen the user
+  // just navigated to. SSR renders it closed and the client opens it only
+  // where there is room for it to sit beside the content.
+  const [isRailOpen, setRailOpen] = useState(false);
   const [isAssistantOpen, setAssistantOpen] = useState(false);
   const [selectedChangeId, setSelectedChangeId] = useState<string | null>("CHG-2025-0047");
   const [selectedReportId, setSelectedReportId] = useState<string | null>("IDR-2025-0041");
@@ -86,7 +93,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === "undefined") return "light";
-    const saved = localStorage.getItem("regiq-theme") as Theme | null;
+    const saved = (localStorage.getItem(THEME_KEY) ??
+      localStorage.getItem("regiq-theme")) as Theme | null;
     if (saved) return saved;
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
@@ -94,8 +102,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("regiq-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
+
+  // Open the rail once there is room, and fold it away again on the way down,
+  // so resizing never leaves a 320px panel sitting on top of the content.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const wide = window.matchMedia("(min-width: 1280px)");
+    const sync = (event: MediaQueryList | MediaQueryListEvent) => setRailOpen(event.matches);
+    sync(wide);
+    wide.addEventListener("change", sync);
+    return () => wide.removeEventListener("change", sync);
+  }, []);
 
   const logAudit = useCallback((e: Omit<AuditEvent, "id" | "timestamp">) => {
     setAuditLog((prev) => [

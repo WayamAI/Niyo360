@@ -47,6 +47,7 @@ import {
   LogOut,
   Map,
   Moon,
+  Menu,
   MoreHorizontal,
   Pause,
   PenLine,
@@ -102,6 +103,7 @@ export const icons = {
   assign: UserPlus,
   play: Play,
   pause: Pause,
+  menu: Menu,
   more: MoreHorizontal,
 
   // ── direction ──────────────────────────────────────────────────────────
