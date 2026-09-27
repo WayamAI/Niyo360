@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { SEED_AUDIT_EVENTS } from "@/data/mockData";
+import { useTheme, type Theme } from "@/context/ThemeContext";
 import { demoTimestamp } from "@/lib/demo-clock";
 
 export type ScreenId =
@@ -34,11 +35,6 @@ export interface Toast {
   message: string;
   variant: "default" | "success" | "warning" | "error";
 }
-
-type Theme = "light" | "dark";
-
-/** Namespaced to the current product name; "regiq-theme" predates the rebrand. */
-const THEME_KEY = "niyo360.theme";
 
 interface AppContextType {
   currentScreen: ScreenId;
@@ -86,19 +82,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [resolvedEscalations, setResolved] = useState<Set<string>>(new Set());
   const [reviewedFeed, setReviewed] = useState<Set<string>>(new Set());
 
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "light";
-    const saved = (localStorage.getItem(THEME_KEY) ??
-      localStorage.getItem("regiq-theme")) as Theme | null;
-    if (saved) return saved;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  });
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem(THEME_KEY, theme);
-  }, [theme]);
+  // Theme lives in ThemeProvider, which wraps the whole tree including the
+  // sign-in screen. Re-exposed here so every existing useApp().theme call site
+  // keeps working and there is still one theme system.
+  const { theme, toggleTheme } = useTheme();
 
   // Open the rail once there is room, and fold it away again on the way down,
   // so resizing never leaves a 320px panel sitting on top of the content.
@@ -159,7 +146,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     reviewedFeed,
     markFeedReviewed: (id) => setReviewed((prev) => new Set(prev).add(id)),
     theme,
-    toggleTheme: () => setTheme((t) => (t === "light" ? "dark" : "light")),
+    toggleTheme,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppProvider } from "@/context/AppContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { Shell } from "@/components/Shell";
 import { Login } from "@/components/screens/Login";
 
@@ -19,10 +20,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  // ThemeProvider sits outside the auth gate so the `.dark` class is applied
+  // on the sign-in screen too; AppProvider stays inside it so signing out
+  // still resets app state.
   return (
-    <AuthProvider>
-      <Gate />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Gate />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
