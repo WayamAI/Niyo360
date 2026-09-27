@@ -95,6 +95,7 @@ export function AIAssistant() {
           </p>
         </div>
         <button
+          type="button"
           onClick={toggleAssistant}
           aria-label="Close AI assistant"
           className="p-1 rounded hover:bg-action-tertiary-hover text-icon-tertiary hover:text-icon-primary transition-colors duration-200"
@@ -108,6 +109,7 @@ export function AIAssistant() {
           {AI_SUGGESTIONS.map((s) => (
             <button
               key={s.q}
+              type="button"
               onClick={() => ask(s.q)}
               className="shrink-0 text-2xs rounded-full border border-stroke-default bg-action px-3 py-1.5 hover:bg-action-tertiary-hover hover:border-brand/50 text-fg-primary transition"
             >

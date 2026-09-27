@@ -37,6 +37,7 @@ export function ToastContainer() {
           <Icon v={t.variant} />
           <p className="text-xs text-fg-primary flex-1 leading-snug">{t.message}</p>
           <button
+            type="button"
             onClick={() => dismissToast(t.id)}
             aria-label="Dismiss notification"
             className="p-0.5 rounded hover:bg-action-tertiary-hover text-icon-tertiary hover:text-icon-primary transition-colors duration-200"

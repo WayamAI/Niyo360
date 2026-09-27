@@ -30,12 +30,18 @@ const sizeClasses: Record<Size, string> = {
 export function Button({
   variant = "primary",
   size = "md",
+  type = "button",
   className = "",
   children,
   ...rest
 }: Props) {
   return (
     <button
+      // Defaults to "button". An HTML button with no type is a submit button,
+      // so every secondary action inside a <form> — "Save as draft", "Cancel"
+      // — would submit it. The two submit buttons in the app set type
+      // explicitly.
+      type={type}
       className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       {...rest}
     >
