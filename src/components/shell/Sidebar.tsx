@@ -1,39 +1,53 @@
 import { useApp, type ScreenId } from "@/context/AppContext";
 import { AppIcon, type IconName } from "@/components/icons";
+import { AUTHORITY_SYNC } from "@/data/regulatoryData";
 
+/**
+ * Primary navigation.
+ *
+ * The information architecture is the product's own: an overview, then one
+ * group per capability pillar, then governance. Group labels carry the pillar
+ * accent because that is the one place in the app where pillar colour means
+ * something structural rather than decorative.
+ *
+ * Three widths: a 232px rail, a 56px icon rail, and an off-canvas drawer below
+ * the lg breakpoint. Collapse state and the drawer are owned by Shell, which
+ * is also what draws the scrim.
+ */
 const SECTIONS: Array<{
   label: string;
+  /** Short form shown in the collapsed icon rail as a group separator. */
+  short: string;
   pillar?: "01" | "02" | "03" | "04";
   items: Array<{ id: ScreenId; label: string; icon: IconName; badge?: string }>;
 }> = [
-  // Scope: this build ships only Pillar 01 (Change Intelligence). The other
-  // pillar screens still exist in src/components/screens/ and are wired into
-  // Shell.tsx, but they are intentionally hidden from the sidebar. Uncomment
-  // the corresponding section to re-enable.
-
   {
-    label: "OVERVIEW",
+    label: "Overview",
+    short: "OV",
     items: [{ id: "dashboard", label: "Command Centre", icon: "dashboard" }],
   },
   {
-    label: "PILLAR 01, CHANGE INTELLIGENCE",
+    label: "01 · Change Intelligence",
+    short: "01",
     pillar: "01",
     items: [
-      { id: "feed-monitor", label: "Regulatory Feed Monitor", icon: "feed" },
+      { id: "feed-monitor", label: "Feed Monitor", icon: "feed" },
       { id: "delta-reports", label: "Impact Delta Reports", icon: "deltaReport" },
-      { id: "agent-console", label: "Regulatory Intelligence Agent", icon: "agent" },
+      { id: "agent-console", label: "Intelligence Agent", icon: "agent" },
     ],
   },
   {
-    label: "PILLAR 02, AI WRITING",
+    label: "02 · AI Writing",
+    short: "02",
     pillar: "02",
     items: [
-      { id: "haq-drafts", label: "HAQ Response Drafts", icon: "haqDraft" },
-      { id: "variation-drafts", label: "Variation Section Drafts", icon: "variationDraft" },
+      { id: "haq-drafts", label: "HAQ Responses", icon: "haqDraft" },
+      { id: "variation-drafts", label: "Variation Sections", icon: "variationDraft" },
     ],
   },
   {
-    label: "PILLAR 03, COMPLIANCE VALIDATOR",
+    label: "03 · Compliance Validator",
+    short: "03",
     pillar: "03",
     items: [
       { id: "validator", label: "Pre-Submission Validator", icon: "validator" },
@@ -41,15 +55,17 @@ const SECTIONS: Array<{
     ],
   },
   {
-    label: "PILLAR 04, CHANGE SIMULATOR",
+    label: "04 · Change Simulator",
+    short: "04",
     pillar: "04",
     items: [
-      { id: "simulator", label: "CMC Change Simulator", icon: "simulator" },
+      { id: "simulator", label: "CMC Simulator", icon: "simulator" },
       { id: "heatmap", label: "Market Heatmap", icon: "map" },
     ],
   },
   {
-    label: "GOVERNANCE",
+    label: "Governance",
+    short: "GV",
     items: [
       { id: "calendar", label: "Regulatory Calendar", icon: "calendar" },
       { id: "audit", label: "Audit Trail", icon: "audit" },
@@ -58,64 +74,154 @@ const SECTIONS: Array<{
   },
 ];
 
-export function Sidebar() {
+/** Screens reachable only by drilling in; they light up their parent's row. */
+const PARENT_OF: Partial<Record<ScreenId, ScreenId>> = {
+  "report-detail": "delta-reports",
+  "new-change": "simulator",
+};
+
+export function Sidebar({
+  /** Drawer visibility below lg. Ignored at lg and above. */
+  open = false,
+  onClose,
+  collapsed = false,
+}: {
+  open?: boolean;
+  onClose?: () => void;
+  collapsed?: boolean;
+}) {
   const { currentScreen, navigateTo } = useApp();
+  const activeId = PARENT_OF[currentScreen] ?? currentScreen;
+  const unhealthy = AUTHORITY_SYNC.filter((a) => !a.isHealthy);
+  const healthy = AUTHORITY_SYNC.length - unhealthy.length;
+
+  function go(id: ScreenId) {
+    navigateTo(id);
+    onClose?.();
+  }
+
   return (
-    <aside className="fixed left-0 top-14 bottom-0 w-[220px] bg-container border-r border-stroke-muted z-40 flex flex-col overflow-y-auto scrollbar-thin">
-      <nav className="flex-1 p-3 space-y-5">
-        {SECTIONS.map((section) => (
-          <div key={section.label}>
-            <div
-              className={`px-3 mb-1.5 type-label-sm ${section.pillar ? "" : "text-fg-quaternary"}`}
-              style={section.pillar ? { color: `var(--pillar-${section.pillar})` } : undefined}
-            >
-              {section.label}
-            </div>
-            {section.items.map((it) => {
-              const active = currentScreen === it.id;
-              return (
-                <button
-                  key={it.id}
-                  onClick={() => navigateTo(it.id)}
-                  aria-current={active ? "page" : undefined}
-                  className={`w-full h-9 px-3 rounded-md flex items-center gap-2.5 text-sm transition-colors duration-200
-                    ${
-                      active
-                        ? "bg-action-primary text-on-action-primary font-medium"
-                        : "text-fg-tertiary hover:bg-action-tertiary-hover hover:text-fg-secondary"
-                    }`}
-                >
-                  <AppIcon
-                    name={it.icon}
-                    size="lg"
-                    className={active ? "text-on-action-primary" : "text-icon-tertiary"}
-                  />
-                  <span className="flex-1 text-left truncate">{it.label}</span>
-                  {it.badge && (
-                    <span
-                      className={`text-3xs font-mono rounded px-1.5 ${
-                        active
-                          ? "bg-on-action-primary/15 text-on-action-primary"
-                          : "bg-error-bg text-error-icon"
-                      }`}
-                    >
-                      {it.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        ))}
+    <aside
+      aria-label="Primary"
+      className={`fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col border-r border-stroke-muted bg-container transition-[width,transform] duration-200 ease-out lg:relative lg:z-30 lg:translate-x-0 ${
+        collapsed ? "w-[232px] lg:w-14" : "w-[232px]"
+      } ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+    >
+      <nav
+        aria-label="Sections"
+        className={`scrollbar-thin min-h-0 flex-1 overflow-y-auto py-3 ${
+          collapsed ? "px-2 lg:px-1.5" : "px-2"
+        }`}
+      >
+        <ul className="flex flex-col gap-4">
+          {SECTIONS.map((section) => (
+            <li key={section.label}>
+              <h2
+                className={`type-label-sm mb-1 px-2 ${section.pillar ? "" : "text-fg-quaternary"} ${
+                  collapsed ? "lg:text-center lg:px-0" : ""
+                }`}
+                style={section.pillar ? { color: `var(--pillar-${section.pillar})` } : undefined}
+              >
+                <span className={collapsed ? "lg:hidden" : ""}>{section.label}</span>
+                <span className={collapsed ? "hidden lg:inline" : "hidden"} aria-hidden="true">
+                  {section.short}
+                </span>
+              </h2>
+              <ul className="flex flex-col gap-0.5">
+                {section.items.map((item) => {
+                  const active = activeId === item.id;
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => go(item.id)}
+                        aria-current={active ? "page" : undefined}
+                        title={collapsed ? item.label : undefined}
+                        className={`relative flex h-9 w-full items-center gap-2.5 rounded-md px-2 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                          active
+                            ? "bg-raised-2 text-fg-primary"
+                            : "text-fg-tertiary hover:bg-action-tertiary-hover hover:text-fg-secondary"
+                        } ${collapsed ? "lg:justify-center lg:px-0" : ""}`}
+                      >
+                        {/* Active marker: a 2px brand rail rather than
+                            inverting the whole row, which made one of
+                            thirteen items the loudest element on screen. */}
+                        {active && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-brand"
+                          />
+                        )}
+                        <AppIcon
+                          name={item.icon}
+                          size="md"
+                          className={active ? "text-icon-primary" : "text-icon-tertiary"}
+                        />
+                        <span
+                          className={`type-body-md min-w-0 flex-1 truncate text-left ${
+                            active ? "font-medium" : ""
+                          } ${collapsed ? "lg:hidden" : ""}`}
+                        >
+                          {item.label}
+                        </span>
+                        {item.badge && (
+                          <span
+                            className={`type-caption tabular shrink-0 rounded px-1.5 font-mono ${
+                              active ? "bg-action text-fg-secondary" : "bg-error-bg text-error-icon"
+                            } ${collapsed ? "lg:hidden" : ""}`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+          ))}
+        </ul>
       </nav>
-      <div className="p-3">
-        <div className="rounded-lg bg-raised border border-stroke-muted px-3 py-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs text-fg-tertiary">Simulation Engine</span>
-            <span className="w-2 h-2 rounded-full animate-pulse bg-success-icon" />
-          </div>
-          <div className="font-mono text-3xs mt-1 text-success">Active, 112 markets indexed</div>
-        </div>
+
+      {/* Feed health, derived from AUTHORITY_SYNC rather than asserted. The
+          previous copy read "Active, 112 markets indexed" — a number the
+          dataset does not contain, over a green dot that hid a stale feed. */}
+      <div className={`shrink-0 p-2 ${collapsed ? "lg:px-1.5" : ""}`}>
+        <button
+          type="button"
+          onClick={() => go("feed-monitor")}
+          title={collapsed ? "Authority feed health" : undefined}
+          className={`w-full rounded-md border border-stroke-muted bg-raised px-2.5 py-2 text-left transition-colors duration-150 hover:border-stroke-default focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+            collapsed ? "lg:grid lg:h-9 lg:place-items-center lg:px-0 lg:py-0" : ""
+          }`}
+        >
+          <span
+            className={`flex items-center justify-between gap-2 ${collapsed ? "lg:hidden" : ""}`}
+          >
+            <span className="type-caption text-fg-tertiary">Authority feeds</span>
+            <span
+              className={`size-2 shrink-0 rounded-full ${
+                unhealthy.length ? "bg-warning-icon" : "bg-success-icon"
+              }`}
+            />
+          </span>
+          <span
+            className={`type-caption tabular mt-0.5 block font-mono ${
+              unhealthy.length ? "text-warning" : "text-success"
+            } ${collapsed ? "lg:hidden" : ""}`}
+          >
+            {unhealthy.length
+              ? `${healthy}/${AUTHORITY_SYNC.length} healthy · ${unhealthy[0].code} stale`
+              : `${healthy}/${AUTHORITY_SYNC.length} healthy`}
+          </span>
+          <span className={collapsed ? "hidden lg:block" : "hidden"} aria-hidden="true">
+            <AppIcon
+              name="activity"
+              size="md"
+              className={unhealthy.length ? "text-warning-icon" : "text-success-icon"}
+            />
+          </span>
+        </button>
       </div>
     </aside>
   );
