@@ -22,11 +22,16 @@ const Icon = ({ v }: { v: keyof typeof variantBorder }) => {
 export function ToastContainer() {
   const { toasts, dismissToast } = useApp();
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+    <div
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+      className="pointer-events-none fixed inset-x-4 bottom-4 z-[9999] flex flex-col items-end gap-2 sm:inset-x-auto sm:right-4"
+    >
       {toasts.slice(-3).map((t) => (
         <div
           key={t.id}
-          className="event-enter pointer-events-auto flex items-start gap-3 rounded-lg border border-stroke-default bg-raised shadow-lg pl-3 pr-2 py-3 max-w-[340px]"
+          className="event-enter pointer-events-auto flex w-full max-w-[340px] items-start gap-3 rounded-lg border border-stroke-default bg-raised py-2.5 pr-2 pl-3"
           style={{ borderLeft: `3px solid ${variantBorder[t.variant]}` }}
         >
           <Icon v={t.variant} />
