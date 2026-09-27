@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { SEED_AUDIT_EVENTS } from "@/data/mockData";
 import { useTheme, type Theme } from "@/context/ThemeContext";
 import { demoTimestamp } from "@/lib/demo-clock";
@@ -105,10 +113,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ]);
   }, []);
 
+  // Auto-dismiss timers are tracked so signing out (which unmounts this
+  // provider) does not leave up to a dozen timeouts writing into dead state.
+  const toastTimers = useRef<number[]>([]);
+  useEffect(() => {
+    const pending = toastTimers.current;
+    return () => pending.forEach((id) => window.clearTimeout(id));
+  }, []);
+
   const showToast = useCallback((message: string, variant: Toast["variant"] = "default") => {
     const id = `toast-${Date.now()}-${Math.random()}`;
     setToasts((prev) => [...prev, { id, message, variant }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
+    toastTimers.current.push(
+      window.setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500),
+    );
   }, []);
 
   const dismissToast = useCallback((id: string) => {
