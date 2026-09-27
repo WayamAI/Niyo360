@@ -4,10 +4,10 @@ import { AppIcon, type IconName } from "@/components/icons";
 /**
  * Bounded content surfaces.
  *
- * `Card` (Card.tsx) is a free-standing block that grows with its content.
- * `Panel` is the framed, height-aware version: it owns a header strip and a
- * body that can hold its own scroll area, which is what a table or chart
- * needs so it never paints over its neighbours.
+ * `Panel` is the app's one framed surface: it owns a header strip and a body
+ * that can hold its own scroll area, which is what a table or chart needs so
+ * it never paints over its neighbours. The only other card treatment is
+ * `AgentCard` (Card.tsx), which marks generated output.
  */
 export function Panel({
   title,

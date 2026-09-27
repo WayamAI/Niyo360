@@ -125,8 +125,8 @@ export function PageBody({
 }
 
 /**
- * Label above a group of cards or a panel. Replaces the free-floating
- * `Eyebrow` where the group also needs a description or an action.
+ * Label above a group of cards or panels, with room for a description and an
+ * action. Replaces the per-screen eyebrow markup this app used to repeat.
  */
 export function SectionHeader({
   title,
