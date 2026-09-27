@@ -1,27 +1,28 @@
-import { AppIcon } from "@/components/icons";
 import { useMemo, useState } from "react";
+import { AppIcon } from "@/components/icons";
 import { useApp } from "@/context/AppContext";
-import { Card } from "@/components/shared/Card";
+import { PageBody, PageHeader } from "@/components/shared/Page";
+import { KpiRow, KpiTile, Panel } from "@/components/shared/Panel";
 import { Button } from "@/components/shared/Button";
-import { FEED_EVENTS, FEED_KPIS, type AuthorityCode, type FilingType } from "@/data/regulatoryData";
+import { DataTable, type Column } from "@/components/shared/DataTable";
+import { FilterBar, FilterSelect } from "@/components/shared/Filters";
+import {
+  FEED_EVENTS,
+  FEED_KPIS,
+  type AuthorityCode,
+  type FeedEvent,
+  type FilingType,
+} from "@/data/regulatoryData";
 import {
   AuthorityBadge,
+  ConfidenceRing,
+  DeadlineCountdown,
   FilingTypeBadge,
   StatusPill,
-  DeadlineCountdown,
-  ConfidenceRing,
 } from "@/components/regulatory/atoms";
 
-const AUTH_OPTIONS: ("All" | AuthorityCode)[] = [
-  "All",
-  "FDA",
-  "EMA",
-  "MHRA",
-  "CDSCO",
-  "TGA",
-  "ANVISA",
-];
-const STATUS_OPTIONS = [
+const AUTHORITIES = ["All", "FDA", "EMA", "MHRA", "CDSCO", "TGA", "ANVISA"] as const;
+const STATUSES = [
   "All",
   "Detected",
   "Processing",
@@ -32,313 +33,272 @@ const STATUS_OPTIONS = [
   "Closed",
   "No Action",
 ] as const;
-const FILING_OPTIONS: ("All" | FilingType)[] = ["All", "IA", "IB", "II", "NDA", "None", "TBD"];
+const FILINGS = ["All", "IA", "IB", "II", "NDA", "None", "TBD"] as const;
 
 export function FeedMonitor() {
   const { logAudit, showToast, navigateTo, setSelectedReportId } = useApp();
-  const [authority, setAuthority] = useState<(typeof AUTH_OPTIONS)[number]>("All");
-  const [status, setStatus] = useState<(typeof STATUS_OPTIONS)[number]>("All");
-  const [filing, setFiling] = useState<(typeof FILING_OPTIONS)[number]>("All");
-  const [search, setSearch] = useState("");
+  const [authority, setAuthority] = useState<(typeof AUTHORITIES)[number]>("All");
+  const [status, setStatus] = useState<(typeof STATUSES)[number]>("All");
+  const [filing, setFiling] = useState<(typeof FILINGS)[number]>("All");
 
-  const filtered = useMemo(
+  const rows = useMemo(
     () =>
       FEED_EVENTS.filter(
-        (e) =>
-          (authority === "All" || e.authority === authority) &&
-          (status === "All" || e.status === status) &&
-          (filing === "All" || e.filingType === filing) &&
-          (search === "" ||
-            e.title.toLowerCase().includes(search.toLowerCase()) ||
-            e.id.toLowerCase().includes(search.toLowerCase())),
+        (event) =>
+          (authority === "All" || event.authority === (authority as AuthorityCode)) &&
+          (status === "All" || event.status === status) &&
+          (filing === "All" || event.filingType === (filing as FilingType)),
       ),
-    [authority, status, filing, search],
+    [authority, status, filing],
   );
 
-  const openReport = (eventId: string, reportId: string | null) => {
+  const activeFilters = [authority, status, filing].filter((value) => value !== "All").length;
+
+  function clearFilters() {
+    setAuthority("All");
+    setStatus("All");
+    setFiling("All");
+  }
+
+  function openReport(event: FeedEvent) {
     logAudit({
       actor: "Regulatory Operations",
       actorType: "user",
       pillar: "01",
-      action: `Opened feed event ${eventId}`,
+      action: `Opened feed event ${event.id}`,
     });
-    if (reportId) {
-      setSelectedReportId(reportId);
+    if (event.reportId) {
+      setSelectedReportId(event.reportId);
       navigateTo("report-detail");
     } else {
       showToast(
-        "Awaiting report — agent has not yet generated an Impact Delta Report for this event.",
+        `No Impact Delta Report yet for ${event.id} — the agent has not finished mapping it.`,
         "warning",
       );
     }
-  };
+  }
+
+  const columns: Column<FeedEvent>[] = [
+    {
+      key: "id",
+      header: "Event",
+      card: "title",
+      value: (event) => event.id,
+      render: (event) => (
+        <span className="flex items-center gap-1.5">
+          {event.urgencyFlag && (
+            <AppIcon name="warning" size="xs" className="text-error-icon" aria-label="Urgent" />
+          )}
+          <span className="font-mono text-[color:var(--pillar-01)]">{event.id}</span>
+        </span>
+      ),
+    },
+    {
+      key: "authority",
+      header: "Authority",
+      value: (event) => event.authority,
+      render: (event) => <AuthorityBadge code={event.authority} />,
+    },
+    {
+      key: "published",
+      header: "Published",
+      hide: "md",
+      value: (event) => event.publishedDate,
+      render: (event) => (
+        <span className="tabular font-mono text-fg-tertiary">{event.publishedDate}</span>
+      ),
+    },
+    {
+      key: "title",
+      header: "Guideline",
+      value: (event) => event.title,
+      render: (event) => (
+        <span className="line-clamp-2 max-w-[38ch] text-fg-primary" title={event.title}>
+          {event.title}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Stage",
+      value: (event) => event.status,
+      render: (event) => <StatusPill status={event.status} />,
+    },
+    {
+      key: "filing",
+      header: "Filing",
+      value: (event) => event.filingType,
+      render: (event) => <FilingTypeBadge type={event.filingType} />,
+    },
+    {
+      key: "deadline",
+      header: "Deadline",
+      value: (event) => event.deadlineDate,
+      render: (event) => <DeadlineCountdown date={event.deadlineDate} />,
+    },
+    {
+      key: "confidence",
+      header: "Conf.",
+      align: "center",
+      hide: "lg",
+      value: (event) => event.confidenceScore,
+      render: (event) => (
+        <span className="flex justify-center">
+          <ConfidenceRing value={event.confidenceScore} size={30} />
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "",
+      card: false,
+      render: (event) => (
+        <span className="flex items-center gap-0.5">
+          <RowAction label="Open report" icon="view" onClick={() => openReport(event)} />
+          <RowAction
+            label="Reassign"
+            icon="assign"
+            onClick={() => showToast(`Reassignment for ${event.id} is not wired in this build.`)}
+          />
+          <RowAction
+            label="Flag for follow-up"
+            icon="flag"
+            onClick={() => showToast(`${event.id} flagged for follow-up.`, "warning")}
+          />
+        </span>
+      ),
+    },
+  ];
 
   return (
-    <div className="page-enter space-y-5">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="type-display-page text-fg-primary">Regulatory Feed Monitor</h1>
-          <p className="text-sm text-fg-tertiary mt-1 max-w-3xl">
-            Inbox of every regulatory event ingested from FDA, EMA, MHRA, CDSCO, TGA, and ANVISA
-            feeds. Each event is mapped against the active product–market portfolio.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-2xs text-fg-tertiary">
-            Last sync: {FEED_KPIS.lastSyncMinutesAgo} min ago
-          </span>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => showToast("Feed refresh queued.", "success")}
-          >
-            <AppIcon name="refresh" size="sm" /> Refresh
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          {
-            l: "NEW THIS WEEK",
-            v: FEED_KPIS.newThisWeek,
-            n: `+${FEED_KPIS.newThisWeekDelta} vs last week`,
-            c: "var(--pillar-01)",
-          },
-          {
-            l: "PROCESSING NOW",
-            v: FEED_KPIS.processingNow,
-            n: "Regulatory Intelligence Agent running",
-          },
-          {
-            l: "REPORTS GENERATED",
-            v: FEED_KPIS.reportsGenerated,
-            n: `of ${FEED_KPIS.reportsGeneratedOfTotal} resolved`,
-            c: "var(--feedback-success-icon)",
-          },
-          {
-            l: "OVERDUE / AT RISK",
-            v: FEED_KPIS.overdueOrAtRisk,
-            n: "Deadline breach risk",
-            c: "var(--feedback-error-icon)",
-          },
-        ].map((k) => (
-          <Card key={k.l}>
-            <div className="text-2xs font-medium uppercase tracking-wider text-fg-tertiary mb-2">
-              {k.l}
-            </div>
-            <div className="type-display-metric-md" style={{ color: k.c || "var(--fg-primary)" }}>
-              {k.v}
-            </div>
-            <div className="text-xs text-fg-tertiary mt-2">{k.n}</div>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <div className="flex flex-wrap gap-2 items-center">
-          <FilterSelect
-            label="Authority"
-            value={authority}
-            onChange={(v) => setAuthority(v as any)}
-            options={AUTH_OPTIONS}
-          />
-          <FilterSelect
-            label="Status"
-            value={status}
-            onChange={(v) => setStatus(v as any)}
-            options={STATUS_OPTIONS as any}
-          />
-          <FilterSelect
-            label="Filing"
-            value={filing}
-            onChange={(v) => setFiling(v as any)}
-            options={FILING_OPTIONS}
-          />
-          <div className="flex-1 min-w-[200px] relative">
-            <AppIcon
-              name="search"
+    <>
+      <PageHeader
+        title="Regulatory Feed Monitor"
+        description="Every event ingested from the FDA, EMA, MHRA, CDSCO, TGA and ANVISA feeds, mapped against the active product–market portfolio."
+        breadcrumb={[{ label: "Change Intelligence" }, { label: "Feed Monitor" }]}
+        actions={
+          <>
+            <span className="type-body-md tabular font-mono text-fg-tertiary">
+              Synced {FEED_KPIS.lastSyncMinutesAgo} min ago
+            </span>
+            <Button
+              variant="secondary"
               size="sm"
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-tertiary"
-            />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search events by title or ID…"
-              className="w-full h-9 rounded-md bg-action border border-stroke-default pl-8 pr-3 text-xs text-fg-primary focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => showToast("Feed exported to CSV.", "success")}
-          >
-            <AppIcon name="download" size="sm" /> Export CSV
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-action text-fg-quaternary type-label-md sticky top-0 z-10">
-                <Th>Event ID</Th>
-                <Th>Authority</Th>
-                <Th>Published</Th>
-                <Th>Event Title</Th>
-                <Th>Stage</Th>
-                <Th>Filing</Th>
-                <Th>Deadline</Th>
-                <Th className="text-center">Conf.</Th>
-                <Th>Actions</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((e) => (
-                <tr
-                  key={e.id}
-                  className="border-t border-stroke-muted transition-colors duration-200 hover:bg-raised-2 cursor-pointer"
-                  onClick={() => openReport(e.id, e.reportId)}
-                >
-                  <td
-                    className="px-4 py-3 font-mono text-2xs"
-                    style={{ color: "var(--pillar-01)" }}
-                  >
-                    {e.urgencyFlag && (
-                      <AppIcon name="warning" size="xs" className="inline mr-1 text-error-icon" />
-                    )}
-                    {e.id}
-                  </td>
-                  <td className="px-4 py-3">
-                    <AuthorityBadge code={e.authority} />
-                  </td>
-                  <td className="px-4 py-3 font-mono text-2xs text-fg-tertiary">
-                    {e.publishedDate}
-                  </td>
-                  <td className="px-4 py-3 max-w-[360px]">
-                    <div className="text-fg-primary line-clamp-2" title={e.title}>
-                      {e.title}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusPill status={e.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <FilingTypeBadge type={e.filingType} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <DeadlineCountdown date={e.deadlineDate} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-center">
-                      <ConfidenceRing value={e.confidenceScore} />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1" onClick={(ev) => ev.stopPropagation()}>
-                      <IconBtn label="View Report" onClick={() => openReport(e.id, e.reportId)}>
-                        <AppIcon name="view" size="sm" />
-                      </IconBtn>
-                      <IconBtn
-                        label="Reassign"
-                        onClick={() => showToast(`Reassign dialog for ${e.id}.`)}
-                      >
-                        <AppIcon name="assign" size="sm" />
-                      </IconBtn>
-                      <IconBtn
-                        label="Flag"
-                        onClick={() => showToast(`${e.id} flagged for follow-up.`, "warning")}
-                      >
-                        <AppIcon name="flag" size="sm" />
-                      </IconBtn>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      <Card className="border-l-[3px]" style={{ borderLeftColor: "var(--pillar-02)" }}>
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-md grid place-items-center"
-              style={{ background: "color-mix(in oklab, var(--pillar-02) 14%, transparent)" }}
+              onClick={() => showToast("Feed refresh queued.", "success")}
             >
-              <AppIcon name="agent" className="text-pillar-02" />
-            </div>
-            <div>
-              <div className="text-sm font-medium text-fg-primary">
-                Regulatory Intelligence Agent
+              <AppIcon name="refresh" size="sm" /> Refresh
+            </Button>
+          </>
+        }
+      />
+
+      <PageBody className="gap-4">
+        <KpiRow>
+          <KpiTile
+            label="New this week"
+            value={FEED_KPIS.newThisWeek}
+            note={`+${FEED_KPIS.newThisWeekDelta} vs last week`}
+            tone="brand"
+          />
+          <KpiTile
+            label="Processing now"
+            value={FEED_KPIS.processingNow}
+            note="Intelligence Agent running"
+          />
+          <KpiTile
+            label="Reports generated"
+            value={FEED_KPIS.reportsGenerated}
+            note={`of ${FEED_KPIS.reportsGeneratedOfTotal} resolved`}
+            tone="success"
+          />
+          <KpiTile
+            label="Overdue or at risk"
+            value={FEED_KPIS.overdueOrAtRisk}
+            note="Deadline breach risk"
+            tone={FEED_KPIS.overdueOrAtRisk > 0 ? "error" : "neutral"}
+          />
+        </KpiRow>
+
+        <DataTable
+          rows={rows}
+          columns={columns}
+          rowKey={(event) => event.id}
+          onRowOpen={openReport}
+          searchPlaceholder="Search events by title or ID"
+          getSearchText={(event) => `${event.id} ${event.title}`}
+          exportName="regulatory-feed"
+          emptyTitle="No events match these filters"
+          emptyDetail="Widen the authority, stage or filing filter to see more of the feed."
+          emptyAction={
+            activeFilters > 0 ? (
+              <Button variant="secondary" size="sm" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            ) : undefined
+          }
+          toolbar={
+            <FilterBar activeCount={activeFilters} onClear={clearFilters}>
+              <FilterSelect
+                label="Authority"
+                value={authority}
+                onChange={setAuthority}
+                options={AUTHORITIES}
+              />
+              <FilterSelect label="Stage" value={status} onChange={setStatus} options={STATUSES} />
+              <FilterSelect label="Filing" value={filing} onChange={setFiling} options={FILINGS} />
+            </FilterBar>
+          }
+        />
+
+        <Panel>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span
+                className="grid size-8 shrink-0 place-items-center rounded-md"
+                style={{ background: "color-mix(in oklab, var(--pillar-02) 14%, transparent)" }}
+              >
+                <AppIcon name="agent" size="md" className="text-pillar-02" />
+              </span>
+              <div className="min-w-0">
+                <div className="type-heading-sm text-fg-primary">Regulatory Intelligence Agent</div>
+                <div className="type-body-sm tabular text-fg-tertiary">
+                  {FEED_KPIS.avgConfidenceScore}% average confidence · {FEED_KPIS.agentItemsToday}{" "}
+                  items today
+                </div>
               </div>
-              <div className="text-2xs text-fg-tertiary">
-                {FEED_KPIS.avgConfidenceScore}% avg confidence · {FEED_KPIS.agentItemsToday} items
-                today ·
-              </div>
             </div>
+            <Button variant="secondary" size="sm" onClick={() => navigateTo("agent-console")}>
+              Open console
+            </Button>
           </div>
-          <div className="text-2xs font-mono text-fg-tertiary truncate max-w-[420px]">
-            ▸ 08:32 Deadline calc complete · ▸ 08:31 Filing type IB · ▸ 08:30 7 products mapped
-          </div>
-        </div>
-      </Card>
-    </div>
+        </Panel>
+      </PageBody>
+    </>
   );
 }
 
-function FilterSelect({
+/** Compact icon control for a table row. Labelled, because it is icon-only. */
+function RowAction({
   label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: readonly string[];
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`h-8 rounded-md border px-2.5 text-xs transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring ${
-        value && value !== "All"
-          ? "bg-raised-2 border-stroke-active text-fg-primary"
-          : "bg-action border-stroke-muted text-fg-tertiary hover:text-fg-secondary"
-      }`}
-    >
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {label}: {o}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function Th({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <th className={`text-left px-4 py-3 font-medium ${className}`}>{children}</th>;
-}
-
-function IconBtn({
-  label,
+  icon,
   onClick,
-  children,
 }: {
   label: string;
+  icon: "view" | "assign" | "flag";
   onClick: () => void;
-  children: React.ReactNode;
 }) {
   return (
     <button
-      onClick={onClick}
+      type="button"
       title={label}
-      className="w-7 h-7 grid place-items-center rounded-md hover:bg-action-tertiary-hover text-icon-tertiary hover:text-icon-primary transition-colors duration-200"
+      aria-label={label}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      className="grid size-7 place-items-center rounded-md text-icon-tertiary transition-colors duration-150 hover:bg-action-tertiary-hover hover:text-icon-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
-      {children}
+      <AppIcon name={icon} size="sm" />
     </button>
   );
 }
