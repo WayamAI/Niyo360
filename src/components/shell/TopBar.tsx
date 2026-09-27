@@ -1,31 +1,34 @@
 import { AppIcon, IconButton } from "@/components/icons";
-import { useApp } from '@/context/AppContext';
-import { useAuth } from '@/context/AuthContext';
-import niyo360Logo from '@/assets/niyo360-logo.svg';
-import niyo360LogoDark from '@/assets/niyo360-logo-dark.svg';
+import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
+import niyo360Logo from "@/assets/niyo360-logo.svg";
+import niyo360LogoDark from "@/assets/niyo360-logo-dark.svg";
 
 export function TopBar() {
   const { showToast, toggleAssistant, theme, toggleTheme } = useApp();
   const { session, logout } = useAuth();
-  const initials = (session?.email ?? '?')
-    .split('@')[0]
-    .split(/[._-]/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase())
-    .join('') || '?';
+  const initials =
+    (session?.email ?? "?")
+      .split("@")[0]
+      .split(/[._-]/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((s) => s[0]?.toUpperCase())
+      .join("") || "?";
   return (
     <header className="fixed top-0 inset-x-0 h-14 z-50 bg-container border-b border-stroke-muted flex items-center px-4 gap-4">
       <div className="flex items-center gap-3">
-        <img src={theme === 'dark' ? niyo360LogoDark : niyo360Logo} alt="Niyo360" className="h-7 w-auto" />
+        <img
+          src={theme === "dark" ? niyo360LogoDark : niyo360Logo}
+          alt="Niyo360"
+          className="h-7 w-auto"
+        />
         <div className="h-6 w-px bg-stroke-default" />
         {/* Michroma carries the product identity; the descriptor stays in
             Geist so the header reads as one compact line. */}
         <div className="flex items-baseline gap-2 whitespace-nowrap">
           <h1 className="type-display-section text-fg-primary">Niyo360</h1>
-          <span className="text-xs font-medium text-fg-tertiary">
-            Change Intelligence
-          </span>
+          <span className="text-xs font-medium text-fg-tertiary">Change Intelligence</span>
         </div>
 
         {/* <span
@@ -53,16 +56,16 @@ export function TopBar() {
           <span className="font-mono text-3xs text-fg-quaternary">⌘K</span>
         </button>
         <IconButton
-          icon={theme === 'light' ? 'themeDark' : 'themeLight'}
+          icon={theme === "light" ? "themeDark" : "themeLight"}
           size="sm"
           onClick={toggleTheme}
-          aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+          aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
         />
         <div className="relative">
           <IconButton
             icon="notification"
             size="sm"
-            onClick={() => showToast('3 pending notifications')}
+            onClick={() => showToast("3 pending notifications")}
             aria-label="Notifications, 3 pending"
           />
           <span
@@ -75,14 +78,20 @@ export function TopBar() {
         <div
           className="w-8 h-8 rounded-full grid place-items-center border text-pillar-03"
           style={{
-            background: 'color-mix(in oklab, var(--pillar-03) 12%, transparent)',
-            borderColor: 'color-mix(in oklab, var(--pillar-03) 30%, transparent)',
+            background: "color-mix(in oklab, var(--pillar-03) 12%, transparent)",
+            borderColor: "color-mix(in oklab, var(--pillar-03) 30%, transparent)",
           }}
           title={session?.email}
         >
           <span className="text-xs font-medium">{initials}</span>
         </div>
-        <IconButton icon="signOut" size="sm" onClick={logout} aria-label="Sign out" title="Sign out" />
+        <IconButton
+          icon="signOut"
+          size="sm"
+          onClick={logout}
+          aria-label="Sign out"
+          title="Sign out"
+        />
       </div>
     </header>
   );

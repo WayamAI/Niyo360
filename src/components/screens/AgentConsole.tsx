@@ -135,9 +135,7 @@ export function AgentConsole() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <h1 className="type-display-page text-fg-primary">
-                  {AGENT.name}
-                </h1>
+                <h1 className="type-display-page text-fg-primary">{AGENT.name}</h1>
                 <span
                   className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-3xs font-medium"
                   style={{
@@ -149,7 +147,11 @@ export function AgentConsole() {
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${paused ? "" : "animate-pulse"}`}
-                    style={{ background: paused ? "var(--feedback-warning-icon)" : "var(--feedback-success-icon)" }}
+                    style={{
+                      background: paused
+                        ? "var(--feedback-warning-icon)"
+                        : "var(--feedback-success-icon)",
+                    }}
                   />
                   {paused ? "Paused" : "Active"}
                 </span>
@@ -230,7 +232,9 @@ export function AgentConsole() {
           icon={<AppIcon name="warning" size="sm" />}
           label="Authority Health"
           value={`${AUTHORITY_SYNC.length - unhealthyAuthorities} / ${AUTHORITY_SYNC.length}`}
-          accent={unhealthyAuthorities ? "var(--feedback-warning-icon)" : "var(--feedback-success-icon)"}
+          accent={
+            unhealthyAuthorities ? "var(--feedback-warning-icon)" : "var(--feedback-success-icon)"
+          }
           note={
             unhealthyAuthorities
               ? `${unhealthyAuthorities} feed${unhealthyAuthorities > 1 ? "s" : ""} delayed`
@@ -262,9 +266,7 @@ export function AgentConsole() {
             <ActivityIcon type={headlineEvent.type} />
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
-                <span className="font-mono text-3xs text-fg-tertiary">
-                  {headlineEvent.ts}
-                </span>
+                <span className="font-mono text-3xs text-fg-tertiary">{headlineEvent.ts}</span>
                 {headlineEvent.feedId && (
                   <span className="font-mono text-3xs" style={{ color: "var(--pillar-01)" }}>
                     {headlineEvent.feedId}
@@ -323,7 +325,11 @@ export function AgentConsole() {
                       <stop offset="100%" stopColor="var(--pillar-02)" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="2 4" stroke="var(--stroke-muted)" vertical={false} />
+                  <CartesianGrid
+                    strokeDasharray="2 4"
+                    stroke="var(--stroke-muted)"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey="x"
                     stroke="var(--fg-quaternary)"
@@ -342,7 +348,8 @@ export function AgentConsole() {
                   <Tooltip
                     contentStyle={{
                       background: "var(--surface-raised)",
-                      border: "1px solid var(--stroke-default)", boxShadow: "var(--elevation-popover)",
+                      border: "1px solid var(--stroke-default)",
+                      boxShadow: "var(--elevation-popover)",
                       borderRadius: 8,
                       fontSize: 12,
                     }}
@@ -387,10 +394,7 @@ export function AgentConsole() {
                     <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                       <div className="flex items-center gap-2 min-w-0">
                         <AuthorityBadge code={item.authority} />
-                        <span
-                          className="font-mono text-3xs"
-                          style={{ color: "var(--pillar-01)" }}
-                        >
+                        <span className="font-mono text-3xs" style={{ color: "var(--pillar-01)" }}>
                           {item.feedId}
                         </span>
                         <StatusPill status={item.stage} />
@@ -440,10 +444,16 @@ export function AgentConsole() {
                   className="flex items-start gap-2.5 rounded-md p-3"
                   style={{
                     background: `color-mix(in oklab, ${PURPLE} 4%, var(--surface-raised))`,
-                    border: "1px solid var(--stroke-default)", boxShadow: "var(--elevation-popover)",
+                    border: "1px solid var(--stroke-default)",
+                    boxShadow: "var(--elevation-popover)",
                   }}
                 >
-                  <AppIcon name="success" size="sm" className="mt-0.5 shrink-0" style={{ color: PURPLE }} />
+                  <AppIcon
+                    name="success"
+                    size="sm"
+                    className="mt-0.5 shrink-0"
+                    style={{ color: PURPLE }}
+                  />
                   <span className="text-xs text-fg-primary leading-relaxed">{c}</span>
                 </div>
               ))}
@@ -485,9 +495,17 @@ export function AgentConsole() {
                       className="w-full flex items-center gap-2 text-left hover:text-fg-primary transition"
                     >
                       {isOpen ? (
-                        <AppIcon name="chevronDown" size="sm" className="text-fg-tertiary shrink-0" />
+                        <AppIcon
+                          name="chevronDown"
+                          size="sm"
+                          className="text-fg-tertiary shrink-0"
+                        />
                       ) : (
-                        <AppIcon name="chevronRight" size="sm" className="text-fg-tertiary shrink-0" />
+                        <AppIcon
+                          name="chevronRight"
+                          size="sm"
+                          className="text-fg-tertiary shrink-0"
+                        />
                       )}
                       <span className="font-mono text-2xs text-fg-tertiary">
                         Step {step.stepNumber}
@@ -588,7 +606,9 @@ export function AgentConsole() {
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{
-                        background: a.isHealthy ? "var(--feedback-success-icon)" : "var(--feedback-warning-icon)",
+                        background: a.isHealthy
+                          ? "var(--feedback-success-icon)"
+                          : "var(--feedback-warning-icon)",
                       }}
                       title={a.isHealthy ? "Healthy" : "Delayed"}
                     />
@@ -624,9 +644,7 @@ export function AgentConsole() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="font-mono text-3xs text-fg-tertiary">
-                          {evt.ts}
-                        </span>
+                        <span className="font-mono text-3xs text-fg-tertiary">{evt.ts}</span>
                         {evt.feedId && (
                           <span
                             className="font-mono text-3xs"

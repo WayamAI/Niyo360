@@ -3,23 +3,29 @@ import { AppIcon } from "@/components/icons";
 export function HumanInLoopBanner({ compact = false }: { compact?: boolean }) {
   return (
     <div
-      className={`flex items-start gap-3 rounded-lg border ${compact ? 'p-3' : 'p-4'}`}
+      className={`flex items-start gap-3 rounded-lg border ${compact ? "p-3" : "p-4"}`}
       style={{
-        background: 'color-mix(in oklab, var(--pillar-02) 8%, var(--surface-raised))',
-        borderColor: 'color-mix(in oklab, var(--pillar-02) 30%, transparent)',
+        background: "color-mix(in oklab, var(--pillar-02) 8%, var(--surface-raised))",
+        borderColor: "color-mix(in oklab, var(--pillar-02) 30%, transparent)",
       }}
     >
       <AppIcon name="risk" className="mt-0.5 shrink-0 text-pillar-02" />
       <p className="text-xs text-fg-primary/80 leading-relaxed">
         All AI-generated drafts require regulatory specialist review and approval before submission.
-        AI output is a structured first draft only. FDA oversight requirements for AI-assisted submissions
-        are satisfied through mandatory human-in-the-loop sign-off.
+        AI output is a structured first draft only. FDA oversight requirements for AI-assisted
+        submissions are satisfied through mandatory human-in-the-loop sign-off.
       </p>
     </div>
   );
 }
 
-export function ConfidencePill({ value, pillar = '02' }: { value: number; pillar?: '01'|'02'|'03'|'04' }) {
+export function ConfidencePill({
+  value,
+  pillar = "02",
+}: {
+  value: number;
+  pillar?: "01" | "02" | "03" | "04";
+}) {
   return (
     <span
       className="inline-flex items-center rounded px-2 py-0.5 font-mono text-2xs"
@@ -36,16 +42,22 @@ export function ConfidencePill({ value, pillar = '02' }: { value: number; pillar
 export function ThinkingDots() {
   return (
     <span className="dot-pulse inline-flex items-center">
-      <span /><span /><span />
+      <span />
+      <span />
+      <span />
     </span>
   );
 }
 
-export function ValueSignal({ level }: { level: 'High Value' | 'Medium-High Value' | 'Conditional Value' }) {
+export function ValueSignal({
+  level,
+}: {
+  level: "High Value" | "Medium-High Value" | "Conditional Value";
+}) {
   const map = {
-    'High Value':         { color: 'var(--feedback-success-icon)', label: level },
-    'Medium-High Value':  { color: 'var(--feedback-warning-icon)', label: level },
-    'Conditional Value':  { color: 'var(--feedback-info-icon)',  label: level },
+    "High Value": { color: "var(--feedback-success-icon)", label: level },
+    "Medium-High Value": { color: "var(--feedback-warning-icon)", label: level },
+    "Conditional Value": { color: "var(--feedback-info-icon)", label: level },
   } as const;
   const { color, label } = map[level];
   return (

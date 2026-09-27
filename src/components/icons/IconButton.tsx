@@ -5,8 +5,7 @@ import type { IconName } from "./registry";
 type Variant = "ghost" | "subtle" | "inverse";
 type Size = "sm" | "md" | "lg";
 
-export interface IconButtonProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   icon: IconName;
   /** Required: an icon-only control has no other accessible name. */
   "aria-label": string;

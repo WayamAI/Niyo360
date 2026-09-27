@@ -114,9 +114,7 @@ export function Sidebar() {
             <span className="text-2xs text-fg-tertiary">Simulation Engine</span>
             <span className="w-2 h-2 rounded-full animate-pulse bg-success-icon" />
           </div>
-          <div className="font-mono text-3xs mt-1 text-success">
-            Active, 112 markets indexed
-          </div>
+          <div className="font-mono text-3xs mt-1 text-success">Active, 112 markets indexed</div>
         </div>
       </div>
     </aside>

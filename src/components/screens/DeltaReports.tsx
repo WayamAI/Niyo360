@@ -68,9 +68,7 @@ export function DeltaReports() {
     <div className="page-enter space-y-5">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="type-display-page text-fg-primary">
-            Impact Delta Reports
-          </h1>
+          <h1 className="type-display-page text-fg-primary">Impact Delta Reports</h1>
           <p className="text-sm text-fg-tertiary mt-1 max-w-3xl">
             RA specialist working queue. Each report maps an incoming guideline against the active
             product–market portfolio with the eleven structured impact fields.
@@ -90,7 +88,11 @@ export function DeltaReports() {
       <Card>
         <div className="flex flex-wrap gap-2 items-center">
           <div className="flex-1 min-w-[200px] relative">
-            <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-tertiary" />
+            <AppIcon
+              name="search"
+              size="sm"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-tertiary"
+            />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -155,7 +157,8 @@ export function DeltaReports() {
               <Tooltip
                 contentStyle={{
                   background: "var(--surface-raised)",
-                  border: "1px solid var(--stroke-default)", boxShadow: "var(--elevation-popover)",
+                  border: "1px solid var(--stroke-default)",
+                  boxShadow: "var(--elevation-popover)",
                   borderRadius: 8,
                   fontSize: 12,
                 }}
@@ -176,12 +179,7 @@ export function DeltaReports() {
                 radius={[3, 3, 0, 0]}
               />
               <Bar dataKey="filed" name="Filed" fill="var(--data-accent)" radius={[3, 3, 0, 0]} />
-              <Bar
-                dataKey="closed"
-                name="Closed"
-                fill="var(--fg-tertiary)"
-                radius={[3, 3, 0, 0]}
-              />
+              <Bar dataKey="closed" name="Closed" fill="var(--fg-tertiary)" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

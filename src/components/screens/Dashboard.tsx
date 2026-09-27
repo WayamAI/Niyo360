@@ -104,15 +104,16 @@ export function Dashboard() {
     <div className="page-enter space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 mb-1.5 text-2xs text-fg-quaternary">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 mb-1.5 text-2xs text-fg-quaternary"
+          >
             <AppIcon name="home" size="xs" aria-label="Home" />
             <span aria-hidden="true">/</span>
             <span className="text-fg-tertiary">Command Centre</span>
           </nav>
           <h1 className="type-display-page text-fg-primary">Command Centre</h1>
-          <p className="text-sm text-fg-tertiary mt-1.5">
-            Regulatory Intelligence Platform
-          </p>
+          <p className="text-sm text-fg-tertiary mt-1.5">Regulatory Intelligence Platform</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-fg-tertiary rounded-md border border-stroke-default bg-action px-3 py-1.5 font-mono">
@@ -168,9 +169,7 @@ export function Dashboard() {
               onClick={() => navigateTo(k.target)}
               className="text-left rounded-2xl border border-stroke-default bg-raised p-5 shadow-sm hover:border-stroke-active hover:bg-raised-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="type-label-md text-fg-quaternary mb-2.5">
-                {k.label}
-              </div>
+              <div className="type-label-md text-fg-quaternary mb-2.5">{k.label}</div>
               <div className="type-display-metric text-fg-primary">{k.value}</div>
               <div className="text-xs text-fg-tertiary mt-2.5">{k.note}</div>
               <div
@@ -249,13 +248,18 @@ export function Dashboard() {
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={CHANGE_ACTIVITY_BY_MONTH}>
-                <CartesianGrid strokeDasharray="2 4" stroke="var(--stroke-muted)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="2 4"
+                  stroke="var(--stroke-muted)"
+                  vertical={false}
+                />
                 <XAxis dataKey="month" stroke="var(--fg-quaternary)" fontSize={11} />
                 <YAxis stroke="var(--fg-quaternary)" fontSize={11} />
                 <Tooltip
                   contentStyle={{
                     background: "var(--surface-raised)",
-                    border: "1px solid var(--stroke-default)", boxShadow: "var(--elevation-popover)",
+                    border: "1px solid var(--stroke-default)",
+                    boxShadow: "var(--elevation-popover)",
                     borderRadius: 8,
                     fontSize: 12,
                   }}
