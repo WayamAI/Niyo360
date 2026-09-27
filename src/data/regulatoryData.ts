@@ -1,3 +1,5 @@
+import { demoNow } from "@/lib/demo-clock";
+
 // Regulatory Change Intelligence (Pillar 01) — full spec data set.
 // Mirrors section 9 of the Niyo360 Regulatory Change Intelligence Module spec.
 
@@ -808,7 +810,10 @@ export function filingTypeExplanation(t: FilingType): string {
 
 export function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null;
-  const ms = new Date(dateStr).getTime() - Date.now();
+  // Against DEMO_NOW, not the wall clock: these deadlines are stored relative
+  // to the dataset's own reference date, so the real clock reports every one
+  // of them as overdue and the colour ramp loses all of its meaning.
+  const ms = new Date(dateStr).getTime() - demoNow().getTime();
   return Math.ceil(ms / 86400000);
 }
 

@@ -1,10 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AppIcon } from "@/components/icons";
+import { Button } from "@/components/shared/Button";
 import niyo360Logo from "@/assets/niyo360-logo.svg";
 
+/**
+ * Sign-in.
+ *
+ * Deliberately plain: a logo, one card, two fields. The only decoration is the
+ * mark itself. Authentication states are explicit — invalid input is reported
+ * inline against the field that caused it, never as a raw error string.
+ */
 export function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -12,79 +18,100 @@ export function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
     setSubmitting(true);
     setError(null);
-    // Demo auth: any well-formed email + any non-empty password is accepted.
+    // Demo auth: any well-formed email plus any non-empty password is accepted.
     const result = login(email, password);
     if (!result.ok) {
       setError(result.error);
       setSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-page px-4">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center mb-8">
-          <img src={niyo360Logo} alt="Niyo360" className="h-24 w-auto mb-4" />
+    <main className="flex min-h-screen w-full items-center justify-center bg-page px-4 py-10">
+      <div className="w-full max-w-[360px]">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <img src={niyo360Logo} alt="" aria-hidden="true" className="mb-3 h-14 w-auto" />
           <h1 className="type-display-page-sm text-fg-primary">Niyo360</h1>
-          <p className="text-sm text-fg-tertiary mt-1">Change Intelligence</p>
+          <p className="type-body-md mt-0.5 text-fg-tertiary">Change Intelligence</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-lg border border-stroke-default bg-raised p-6 shadow-sm space-y-4"
+          className="space-y-3.5 rounded-lg border border-stroke-default bg-container p-5"
         >
           <div>
-            <h2 className="text-md font-semibold text-fg-primary">Sign in</h2>
-            <p className="text-xs text-fg-tertiary mt-1">
+            <h2 className="type-heading-md text-fg-primary">Sign in</h2>
+            <p className="type-body-sm mt-0.5 text-fg-tertiary">
               Demo build — any email address and password will sign you in.
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
+            <label htmlFor="email" className="type-label-sm block text-fg-quaternary">
+              Email
+            </label>
+            <input
               id="email"
               type="email"
               autoComplete="email"
               placeholder="you@company.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (error) setError(null);
+              }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "login-error" : undefined}
               required
+              className="type-body-lg h-9 w-full rounded-md border border-stroke-default bg-action px-2.5 text-fg-primary placeholder:text-fg-quaternary transition-colors duration-150 hover:border-stroke-active focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input
+            <label htmlFor="password" className="type-label-sm block text-fg-quaternary">
+              Password
+            </label>
+            <input
               id="password"
               type="password"
               autoComplete="current-password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                if (error) setError(null);
+              }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "login-error" : undefined}
               required
+              className="type-body-lg h-9 w-full rounded-md border border-stroke-default bg-action px-2.5 text-fg-primary placeholder:text-fg-quaternary transition-colors duration-150 hover:border-stroke-active focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             />
           </div>
 
           {error && (
-            <p className="text-xs text-destructive" role="alert">
+            <p
+              id="login-error"
+              role="alert"
+              className="type-body-md flex items-start gap-1.5 rounded-md border border-error-stroke bg-error-bg px-2.5 py-2 text-error"
+            >
+              <AppIcon name="error" size="sm" className="mt-0.5 shrink-0 text-error-icon" />
               {error}
             </p>
           )}
 
           <Button type="submit" className="w-full" disabled={submitting}>
-            Sign in
+            {submitting ? "Signing in…" : "Sign in"}
           </Button>
-
-          <p className="text-2xs text-fg-tertiary text-center pt-1">
-            This is a demo environment. No real credentials are required or stored.
-          </p>
         </form>
+
+        <p className="type-caption mt-4 text-center text-fg-quaternary">
+          Demo environment. No real credentials are required or stored.
+        </p>
       </div>
-    </div>
+    </main>
   );
 }

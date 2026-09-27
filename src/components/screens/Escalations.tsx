@@ -1,124 +1,285 @@
-import { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { Card } from '@/components/shared/Card';
-import { Badge, badgeForRisk, badgeForStatus } from '@/components/shared/Badge';
-import { Button } from '@/components/shared/Button';
-import { Drawer } from '@/components/shared/Drawer';
-import { ESCALATIONS } from '@/data/mockData';
+import { useState } from "react";
+import { useApp } from "@/context/AppContext";
+import { PageBody, PageHeader, Field } from "@/components/shared/Page";
+import { KpiRow, KpiTile } from "@/components/shared/Panel";
+import { Badge, badgeForRisk, badgeForStatus } from "@/components/shared/Badge";
+import { Button } from "@/components/shared/Button";
+import { DataTable, type Column } from "@/components/shared/DataTable";
+import { Drawer } from "@/components/shared/Drawer";
+import { ESCALATIONS } from "@/data/mockData";
+
+type Escalation = (typeof ESCALATIONS)[number];
+
+/** Under a week is red, under three weeks amber, otherwise on track. */
+function slaColor(days: number): string {
+  if (days < 7) return "var(--feedback-error-icon)";
+  if (days < 21) return "var(--feedback-warning-icon)";
+  return "var(--feedback-success-icon)";
+}
 
 export function Escalations() {
   const { showToast, logAudit, resolveEscalation, resolvedEscalations } = useApp();
   const [openId, setOpenId] = useState<string | null>(null);
-  const open = openId ? ESCALATIONS.find(e => e.id === openId) : null;
+  const open = openId ? (ESCALATIONS.find((item) => item.id === openId) ?? null) : null;
 
-  const counts = {
-    critical: ESCALATIONS.filter(e => e.severity === 'Critical').length,
-    high: ESCALATIONS.filter(e => e.severity === 'High').length,
-    inProgress: ESCALATIONS.filter(e => e.status === 'In Progress').length,
-  };
+  const isResolved = (item: Escalation) => resolvedEscalations.has(item.id);
+  const openItems = ESCALATIONS.filter((item) => !isResolved(item));
+
+  const critical = openItems.filter((item) => item.severity === "Critical").length;
+  const high = openItems.filter((item) => item.severity === "High").length;
+  const inProgress = openItems.filter((item) => item.status === "In Progress").length;
+
+  function resolve(item: Escalation) {
+    resolveEscalation(item.id);
+    showToast(`${item.id} resolved.`, "success");
+    logAudit({
+      actor: "Regulatory Operations",
+      actorType: "user",
+      pillar: item.pillar,
+      action: `Resolved escalation ${item.id}`,
+    });
+  }
+
+  const columns: Column<Escalation>[] = [
+    {
+      key: "id",
+      header: "ID",
+      card: "title",
+      value: (item) => item.id,
+      render: (item) => <span className="font-mono text-brand">{item.id}</span>,
+    },
+    {
+      key: "severity",
+      header: "Severity",
+      value: (item) => item.severity,
+      render: (item) => <Badge variant={badgeForRisk(item.severity)}>{item.severity}</Badge>,
+    },
+    {
+      key: "pillar",
+      header: "Pillar",
+      hide: "md",
+      value: (item) => item.pillar,
+      render: (item) => (
+        <Badge variant={`pillar-${item.pillar}` as "pillar-01"}>P{item.pillar}</Badge>
+      ),
+    },
+    {
+      key: "subject",
+      header: "Product / market",
+      value: (item) => `${item.productName} ${item.market}`,
+      render: (item) => (
+        <span className="block min-w-0">
+          <span className="block truncate font-medium text-fg-primary">{item.productName}</span>
+          <span className="type-caption block truncate text-fg-quaternary">{item.market}</span>
+        </span>
+      ),
+    },
+    {
+      key: "issueType",
+      header: "Issue",
+      hide: "md",
+      value: (item) => item.issueType,
+      render: (item) => <span className="text-fg-tertiary">{item.issueType}</span>,
+    },
+    {
+      key: "summary",
+      header: "Summary",
+      hide: "lg",
+      value: (item) => item.issue,
+      render: (item) => (
+        <span className="line-clamp-2 max-w-[38ch] text-fg-tertiary">{item.issue}</span>
+      ),
+    },
+    {
+      key: "sla",
+      header: "SLA days",
+      align: "right",
+      value: (item) => item.slaDaysRemaining,
+      render: (item) => (
+        <span
+          className="tabular font-mono font-medium"
+          style={{
+            color: isResolved(item) ? "var(--fg-quaternary)" : slaColor(item.slaDaysRemaining),
+          }}
+        >
+          {item.slaDaysRemaining}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      card: "meta",
+      value: (item) => (isResolved(item) ? "Resolved" : item.status),
+      render: (item) =>
+        isResolved(item) ? (
+          <Badge variant="complete">Resolved</Badge>
+        ) : (
+          <Badge variant={badgeForStatus(item.status)}>{item.status}</Badge>
+        ),
+    },
+    {
+      key: "actions",
+      header: "",
+      card: false,
+      render: (item) => (
+        <span className="flex justify-end gap-1.5">
+          <Button variant="secondary" size="sm" onClick={() => setOpenId(item.id)}>
+            View
+          </Button>
+          {!isResolved(item) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(event) => {
+                event.stopPropagation();
+                resolve(item);
+              }}
+            >
+              Resolve
+            </Button>
+          )}
+        </span>
+      ),
+    },
+  ];
 
   return (
-    <div className="page-enter space-y-5">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="type-display-page text-fg-primary">Escalations</h1>
-          <p className="text-sm text-fg-tertiary mt-1">Open items requiring regulatory affairs attention across all capability pillars.</p>
-        </div>
-        <Badge variant="open">{ESCALATIONS.length} open escalations</Badge>
-      </div>
+    <>
+      <PageHeader
+        title="Escalations"
+        description="Open items requiring regulatory affairs attention across all four capability pillars."
+        breadcrumb={[{ label: "Governance" }, { label: "Escalations" }]}
+        badges={
+          <Badge variant={openItems.length > 0 ? "open" : "complete"}>
+            {openItems.length} open
+          </Badge>
+        }
+      />
 
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard label="CRITICAL / OPEN" value={counts.critical} color="var(--feedback-error-icon)" />
-        <StatCard label="HIGH / OPEN" value={counts.high} color="var(--feedback-warning-icon)" />
-        <StatCard label="IN PROGRESS" value={counts.inProgress} color="var(--feedback-info-icon)" />
-      </div>
+      <PageBody className="gap-4">
+        <KpiRow>
+          <KpiTile
+            label="Critical"
+            value={critical}
+            note="Open and unresolved"
+            tone={critical > 0 ? "error" : "neutral"}
+          />
+          <KpiTile
+            label="High"
+            value={high}
+            note="Open and unresolved"
+            tone={high > 0 ? "warning" : "neutral"}
+          />
+          <KpiTile label="In progress" value={inProgress} tone="info" />
+          <KpiTile
+            label="Resolved"
+            value={resolvedEscalations.size}
+            note="This session"
+            tone={resolvedEscalations.size > 0 ? "success" : "neutral"}
+          />
+        </KpiRow>
 
-      <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-action text-fg-quaternary type-label-md sticky top-0 z-10">
-                {['ID', 'Severity', 'Pillar', 'Product / Market', 'Issue Type', 'Summary', 'SLA Days', 'Status', 'Actions'].map(h => <th key={h} className="text-left px-4 py-3 font-medium">{h}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {ESCALATIONS.map(e => {
-                const resolved = resolvedEscalations.has(e.id);
-                const daysColor = e.slaDaysRemaining < 7 ? 'var(--feedback-error-icon)' : e.slaDaysRemaining < 21 ? 'var(--feedback-warning-icon)' : 'var(--feedback-success-icon)';
-                return (
-                  <tr key={e.id} className="border-t border-stroke-muted transition-colors duration-200 hover:bg-raised-2">
-                    <td className="px-4 py-3 font-mono" style={{ color: 'var(--brand)' }}>{e.id}</td>
-                    <td className="px-4 py-3"><Badge variant={badgeForRisk(e.severity)}>{e.severity}</Badge></td>
-                    <td className="px-4 py-3"><Badge variant={`pillar-${e.pillar}` as any}>P{e.pillar}</Badge></td>
-                    <td className="px-4 py-3"><div className="text-fg-primary font-medium">{e.productName}</div><div className="text-2xs text-fg-tertiary">{e.market}</div></td>
-                    <td className="px-4 py-3 text-fg-tertiary">{e.issueType}</td>
-                    <td className="px-4 py-3 text-fg-tertiary max-w-[300px]"><span className="line-clamp-2">{e.issue}</span></td>
-                    <td className="px-4 py-3 font-mono" style={{ color: daysColor }}>{e.slaDaysRemaining}</td>
-                    <td className="px-4 py-3"><Badge variant={resolved ? 'complete' : badgeForStatus(e.status)}>{resolved ? 'Resolved' : e.status}</Badge></td>
-                    <td className="px-4 py-3 flex gap-1">
-                      <Button size="sm" onClick={() => setOpenId(e.id)}>View</Button>
-                      {!resolved && <Button variant="ghost" size="sm" onClick={() => { resolveEscalation(e.id); showToast(`${e.id} resolved.`, 'success'); logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: e.pillar, action: `Resolved escalation ${e.id}` }); }}>Resolve</Button>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+        <DataTable
+          rows={ESCALATIONS}
+          columns={columns}
+          rowKey={(item) => item.id}
+          onRowOpen={(item) => setOpenId(item.id)}
+          isRowActive={(item) => item.id === openId}
+          defaultSort={{ key: "sla", dir: "asc" }}
+          searchPlaceholder="Search escalations by product, market or issue"
+          getSearchText={(item) => `${item.id} ${item.issue}`}
+          exportName="escalations"
+          emptyTitle="No escalations raised"
+          emptyDetail="Items raised by an agent or a specialist appear here."
+        />
+      </PageBody>
 
       <Drawer
-        open={!!open}
+        open={Boolean(open)}
         onClose={() => setOpenId(null)}
-        title={open?.id || ''}
-        subtitle={open ? `${open.productName} · ${open.market}` : ''}
+        title={open?.id ?? ""}
+        subtitle={open ? `${open.productName} · ${open.market}` : undefined}
         width={520}
         footer={
-          open && (
+          open ? (
             <>
-              <Button variant="ghost" onClick={() => setOpenId(null)}>Close</Button>
-              <Button variant="secondary" onClick={() => showToast('Escalated to senior leadership.')}>Escalate Further</Button>
-              <Button onClick={() => { resolveEscalation(open.id); showToast(`${open.id} marked as resolved.`, 'success'); setOpenId(null); }}>Mark as Resolved</Button>
+              <Button variant="ghost" onClick={() => setOpenId(null)}>
+                Close
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => showToast("Escalated to senior leadership.")}
+              >
+                Escalate further
+              </Button>
+              {!isResolved(open) && (
+                <Button
+                  onClick={() => {
+                    resolve(open);
+                    setOpenId(null);
+                  }}
+                >
+                  Mark resolved
+                </Button>
+              )}
             </>
-          )
+          ) : undefined
         }
       >
         {open && (
           <>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge variant={badgeForRisk(open.severity)}>{open.severity}</Badge>
-              <Badge variant={`pillar-${open.pillar}` as any}>Pillar {open.pillar}</Badge>
-              <Badge variant={badgeForStatus(open.status)}>{open.status}</Badge>
+              <Badge variant={`pillar-${open.pillar}` as "pillar-01"}>Pillar {open.pillar}</Badge>
+              <Badge variant={isResolved(open) ? "complete" : badgeForStatus(open.status)}>
+                {isResolved(open) ? "Resolved" : open.status}
+              </Badge>
             </div>
-            <p className="text-sm text-fg-primary leading-relaxed">{open.issue}</p>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="rounded-md bg-action p-2.5"><div className="text-3xs uppercase tracking-wider text-fg-tertiary">Raised By</div><div className="text-fg-primary mt-1">{open.raisedBy}</div></div>
-              <div className="rounded-md bg-action p-2.5"><div className="text-3xs uppercase tracking-wider text-fg-tertiary">SLA Deadline</div><div className="text-fg-primary mt-1 font-mono">{open.slaDeadline}</div></div>
-              <div className="rounded-md bg-action p-2.5"><div className="text-3xs uppercase tracking-wider text-fg-tertiary">Days Remaining</div><div className="text-fg-primary mt-1 font-mono">{open.slaDaysRemaining}</div></div>
-              <div className="rounded-md bg-action p-2.5"><div className="text-3xs uppercase tracking-wider text-fg-tertiary">Change ID</div><div className="text-fg-primary mt-1 font-mono">{open.changeId}</div></div>
-            </div>
+
+            <p className="type-body-lg text-fg-primary">{open.issue}</p>
+
+            <dl className="grid grid-cols-2 gap-3">
+              <Field label="Raised by">{open.raisedBy}</Field>
+              <Field label="SLA deadline" mono>
+                {open.slaDeadline}
+              </Field>
+              <Field label="Days remaining" mono>
+                {open.slaDaysRemaining}
+              </Field>
+              <Field label="Change" mono>
+                {open.changeId}
+              </Field>
+            </dl>
+
             <label className="block">
-              <span className="text-2xs uppercase tracking-wider text-fg-tertiary">Assign To</span>
-              <select className="mt-1 w-full h-9 rounded-md bg-action border border-stroke-default px-3 text-sm">
-                {['Regulatory Operations Team', 'EU Regulatory Affairs Team', 'CMC Regulatory Team', 'Quality Assurance'].map(t => <option key={t}>{t}</option>)}
+              <span className="type-label-sm text-fg-quaternary">Assign to</span>
+              <select
+                className="type-body-md mt-1 h-8 w-full rounded-md border border-stroke-default bg-action px-2.5 text-fg-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                defaultValue="Regulatory Operations Team"
+              >
+                {[
+                  "Regulatory Operations Team",
+                  "EU Regulatory Affairs Team",
+                  "CMC Regulatory Team",
+                  "Quality Assurance",
+                ].map((team) => (
+                  <option key={team}>{team}</option>
+                ))}
               </select>
             </label>
+
             <label className="block">
-              <span className="text-2xs uppercase tracking-wider text-fg-tertiary">Notes</span>
-              <textarea rows={3} className="mt-1 w-full rounded-md bg-action border border-stroke-default px-3 py-2 text-sm" placeholder="Add notes..." />
+              <span className="type-label-sm text-fg-quaternary">Notes</span>
+              <textarea
+                rows={3}
+                placeholder="Add notes"
+                className="type-body-md mt-1 w-full rounded-md border border-stroke-default bg-action px-2.5 py-2 text-fg-primary placeholder:text-fg-quaternary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              />
             </label>
           </>
         )}
       </Drawer>
-    </div>
-  );
-}
-
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <Card>
-      <div className="text-2xs uppercase tracking-wider text-fg-tertiary mb-2">{label}</div>
-      <div className="type-display-metric-md" style={{ color }}>{value}</div>
-    </Card>
+    </>
   );
 }

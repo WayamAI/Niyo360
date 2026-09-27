@@ -1,106 +1,204 @@
+import { useState } from "react";
 import { AppIcon } from "@/components/icons";
-import { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { Card, AgentCard, Eyebrow } from '@/components/shared/Card';
-import { Badge, badgeForVariation } from '@/components/shared/Badge';
-import { Button } from '@/components/shared/Button';
-import { ConfidencePill, HumanInLoopBanner } from '@/components/shared/Atoms';
-import { Drawer } from '@/components/shared/Drawer';
-import { VARIATION_SECTION_DRAFTS, PRODUCT_BY_ID } from '@/data/mockData';
+import { useApp } from "@/context/AppContext";
+import { PageBody, PageHeader, SectionHeader } from "@/components/shared/Page";
+import { Badge, badgeForVariation } from "@/components/shared/Badge";
+import { Button } from "@/components/shared/Button";
+import { DataTable, type Column } from "@/components/shared/DataTable";
+import { Drawer } from "@/components/shared/Drawer";
+import { AgentCard } from "@/components/shared/Card";
+import { ConfidencePill, HumanInLoopBanner } from "@/components/shared/Atoms";
+import { PRODUCT_BY_ID, VARIATION_SECTION_DRAFTS } from "@/data/mockData";
+
+type SectionDraft = (typeof VARIATION_SECTION_DRAFTS)[number];
 
 export function VariationDrafts() {
   const { showToast, logAudit } = useApp();
   const [openId, setOpenId] = useState<string | null>(null);
-  const open = openId ? VARIATION_SECTION_DRAFTS.find(d => d.id === openId) : null;
+  const open = openId
+    ? (VARIATION_SECTION_DRAFTS.find((draft) => draft.id === openId) ?? null)
+    : null;
+
+  const columns: Column<SectionDraft>[] = [
+    {
+      key: "id",
+      header: "Draft",
+      card: "title",
+      value: (draft) => draft.id,
+      render: (draft) => (
+        <span className="font-mono text-[color:var(--pillar-02)]">{draft.id}</span>
+      ),
+    },
+    {
+      key: "product",
+      header: "Product",
+      value: (draft) => PRODUCT_BY_ID(draft.productId)?.name ?? "",
+      render: (draft) => (
+        <span className="text-fg-primary">{PRODUCT_BY_ID(draft.productId)?.name ?? "—"}</span>
+      ),
+    },
+    {
+      key: "section",
+      header: "CTD section",
+      value: (draft) => draft.sectionTitle,
+      render: (draft) => <span className="text-fg-primary">{draft.sectionTitle}</span>,
+    },
+    {
+      key: "variation",
+      header: "Variation",
+      value: (draft) => draft.variationType,
+      render: (draft) => (
+        <Badge variant={badgeForVariation(draft.variationType)}>{draft.variationType}</Badge>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      card: "meta",
+      value: (draft) => draft.draftStatus,
+      render: (draft) => (
+        <Badge variant={draft.draftStatus === "Complete" ? "complete" : "in-progress"}>
+          {draft.draftStatus}
+        </Badge>
+      ),
+    },
+    {
+      key: "confidence",
+      header: "Confidence",
+      hide: "md",
+      value: (draft) => draft.aiConfidence,
+      render: (draft) => <ConfidencePill value={draft.aiConfidence} />,
+    },
+    {
+      key: "words",
+      header: "Words",
+      align: "right",
+      hide: "lg",
+      value: (draft) => draft.wordCount,
+      render: (draft) => (
+        <span className="tabular font-mono text-fg-primary">{draft.wordCount}</span>
+      ),
+    },
+    {
+      key: "sources",
+      header: "Sources",
+      align: "right",
+      hide: "lg",
+      value: (draft) => draft.sourceDocs.length,
+      render: (draft) => (
+        <span className="tabular font-mono text-fg-tertiary">{draft.sourceDocs.length}</span>
+      ),
+    },
+  ];
 
   return (
-    <div className="page-enter space-y-5">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="type-display-page text-fg-primary">Variation Section Drafts</h1>
-            <Badge variant="pillar-02">Pillar 02</Badge>
-          </div>
-          <p className="text-sm text-fg-tertiary mt-1 max-w-3xl">
-            AI-generated first drafts for CTD variation sections, grounded in approved dossier content. All output requires regulatory specialist review.
-          </p>
-        </div>
-        <Button onClick={() => showToast('Draft request submitted. HAQ Drafting Agent will begin within 2 minutes.', 'success')}>New Draft Request</Button>
-      </div>
+    <>
+      <PageHeader
+        title="Variation Section Drafts"
+        description="AI first drafts for CTD variation sections, grounded in approved dossier content. All output requires specialist review."
+        breadcrumb={[{ label: "AI Writing" }, { label: "Variation Sections" }]}
+        badges={<Badge variant="pillar-02">Pillar 02</Badge>}
+        actions={
+          <Button
+            size="sm"
+            onClick={() =>
+              showToast(
+                "Draft request submitted. The agent will begin within two minutes.",
+                "success",
+              )
+            }
+          >
+            New draft request
+          </Button>
+        }
+      />
 
-      <HumanInLoopBanner />
+      <PageBody className="gap-4">
+        <HumanInLoopBanner />
 
-      <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-action text-fg-quaternary type-label-md sticky top-0 z-10">
-                {['Draft ID', 'Product', 'CTD Section', 'Variation', 'Status', 'Confidence', 'Words', 'Sources', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 font-medium">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {VARIATION_SECTION_DRAFTS.map(d => {
-                const p = PRODUCT_BY_ID(d.productId)!;
-                return (
-                  <tr key={d.id} className="border-t border-stroke-muted transition-colors duration-200 hover:bg-raised-2">
-                    <td className="px-4 py-3 font-mono" style={{ color: 'var(--pillar-02)' }}>{d.id}</td>
-                    <td className="px-4 py-3 text-fg-primary">{p.name}</td>
-                    <td className="px-4 py-3 text-fg-primary">{d.sectionTitle}</td>
-                    <td className="px-4 py-3"><Badge variant={badgeForVariation(d.variationType)}>{d.variationType}</Badge></td>
-                    <td className="px-4 py-3"><Badge variant={d.draftStatus === 'Complete' ? 'complete' : 'in-progress'}>{d.draftStatus}</Badge></td>
-                    <td className="px-4 py-3"><ConfidencePill value={d.aiConfidence} /></td>
-                    <td className="px-4 py-3 font-mono text-fg-primary">{d.wordCount}</td>
-                    <td className="px-4 py-3 text-fg-tertiary"><span className="rounded bg-action px-2 py-1">{d.sourceDocs.length} sources</span></td>
-                    <td className="px-4 py-3"><Button size="sm" onClick={() => { setOpenId(d.id); logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: '02', action: `Viewed variation draft ${d.id}` }); }}>View Draft</Button></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+        <DataTable
+          rows={VARIATION_SECTION_DRAFTS}
+          columns={columns}
+          rowKey={(draft) => draft.id}
+          isRowActive={(draft) => draft.id === openId}
+          onRowOpen={(draft) => {
+            setOpenId(draft.id);
+            logAudit({
+              actor: "Regulatory Operations",
+              actorType: "user",
+              pillar: "02",
+              action: `Viewed variation draft ${draft.id}`,
+            });
+          }}
+          searchPlaceholder="Search by draft ID, product or CTD section"
+          getSearchText={(draft) => `${draft.id} ${draft.summaryOfChanges}`}
+          exportName="variation-section-drafts"
+          emptyTitle="No section drafts yet"
+          emptyDetail="Request a draft and the HAQ Drafting Agent will generate a first pass from the approved dossier."
+        />
+      </PageBody>
 
       <Drawer
-        open={!!open}
+        open={Boolean(open)}
         onClose={() => setOpenId(null)}
-        title={open?.id || ''}
+        title={open?.id ?? ""}
         subtitle={open?.sectionTitle}
         width={620}
         footer={
-          open && (
+          open ? (
             <>
-              <Button variant="ghost" onClick={() => showToast('Draft downloaded as .docx', 'success')}>Download .docx</Button>
-              <Button variant="secondary" onClick={() => showToast('Edit request sent.')}>Request Edits</Button>
-              <Button onClick={() => { showToast(`Draft ${open.id} approved.`, 'success'); setOpenId(null); }}>Approve</Button>
+              <Button
+                variant="ghost"
+                onClick={() => showToast("Draft downloaded as .docx", "success")}
+              >
+                Download
+              </Button>
+              <Button variant="secondary" onClick={() => showToast("Edit request sent.")}>
+                Request edits
+              </Button>
+              <Button
+                onClick={() => {
+                  showToast(`Draft ${open.id} approved.`, "success");
+                  setOpenId(null);
+                }}
+              >
+                Approve
+              </Button>
             </>
-          )
+          ) : undefined
         }
       >
         {open && (
           <>
             <section>
-              <Eyebrow>Section Summary</Eyebrow>
-              <p className="text-sm text-fg-primary leading-relaxed">{open.summaryOfChanges}</p>
+              <SectionHeader title="Summary of changes" />
+              <p className="type-body-lg text-fg-primary">{open.summaryOfChanges}</p>
             </section>
+
             <section>
-              <Eyebrow>Source Documents</Eyebrow>
+              <SectionHeader title="Source documents" />
               <ul className="space-y-1.5">
-                {open.sourceDocs.map(s => <li key={s} className="flex items-center gap-2 text-xs text-fg-primary"><AppIcon name="document" size="sm" className="text-fg-tertiary" /> {s}</li>)}
+                {open.sourceDocs.map((doc) => (
+                  <li key={doc} className="type-body-md flex items-center gap-2 text-fg-primary">
+                    <AppIcon name="document" size="sm" className="text-icon-quaternary" />
+                    {doc}
+                  </li>
+                ))}
               </ul>
             </section>
+
             <AgentCard pillar="02">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-fg-primary">Draft Text (Excerpt)</span>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="type-heading-sm text-fg-primary">Draft text, excerpt</span>
                 <ConfidencePill value={open.aiConfidence} />
               </div>
-              <div className="text-sm text-fg-primary leading-relaxed whitespace-pre-line">{open.excerpt}</div>
+              <div className="type-body-lg whitespace-pre-line text-fg-primary">{open.excerpt}</div>
             </AgentCard>
+
             <HumanInLoopBanner compact />
           </>
         )}
       </Drawer>
-    </div>
+    </>
   );
 }

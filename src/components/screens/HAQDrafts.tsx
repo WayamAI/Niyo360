@@ -1,146 +1,286 @@
+import { useState } from "react";
 import { AppIcon } from "@/components/icons";
-import { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { Card, AgentCard, Eyebrow } from '@/components/shared/Card';
-import { Badge } from '@/components/shared/Badge';
-import { Button } from '@/components/shared/Button';
-import { ConfidencePill, HumanInLoopBanner } from '@/components/shared/Atoms';
-import { Drawer } from '@/components/shared/Drawer';
-import { HAQ_DRAFTS, PRODUCT_BY_ID } from '@/data/mockData';
+import { useApp } from "@/context/AppContext";
+import { PageBody, PageHeader, SectionHeader } from "@/components/shared/Page";
+import { KpiRow, KpiTile } from "@/components/shared/Panel";
+import { Badge } from "@/components/shared/Badge";
+import { Button } from "@/components/shared/Button";
+import { DataTable, type Column } from "@/components/shared/DataTable";
+import { Drawer } from "@/components/shared/Drawer";
+import { AgentCard } from "@/components/shared/Card";
+import { ConfidencePill, HumanInLoopBanner } from "@/components/shared/Atoms";
+import { HAQ_DRAFTS, PRODUCT_BY_ID } from "@/data/mockData";
+
+type HaqDraft = (typeof HAQ_DRAFTS)[number];
+
+/** Shared by the Days column and the drawer subtitle. */
+function urgencyColor(days: number): string {
+  if (days < 14) return "var(--feedback-error-icon)";
+  if (days < 30) return "var(--feedback-warning-icon)";
+  return "var(--feedback-success-icon)";
+}
 
 export function HAQDrafts() {
   const { showToast, logAudit } = useApp();
   const [openId, setOpenId] = useState<string | null>(null);
-  const open = openId ? HAQ_DRAFTS.find(h => h.id === openId) : null;
+  const open = openId ? (HAQ_DRAFTS.find((draft) => draft.id === openId) ?? null) : null;
+
+  // Derived, not asserted: the previous version carried "4 / 2 / 1 / 1" as
+  // literals, so the tiles could not follow the data they sat above.
+  const ready = HAQ_DRAFTS.filter((draft) => draft.status === "Draft Ready").length;
+  const underReview = HAQ_DRAFTS.filter((draft) => draft.status === "Under Review").length;
+  const overdue = HAQ_DRAFTS.filter((draft) => draft.daysRemaining < 0).length;
+  const atRisk = HAQ_DRAFTS.filter(
+    (draft) => draft.daysRemaining >= 0 && draft.daysRemaining < 21,
+  ).length;
+
+  const columns: Column<HaqDraft>[] = [
+    {
+      key: "id",
+      header: "HAQ",
+      card: "title",
+      value: (draft) => draft.id,
+      render: (draft) => (
+        <span className="font-mono text-[color:var(--pillar-02)]">{draft.id}</span>
+      ),
+    },
+    {
+      key: "product",
+      header: "Product",
+      value: (draft) => PRODUCT_BY_ID(draft.productId)?.name ?? "",
+      render: (draft) => {
+        const product = PRODUCT_BY_ID(draft.productId);
+        return (
+          <span className="block min-w-0">
+            <span className="block truncate font-medium text-fg-primary">
+              {product?.name ?? "Unknown product"}
+            </span>
+            <span className="type-caption block truncate text-fg-quaternary">
+              {product?.dosageForm}
+            </span>
+          </span>
+        );
+      },
+    },
+    {
+      key: "authority",
+      header: "Market / authority",
+      value: (draft) => `${draft.market} ${draft.authority}`,
+      render: (draft) => (
+        <span className="text-fg-primary">
+          {draft.market}, {draft.authority}
+        </span>
+      ),
+    },
+    {
+      key: "deadline",
+      header: "Deadline",
+      hide: "md",
+      value: (draft) => draft.queryDeadline,
+      render: (draft) => (
+        <span className="tabular font-mono text-fg-tertiary">{draft.queryDeadline}</span>
+      ),
+    },
+    {
+      key: "days",
+      header: "Days left",
+      align: "right",
+      value: (draft) => draft.daysRemaining,
+      render: (draft) => (
+        <span
+          className="tabular font-mono font-medium"
+          style={{ color: urgencyColor(draft.daysRemaining) }}
+        >
+          {draft.daysRemaining < 0 ? "Overdue" : draft.daysRemaining}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      card: "meta",
+      value: (draft) => draft.status,
+      render: (draft) => (
+        <Badge
+          variant={
+            draft.status === "Draft Ready"
+              ? "complete"
+              : draft.status === "Overdue"
+                ? "overdue"
+                : "in-progress"
+          }
+        >
+          {draft.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "confidence",
+      header: "Confidence",
+      hide: "lg",
+      value: (draft) => draft.aiConfidence,
+      render: (draft) => <ConfidencePill value={draft.aiConfidence} />,
+    },
+  ];
+
+  function view(draft: HaqDraft) {
+    setOpenId(draft.id);
+    logAudit({
+      actor: "Regulatory Operations",
+      actorType: "user",
+      pillar: "02",
+      action: `Viewed HAQ draft ${draft.id}`,
+    });
+  }
 
   return (
-    <div className="page-enter space-y-5">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="type-display-page text-fg-primary">HAQ Response Drafts</h1>
-            <Badge variant="pillar-02">Pillar 02</Badge>
-          </div>
-          <p className="text-sm text-fg-tertiary mt-1 max-w-3xl">
-            AI-drafted Health Authority Query responses grounded in approved dossier content and current regulatory guidelines. All output requires human review before submission.
-          </p>
-        </div>
-        <Button onClick={() => showToast('New HAQ intake created.', 'success')}>New HAQ</Button>
-      </div>
+    <>
+      <PageHeader
+        title="HAQ Response Drafts"
+        description="AI-drafted Health Authority Query responses grounded in approved dossier content. Every draft requires specialist review before submission."
+        breadcrumb={[{ label: "AI Writing" }, { label: "HAQ Responses" }]}
+        badges={<Badge variant="pillar-02">Pillar 02</Badge>}
+        actions={
+          <Button size="sm" onClick={() => showToast("New HAQ intake created.", "success")}>
+            New HAQ
+          </Button>
+        }
+      />
 
-      <HumanInLoopBanner />
+      <PageBody className="gap-4">
+        <KpiRow>
+          <KpiTile label="Open HAQs" value={HAQ_DRAFTS.length} note="Across all authorities" />
+          <KpiTile
+            label="Drafts ready"
+            value={ready}
+            note="Awaiting reviewer sign-off"
+            tone={ready > 0 ? "success" : "neutral"}
+          />
+          <KpiTile label="Under review" value={underReview} />
+          <KpiTile
+            label={overdue > 0 ? "Overdue" : "Inside 21 days"}
+            value={overdue > 0 ? overdue : atRisk}
+            note={overdue > 0 ? "Past the authority deadline" : "Deadline approaching"}
+            tone={overdue > 0 ? "error" : atRisk > 0 ? "warning" : "neutral"}
+          />
+        </KpiRow>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { l: 'OPEN HAQS', v: '4', n: '2 High priority' },
-          { l: 'DRAFTS READY', v: '2', n: 'Awaiting reviewer sign-off' },
-          { l: 'UNDER REVIEW', v: '1' },
-          { l: 'OVERDUE', v: '1', c: 'var(--feedback-error-icon)', red: true },
-        ].map(k => (
-          <Card key={k.l} className={k.red ? '' : ''} style={k.red ? { background: 'color-mix(in oklab, var(--feedback-error-icon) 6%, var(--surface-raised))' } : undefined}>
-            <div className="text-2xs font-medium uppercase tracking-wider text-fg-tertiary mb-2">{k.l}</div>
-            <div className="type-display-metric-md" style={{ color: k.c || 'var(--fg-primary)' }}>{k.v}</div>
-            {k.n && <div className="text-xs text-fg-tertiary mt-2">{k.n}</div>}
-          </Card>
-        ))}
-      </div>
+        <HumanInLoopBanner />
 
-      <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-action text-fg-quaternary type-label-md sticky top-0 z-10">
-                {['HAQ ID', 'Product', 'Market / Authority', 'Deadline', 'Days', 'Status', 'Confidence', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 font-medium">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {HAQ_DRAFTS.map(h => {
-                const p = PRODUCT_BY_ID(h.productId)!;
-                const daysColor = h.daysRemaining < 1 ? 'var(--feedback-error-icon)' : h.daysRemaining < 14 ? 'var(--feedback-error-icon)' : h.daysRemaining < 30 ? 'var(--feedback-warning-icon)' : 'var(--feedback-success-icon)';
-                return (
-                  <tr key={h.id} className="border-t border-stroke-muted transition-colors duration-200 hover:bg-raised-2">
-                    <td className="px-4 py-3 font-mono" style={{ color: 'var(--pillar-02)' }}>{h.id}</td>
-                    <td className="px-4 py-3"><div className="text-fg-primary font-medium">{p.name}</div><div className="text-2xs text-fg-tertiary">{p.dosageForm}</div></td>
-                    <td className="px-4 py-3 text-fg-primary">{h.market}, {h.authority}</td>
-                    <td className="px-4 py-3 font-mono text-fg-tertiary">{h.queryDeadline}</td>
-                    <td className="px-4 py-3 font-mono" style={{ color: daysColor }}>{h.daysRemaining}</td>
-                    <td className="px-4 py-3"><Badge variant={h.status === 'Draft Ready' ? 'complete' : h.status === 'Overdue' ? 'overdue' : 'in-progress'}>{h.status}</Badge></td>
-                    <td className="px-4 py-3"><ConfidencePill value={h.aiConfidence} /></td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <Button size="sm" onClick={() => { setOpenId(h.id); logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: '02', action: `Viewed draft ${h.id}` }); }}>View Draft</Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+        <DataTable
+          rows={HAQ_DRAFTS}
+          columns={columns}
+          rowKey={(draft) => draft.id}
+          onRowOpen={view}
+          isRowActive={(draft) => draft.id === openId}
+          defaultSort={{ key: "days", dir: "asc" }}
+          searchPlaceholder="Search by HAQ ID, product or authority"
+          getSearchText={(draft) => `${draft.id} ${draft.queryText}`}
+          exportName="haq-responses"
+          emptyTitle="No open HAQs"
+          emptyDetail="Queries raised by a health authority appear here once they are logged."
+        />
+      </PageBody>
 
       <Drawer
-        open={!!open}
+        open={Boolean(open)}
         onClose={() => setOpenId(null)}
-        title={open ? `${open.id} · ${PRODUCT_BY_ID(open.productId)?.name}` : ''}
-        subtitle={open ? `${open.market}, ${open.authority} · ${open.daysRemaining} days remaining` : ''}
+        title={open ? `${open.id} · ${PRODUCT_BY_ID(open.productId)?.name}` : ""}
+        subtitle={
+          open
+            ? `${open.market}, ${open.authority} · ${
+                open.daysRemaining < 0 ? "overdue" : `${open.daysRemaining} days remaining`
+              }`
+            : undefined
+        }
         width={620}
         footer={
-          open && (
+          open ? (
             <>
-              <Button variant="ghost" onClick={() => showToast('Draft downloaded as .docx', 'success')}>Download Draft</Button>
-              <Button variant="secondary" onClick={() => showToast('Revision request sent to drafting queue.')}>Request Edits</Button>
-              <Button onClick={() => { showToast('HAQ response approved. Added to submission queue.', 'success'); logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: '02', action: `Approved HAQ response ${open.id}` }); setOpenId(null); }}>Approve for Submission</Button>
+              <Button
+                variant="ghost"
+                onClick={() => showToast("Draft downloaded as .docx", "success")}
+              >
+                Download
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => showToast("Revision request sent to the drafting queue.")}
+              >
+                Request edits
+              </Button>
+              <Button
+                onClick={() => {
+                  showToast("HAQ response approved and added to the submission queue.", "success");
+                  logAudit({
+                    actor: "Regulatory Operations",
+                    actorType: "user",
+                    pillar: "02",
+                    action: `Approved HAQ response ${open.id}`,
+                  });
+                  setOpenId(null);
+                }}
+              >
+                Approve for submission
+              </Button>
             </>
-          )
+          ) : undefined
         }
       >
         {open && (
           <>
             <section>
-              <Eyebrow>Health Authority Query</Eyebrow>
-              <div className="rounded-md bg-action p-3.5" style={{ borderLeft: '3px solid var(--feedback-error-icon)' }}>
-                <p className="text-sm text-fg-tertiary italic leading-relaxed">{open.queryText}</p>
-                <div className="text-2xs text-fg-tertiary mt-2 flex gap-3">
-                  <span>Received: <span className="font-mono">{open.queryReceivedDate}</span></span>
-                  <span>Deadline: <span className="font-mono">{open.queryDeadline}</span></span>
+              <SectionHeader title="Health authority query" />
+              <div
+                className="rounded-md bg-action p-3"
+                style={{ borderLeft: "2px solid var(--feedback-error-icon)" }}
+              >
+                <p className="type-body-lg text-fg-secondary italic">{open.queryText}</p>
+                <div className="type-caption tabular mt-2 flex flex-wrap gap-3 text-fg-quaternary">
+                  <span>
+                    Received <span className="font-mono">{open.queryReceivedDate}</span>
+                  </span>
+                  <span>
+                    Deadline <span className="font-mono">{open.queryDeadline}</span>
+                  </span>
                 </div>
               </div>
             </section>
 
             <AgentCard pillar="02">
-              <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                <span className="text-sm font-medium text-fg-primary">HAQ Drafting Agent</span>
-                <div className="flex items-center gap-2">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="type-heading-sm text-fg-primary">HAQ Drafting Agent</span>
+                <span className="flex items-center gap-2">
                   <ConfidencePill value={open.aiConfidence} />
-                  <span className="font-mono text-2xs text-fg-tertiary">{open.draftWordCount} words</span>
-                </div>
+                  <span className="type-caption tabular font-mono text-fg-quaternary">
+                    {open.draftWordCount} words
+                  </span>
+                </span>
               </div>
-              <div className="text-sm text-fg-primary leading-relaxed space-y-2.5 whitespace-pre-line">{open.draftBody}</div>
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {open.ctdSectionsReferenced.map(c => (
-                  <span key={c} className="text-2xs rounded bg-action px-2 py-1 text-fg-tertiary font-mono">{c}</span>
-                ))}
+              <div className="type-body-lg whitespace-pre-line text-fg-primary">
+                {open.draftBody}
               </div>
             </AgentCard>
 
-            <HumanInLoopBanner compact />
-
             <section>
-              <Eyebrow>Source Documents Referenced</Eyebrow>
-              <ul className="space-y-1.5">
-                {open.ctdSectionsReferenced.map(s => (
-                  <li key={s} className="flex items-center gap-2 text-xs text-fg-primary">
-                    <AppIcon name="document" size="sm" className="text-fg-tertiary" /> {s}
+              <SectionHeader title="CTD sections referenced" />
+              <ul className="flex flex-wrap gap-1.5">
+                {open.ctdSectionsReferenced.map((section) => (
+                  <li
+                    key={section}
+                    className="type-body-sm inline-flex items-center gap-1.5 rounded bg-action px-2 py-1 font-mono text-fg-tertiary"
+                  >
+                    <AppIcon name="document" size="xs" className="text-icon-quaternary" />
+                    {section}
                   </li>
                 ))}
               </ul>
             </section>
+
+            <HumanInLoopBanner compact />
           </>
         )}
       </Drawer>
-    </div>
+    </>
   );
 }

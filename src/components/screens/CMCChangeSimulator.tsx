@@ -1,81 +1,194 @@
-import { useMemo, useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { Card } from '@/components/shared/Card';
-import { Badge, badgeForRisk, badgeForStatus } from '@/components/shared/Badge';
-import { Button } from '@/components/shared/Button';
-import { CHANGES, PRODUCT_BY_ID } from '@/data/mockData';
+import { useMemo, useState } from "react";
+import { useApp } from "@/context/AppContext";
+import { PageBody, PageHeader } from "@/components/shared/Page";
+import { KpiRow, KpiTile } from "@/components/shared/Panel";
+import { Badge, badgeForRisk, badgeForStatus } from "@/components/shared/Badge";
+import { Button } from "@/components/shared/Button";
+import { DataTable, type Column } from "@/components/shared/DataTable";
+import { FilterBar, FilterSelect } from "@/components/shared/Filters";
+import { CHANGES, PRODUCTS, PRODUCT_BY_ID } from "@/data/mockData";
+
+type Change = (typeof CHANGES)[number];
+
+const RISKS = ["All", "High", "Medium", "Low"] as const;
 
 export function CMCChangeSimulator() {
-  const { navigateTo, showToast, logAudit, setSelectedChangeId } = useApp();
-  const [product, setProduct] = useState('All');
-  const [riskFilter, setRiskFilter] = useState('All');
+  const { navigateTo, showToast, logAudit, setSelectedChangeId, selectedChangeId } = useApp();
+  const [product, setProduct] = useState("All");
+  const [risk, setRisk] = useState<(typeof RISKS)[number]>("All");
 
-  const filtered = useMemo(() => CHANGES.filter(c =>
-    (product === 'All' || c.productId === product) &&
-    (riskFilter === 'All' || c.riskLevel === riskFilter)
-  ), [product, riskFilter]);
+  // Built from PRODUCTS rather than three hard-coded <option>s, which had
+  // drifted to short names ("Volantis") that no longer matched the records.
+  const productOptions = useMemo(() => ["All", ...PRODUCTS.map((p) => p.id)], []);
+
+  const rows = useMemo(
+    () =>
+      CHANGES.filter(
+        (change) =>
+          (product === "All" || change.productId === product) &&
+          (risk === "All" || change.riskLevel === risk),
+      ),
+    [product, risk],
+  );
+
+  const activeFilters = [product, risk].filter((value) => value !== "All").length;
+  const simulated = CHANGES.filter((c) => c.simulationStatus === "complete").length;
+  const highRisk = CHANGES.filter((c) => c.riskLevel === "High").length;
+  const marketsTouched = CHANGES.reduce((sum, c) => Math.max(sum, c.affectedMarkets), 0);
+
+  function openResults(change: Change) {
+    if (change.simulationStatus !== "complete") {
+      showToast(`Simulation queued for ${change.id}.`, "success");
+      return;
+    }
+    setSelectedChangeId(change.id);
+    navigateTo("heatmap");
+    logAudit({
+      actor: "Regulatory Operations",
+      actorType: "user",
+      pillar: "04",
+      action: `Viewed simulation results for ${change.id}`,
+    });
+  }
+
+  const columns: Column<Change>[] = [
+    {
+      key: "id",
+      header: "Change",
+      card: "title",
+      value: (change) => change.id,
+      render: (change) => (
+        <span className="font-mono text-[color:var(--pillar-04)]">{change.id}</span>
+      ),
+    },
+    {
+      key: "product",
+      header: "Product",
+      value: (change) => PRODUCT_BY_ID(change.productId)?.name ?? "",
+      render: (change) => (
+        <span className="text-fg-primary">{PRODUCT_BY_ID(change.productId)?.name ?? "—"}</span>
+      ),
+    },
+    {
+      key: "type",
+      header: "Type",
+      value: (change) => change.changeType,
+      render: (change) => (
+        <span className="line-clamp-2 max-w-[30ch] text-fg-tertiary">{change.changeType}</span>
+      ),
+    },
+    {
+      key: "markets",
+      header: "Markets",
+      align: "right",
+      value: (change) => change.affectedMarkets,
+      render: (change) => (
+        <span className="tabular font-mono text-fg-primary">{change.affectedMarkets}</span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Simulation",
+      card: "meta",
+      value: (change) => change.status,
+      render: (change) => <Badge variant={badgeForStatus(change.status)}>{change.status}</Badge>,
+    },
+    {
+      key: "risk",
+      header: "Risk",
+      value: (change) => change.riskLevel,
+      render: (change) => (
+        <Badge variant={badgeForRisk(change.riskLevel)}>{change.riskLevel}</Badge>
+      ),
+    },
+    {
+      key: "deadline",
+      header: "Filing deadline",
+      hide: "md",
+      value: (change) => change.filingDeadline,
+      render: (change) => (
+        <span className="tabular font-mono text-fg-tertiary">{change.filingDeadline}</span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "",
+      card: false,
+      render: (change) => (
+        <span className="flex justify-end">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={(event) => {
+              event.stopPropagation();
+              openResults(change);
+            }}
+          >
+            {change.simulationStatus === "complete" ? "View results" : "Run simulation"}
+          </Button>
+        </span>
+      ),
+    },
+  ];
 
   return (
-    <div className="page-enter space-y-5">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="type-display-page text-fg-primary">CMC Change Impact Simulator</h1>
-            <Badge variant="pillar-04">Pillar 04</Badge>
-          </div>
-          <p className="text-sm text-fg-tertiary mt-1 max-w-3xl">
-            Simulate the regulatory cascade of a proposed CMC or label change across all registered markets before authoring begins. Powered by the CCDS-to-label knowledge graph.
-          </p>
-        </div>
-        <Button onClick={() => navigateTo('new-change')}>New Change</Button>
-      </div>
+    <>
+      <PageHeader
+        title="CMC Change Impact Simulator"
+        description="Simulate the regulatory cascade of a proposed CMC or label change across every registered market before authoring begins."
+        breadcrumb={[{ label: "Change Simulator" }, { label: "CMC Simulator" }]}
+        badges={<Badge variant="pillar-04">Pillar 04</Badge>}
+        actions={
+          <Button size="sm" onClick={() => navigateTo("new-change")}>
+            New change
+          </Button>
+        }
+      />
 
-      <Card>
-        <div className="flex flex-wrap gap-2">
-          <select value={product} onChange={e => setProduct(e.target.value)} className="h-9 rounded-md bg-action border border-stroke-default px-3 text-xs">
-            <option value="All">Product: All</option>
-            <option value="PRD-001">Volantis</option>
-            <option value="PRD-002">Orentis</option>
-            <option value="PRD-003">MMR Vaccine</option>
-          </select>
-          <select value={riskFilter} onChange={e => setRiskFilter(e.target.value)} className="h-9 rounded-md bg-action border border-stroke-default px-3 text-xs">
-            {['All', 'High', 'Medium', 'Low'].map(r => <option key={r} value={r}>Risk: {r}</option>)}
-          </select>
-        </div>
-      </Card>
+      <PageBody className="gap-4">
+        <KpiRow>
+          <KpiTile label="Active changes" value={CHANGES.length} />
+          <KpiTile
+            label="Simulated"
+            value={simulated}
+            note={`of ${CHANGES.length}`}
+            tone="success"
+          />
+          <KpiTile label="High risk" value={highRisk} tone={highRisk > 0 ? "warning" : "neutral"} />
+          <KpiTile label="Largest cascade" value={marketsTouched} note="Markets in one change" />
+        </KpiRow>
 
-      <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-action text-fg-quaternary type-label-md sticky top-0 z-10">
-                {['Change ID', 'Product', 'Type', 'Markets', 'Sim Status', 'Risk', 'Filing Deadline', 'Actions'].map(h => <th key={h} className="text-left px-4 py-3 font-medium">{h}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(c => {
-                const p = PRODUCT_BY_ID(c.productId)!;
-                return (
-                  <tr key={c.id} className="border-t border-stroke-muted transition-colors duration-200 hover:bg-raised-2">
-                    <td className="px-4 py-3 font-mono" style={{ color: 'var(--pillar-04)' }}>{c.id}</td>
-                    <td className="px-4 py-3 text-fg-primary">{p.name}</td>
-                    <td className="px-4 py-3 text-fg-tertiary max-w-[260px]"><span className="line-clamp-2">{c.changeType}</span></td>
-                    <td className="px-4 py-3 font-mono text-fg-primary">{c.affectedMarkets}</td>
-                    <td className="px-4 py-3"><Badge variant={badgeForStatus(c.status)}>{c.status}</Badge></td>
-                    <td className="px-4 py-3"><Badge variant={badgeForRisk(c.riskLevel)}>{c.riskLevel}</Badge></td>
-                    <td className="px-4 py-3 font-mono text-fg-tertiary">{c.filingDeadline}</td>
-                    <td className="px-4 py-3">
-                      {c.simulationStatus === 'complete'
-                        ? <Button size="sm" onClick={() => { setSelectedChangeId(c.id); navigateTo('heatmap'); logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: '04', action: `Viewed simulation results for ${c.id}` }); }}>View Results</Button>
-                        : <Button size="sm" onClick={() => showToast('Simulation queued.', 'success')}>Run Simulation</Button>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </div>
+        <DataTable
+          rows={rows}
+          columns={columns}
+          rowKey={(change) => change.id}
+          onRowOpen={openResults}
+          isRowActive={(change) => change.id === selectedChangeId}
+          searchPlaceholder="Search changes by ID, title or type"
+          getSearchText={(change) => `${change.id} ${change.title} ${change.description}`}
+          exportName="cmc-changes"
+          emptyTitle="No changes match these filters"
+          emptyDetail="Widen the product or risk filter to see more of the portfolio."
+          toolbar={
+            <FilterBar
+              activeCount={activeFilters}
+              onClear={() => {
+                setProduct("All");
+                setRisk("All");
+              }}
+            >
+              <FilterSelect
+                label="Product"
+                value={product}
+                onChange={setProduct}
+                options={productOptions}
+                optionLabel={(id) => (id === "All" ? "All" : (PRODUCT_BY_ID(id)?.name ?? id))}
+              />
+              <FilterSelect label="Risk" value={risk} onChange={setRisk} options={RISKS} />
+            </FilterBar>
+          }
+        />
+      </PageBody>
+    </>
   );
 }

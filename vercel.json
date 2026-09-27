@@ -3,7 +3,5 @@
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist/client",
   "framework": null,
-  "rewrites": [
-    { "source": "/((?!assets/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/((?!assets/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }]
 }

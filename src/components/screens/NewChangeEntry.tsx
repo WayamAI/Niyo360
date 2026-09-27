@@ -1,156 +1,361 @@
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { AppIcon } from "@/components/icons";
-import { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { Card, Eyebrow } from '@/components/shared/Card';
-import { Badge } from '@/components/shared/Badge';
-import { Button } from '@/components/shared/Button';
-import { ThinkingDots } from '@/components/shared/Atoms';
-import { PRODUCTS } from '@/data/mockData';
+import { useApp } from "@/context/AppContext";
+import { PageBody, PageHeader } from "@/components/shared/Page";
+import { Panel } from "@/components/shared/Panel";
+import { Badge } from "@/components/shared/Badge";
+import { Button } from "@/components/shared/Button";
+import { ThinkingDots } from "@/components/shared/Atoms";
+import { PRODUCTS } from "@/data/mockData";
+
+const CATEGORIES = ["CMC", "Label", "Safety", "Clinical", "Administrative"];
+const CHANGE_TYPES = [
+  "Manufacturing Site Transfer / Addition",
+  "Excipient Specification Change",
+  "Analytical Method Change",
+  "Packaging Change",
+  "Shelf Life Extension",
+  "Specification Change",
+];
+const REGIONS = ["Global", "EU/EEA", "Americas", "Asia Pacific", "MEA", "Eastern Europe"];
+const PRIORITIES = ["Standard", "Expedited", "Urgent"];
+
+const INPUT_CLASS =
+  "type-body-md h-8 w-full rounded-md border border-stroke-default bg-action px-2.5 text-fg-primary placeholder:text-fg-quaternary transition-colors duration-150 hover:border-stroke-active focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+
+/** Read-only value rendered in the same slot shape as an input. */
+const READONLY_CLASS =
+  "type-body-md flex h-8 w-full items-center rounded-md border border-stroke-muted bg-raised px-2.5 text-fg-secondary";
 
 export function NewChangeEntry() {
   const { navigateTo, showToast, logAudit, setSelectedChangeId } = useApp();
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [regions, setRegions] = useState<string[]>(["Global"]);
+  const [ccdsImpacted, setCcdsImpacted] = useState(true);
+  const [coreLabelImpacted, setCoreLabelImpacted] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [steps, setSteps] = useState<string[]>([]);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const timers = useRef<number[]>([]);
+  const errorId = useId();
 
-  const run = () => {
+  // Without this, navigating away mid-simulation left four timers running that
+  // called setState and navigateTo on an unmounted screen.
+  useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach((id) => window.clearTimeout(id));
+  }, []);
+
+  function toggleRegion(region: string) {
+    setRegions((current) =>
+      current.includes(region) ? current.filter((item) => item !== region) : [...current, region],
+    );
+  }
+
+  function run(event: FormEvent) {
+    event.preventDefault();
     if (!title.trim()) {
-      showToast('Change title is required.', 'error');
+      setTitleError("Enter a change title before running the simulation.");
+      titleRef.current?.focus();
       return;
     }
+    setTitleError(null);
     setSimulating(true);
-    setSteps(['Indexing affected markets...']);
-    logAudit({ actor: 'Regulatory Operations', actorType: 'user', pillar: '04', action: `Triggered simulation for new change: "${title}"` });
-    setTimeout(() => setSteps(s => [...s, 'Classifying variation types by jurisdiction...']), 700);
-    setTimeout(() => setSteps(s => [...s, 'Mapping CCDS-to-label cascade...']), 1500);
-    setTimeout(() => {
-      setSelectedChangeId('CHG-2025-0047');
-      navigateTo('heatmap');
-      logAudit({ actor: 'Cascade Agent', actorType: 'agent', pillar: '04', action: 'Cascade simulation complete. 47 markets mapped. Confidence 94%.' });
-    }, 2800);
-  };
+    setSteps(["Indexing affected markets…"]);
+    logAudit({
+      actor: "Regulatory Operations",
+      actorType: "user",
+      pillar: "04",
+      action: `Triggered simulation for new change: "${title}"`,
+    });
+    timers.current.push(
+      window.setTimeout(
+        () => setSteps((current) => [...current, "Classifying variation types by jurisdiction…"]),
+        700,
+      ),
+      window.setTimeout(
+        () => setSteps((current) => [...current, "Mapping CCDS-to-label cascade…"]),
+        1500,
+      ),
+      window.setTimeout(() => {
+        setSelectedChangeId("CHG-2025-0047");
+        navigateTo("heatmap");
+        logAudit({
+          actor: "Cascade Agent",
+          actorType: "agent",
+          pillar: "04",
+          action: "Cascade simulation complete. 47 markets mapped. Confidence 94%.",
+        });
+      }, 2800),
+    );
+  }
 
   return (
-    <div className="page-enter max-w-3xl mx-auto space-y-5">
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="type-display-page text-fg-primary">New Change Entry</h1>
-          <Badge variant="pillar-04">Pillar 04</Badge>
-        </div>
-        <p className="text-sm text-fg-tertiary mt-1">Enter a proposed change to simulate its regulatory cascade impact across all registered markets before authoring begins.</p>
-      </div>
+    <>
+      <PageHeader
+        title="New Change Entry"
+        description="Enter a proposed change to simulate its regulatory cascade across every registered market before authoring begins."
+        breadcrumb={[
+          { label: "Change Simulator", onClick: () => navigateTo("simulator") },
+          { label: "New change" },
+        ]}
+        badges={<Badge variant="pillar-04">Pillar 04</Badge>}
+        onBack={() => navigateTo("simulator")}
+      />
 
-      <Card>
-        <Eyebrow>Change Identification</Eyebrow>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="Change ID" hint="Auto-generated">
-            <div className="font-mono text-sm text-fg-primary rounded-md bg-action border border-stroke-default px-3 h-9 flex items-center">CHG-2025-0054</div>
-          </Field>
-          <Field label="Initiated By">
-            <div className="text-sm text-fg-primary rounded-md bg-action border border-stroke-default px-3 h-9 flex items-center">Regulatory Operations Team</div>
-          </Field>
-          <Field label="Change Title" full>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Secondary API Synthesis Site Addition"
-              className="w-full h-9 rounded-md bg-action border border-stroke-default px-3 text-sm focus:ring-2 focus:ring-ring outline-none" />
-          </Field>
-          <Field label="Date">
-            <div className="text-sm text-fg-primary rounded-md bg-action border border-stroke-default px-3 h-9 flex items-center font-mono">22 May 2025</div>
-          </Field>
-        </div>
-      </Card>
-
-      <Card>
-        <Eyebrow>Product and Scope</Eyebrow>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="Product">
-            <select className="w-full h-9 rounded-md bg-action border border-stroke-default px-3 text-sm">
-              {PRODUCTS.map(p => <option key={p.id}>{p.name}</option>)}
-            </select>
-          </Field>
-          <Field label="Change Category">
-            <select className="w-full h-9 rounded-md bg-action border border-stroke-default px-3 text-sm">
-              {['CMC', 'Label', 'Safety', 'Clinical', 'Administrative'].map(c => <option key={c}>{c}</option>)}
-            </select>
-          </Field>
-          <Field label="Change Type" full>
-            <select className="w-full h-9 rounded-md bg-action border border-stroke-default px-3 text-sm">
-              {['Manufacturing Site Transfer / Addition', 'Excipient Specification Change', 'Analytical Method Change', 'Packaging Change', 'Shelf Life Extension', 'Specification Change'].map(c => <option key={c}>{c}</option>)}
-            </select>
-          </Field>
-          <Field label="Change Description" full>
-            <textarea rows={4} className="w-full rounded-md bg-action border border-stroke-default px-3 py-2 text-sm" placeholder="Describe the proposed change..." />
-          </Field>
-          <Field label="Affected Markets" full>
-            <div className="flex flex-wrap gap-2">
-              {['Global', 'EU/EEA', 'Americas', 'Asia Pacific', 'MEA', 'Eastern Europe'].map((z, i) => (
-                <button key={z} className={`px-3 h-8 rounded-md text-xs border ${i === 0 ? 'bg-brand text-on-brand border-brand' : 'bg-action border-stroke-default text-fg-tertiary hover:text-fg-primary'}`}>{z}</button>
-              ))}
+      <PageBody>
+        <form onSubmit={run} className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+          <Panel title="Change identification">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <FormField label="Change ID" hint="Auto-generated">
+                <span className={`${READONLY_CLASS} font-mono`}>CHG-2025-0054</span>
+              </FormField>
+              <FormField label="Initiated by">
+                <span className={READONLY_CLASS}>Regulatory Operations Team</span>
+              </FormField>
+              <FormField label="Change title" required full error={titleError} errorId={errorId}>
+                <input
+                  ref={titleRef}
+                  value={title}
+                  onChange={(event) => {
+                    setTitle(event.target.value);
+                    if (titleError) setTitleError(null);
+                  }}
+                  aria-invalid={Boolean(titleError)}
+                  aria-describedby={titleError ? errorId : undefined}
+                  placeholder="e.g. Secondary API synthesis site addition"
+                  className={`${INPUT_CLASS} ${titleError ? "border-error-icon" : ""}`}
+                />
+              </FormField>
+              <FormField label="Date">
+                <span className={`${READONLY_CLASS} tabular font-mono`}>22 May 2025</span>
+              </FormField>
             </div>
-          </Field>
-        </div>
-      </Card>
+          </Panel>
 
-      <Card>
-        <Eyebrow>Regulatory Context</Eyebrow>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Toggle label="CCDS Impacted" defaultOn />
-          <Toggle label="Core Label Impacted" />
-          <Field label="Submission History Reference" full>
-            <input className="w-full h-9 rounded-md bg-action border border-stroke-default px-3 text-sm" placeholder="e.g. CHG-2024-0031" />
-          </Field>
-          <Field label="Priority Level" full>
-            <div className="flex gap-2">
-              {['Standard', 'Expedited', 'Urgent'].map((p, i) => (
-                <label key={p} className="flex items-center gap-2 text-sm text-fg-primary">
-                  <input type="radio" name="prio" defaultChecked={i === 0} /> {p}
-                </label>
-              ))}
+          <Panel title="Product and scope">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <FormField label="Product">
+                <select className={INPUT_CLASS} defaultValue={PRODUCTS[0].name}>
+                  {PRODUCTS.map((product) => (
+                    <option key={product.id}>{product.name}</option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Change category">
+                <select className={INPUT_CLASS} defaultValue={CATEGORIES[0]}>
+                  {CATEGORIES.map((category) => (
+                    <option key={category}>{category}</option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Change type" full>
+                <select className={INPUT_CLASS} defaultValue={CHANGE_TYPES[0]}>
+                  {CHANGE_TYPES.map((type) => (
+                    <option key={type}>{type}</option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Description" full>
+                <textarea
+                  rows={4}
+                  placeholder="Describe the proposed change"
+                  className="type-body-md w-full rounded-md border border-stroke-default bg-action px-2.5 py-2 text-fg-primary placeholder:text-fg-quaternary transition-colors duration-150 hover:border-stroke-active focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                />
+              </FormField>
             </div>
-          </Field>
-        </div>
-      </Card>
 
-      <div className="flex justify-end gap-2">
-        <Button variant="secondary" onClick={() => showToast('Change draft saved.', 'success')}>Save as Draft</Button>
-        <Button onClick={run} disabled={simulating}>
-          {simulating ? <><ThinkingDots /> Simulating</> : <><AppIcon name="simulator" size="sm" /> Run Impact Simulation</>}
-        </Button>
-      </div>
+            {/* These were styled buttons with no state and no type, so the
+                first one looked permanently selected and clicking any of them
+                submitted nothing. They are now real multi-select toggles. */}
+            <fieldset className="mt-3 min-w-0">
+              <legend className="type-label-sm mb-1.5 text-fg-quaternary">Affected markets</legend>
+              <div className="flex flex-wrap gap-1.5">
+                {REGIONS.map((region) => {
+                  const active = regions.includes(region);
+                  return (
+                    <button
+                      key={region}
+                      type="button"
+                      onClick={() => toggleRegion(region)}
+                      aria-pressed={active}
+                      className={`type-body-md inline-flex h-7 items-center rounded-full border px-2.5 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                        active
+                          ? "border-transparent bg-action-primary text-on-action-primary"
+                          : "border-stroke-default bg-action text-fg-tertiary hover:border-stroke-active hover:text-fg-secondary"
+                      }`}
+                    >
+                      {region}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          </Panel>
 
-      {simulating && (
-        <Card>
-          <div className="text-xs text-fg-tertiary mb-2">Cascade simulation in progress...</div>
-          <div className="h-2 rounded-full bg-action overflow-hidden">
-            <div className="sim-bar h-full" style={{ background: 'var(--pillar-04)' }} />
+          <Panel title="Regulatory context">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <Switch label="CCDS impacted" checked={ccdsImpacted} onChange={setCcdsImpacted} />
+              <Switch
+                label="Core label impacted"
+                checked={coreLabelImpacted}
+                onChange={setCoreLabelImpacted}
+              />
+              <FormField label="Submission history reference" full>
+                <input placeholder="e.g. CHG-2024-0031" className={INPUT_CLASS} />
+              </FormField>
+            </div>
+
+            <fieldset className="mt-3">
+              <legend className="type-label-sm mb-1.5 text-fg-quaternary">Priority</legend>
+              <div className="flex flex-wrap gap-4">
+                {PRIORITIES.map((priority, index) => (
+                  <label
+                    key={priority}
+                    className="type-body-md flex items-center gap-2 text-fg-primary"
+                  >
+                    <input
+                      type="radio"
+                      name="priority"
+                      value={priority}
+                      defaultChecked={index === 0}
+                      className="accent-[color:var(--brand)]"
+                    />
+                    {priority}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </Panel>
+
+          {simulating && (
+            <Panel>
+              <div role="status" aria-live="polite">
+                <div className="type-body-md mb-2 text-fg-tertiary">
+                  Cascade simulation in progress…
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-action">
+                  <div className="sim-bar h-full" style={{ background: "var(--pillar-04)" }} />
+                </div>
+                <ul className="mt-2.5 space-y-1">
+                  {steps.map((step) => (
+                    <li
+                      key={step}
+                      className="type-body-md event-enter flex gap-1.5 text-fg-primary"
+                    >
+                      <AppIcon
+                        name="chevronRight"
+                        size="xs"
+                        className="mt-1 shrink-0 text-icon-quaternary"
+                      />
+                      {step}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Panel>
+          )}
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => showToast("Change draft saved.", "success")}
+            >
+              Save as draft
+            </Button>
+            <Button type="submit" disabled={simulating}>
+              {simulating ? (
+                <>
+                  <ThinkingDots /> Simulating
+                </>
+              ) : (
+                <>
+                  <AppIcon name="simulator" size="sm" /> Run impact simulation
+                </>
+              )}
+            </Button>
           </div>
-          <ul className="mt-3 space-y-1.5">
-            {steps.map((s, i) => <li key={i} className="text-xs text-fg-primary event-enter">→ {s}</li>)}
-          </ul>
-        </Card>
-      )}
-    </div>
+        </form>
+      </PageBody>
+    </>
   );
 }
 
-function Field({ label, hint, full, children }: { label: string; hint?: string; full?: boolean; children: React.ReactNode }) {
+function FormField({
+  label,
+  hint,
+  full,
+  required,
+  error,
+  errorId,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  full?: boolean;
+  required?: boolean;
+  error?: string | null;
+  errorId?: string;
+  children: ReactNode;
+}) {
   return (
-    <label className={`block ${full ? 'md:col-span-2' : ''}`}>
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-2xs uppercase tracking-wider text-fg-tertiary">{label}</span>
-        {hint && <span className="text-3xs rounded bg-action px-1.5 py-0.5 text-fg-tertiary">{hint}</span>}
-      </div>
+    <label className={`block min-w-0 ${full ? "md:col-span-2" : ""}`}>
+      <span className="mb-1 flex items-center justify-between gap-2">
+        <span className="type-label-sm text-fg-quaternary">
+          {label}
+          {required && (
+            <span className="text-error-icon" aria-hidden="true">
+              {" *"}
+            </span>
+          )}
+        </span>
+        {hint && (
+          <span className="type-caption rounded bg-action px-1.5 py-0.5 text-fg-quaternary">
+            {hint}
+          </span>
+        )}
+      </span>
       {children}
+      {error && (
+        <span id={errorId} role="alert" className="type-body-sm mt-1 block text-error">
+          {error}
+        </span>
+      )}
     </label>
   );
 }
 
-function Toggle({ label, defaultOn }: { label: string; defaultOn?: boolean }) {
-  const [on, setOn] = useState(!!defaultOn);
+/** Real switch semantics: the previous version was an unlabelled <button>. */
+function Switch({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
   return (
-    <div className="flex items-center justify-between rounded-md bg-action border border-stroke-default px-3 h-9">
-      <span className="text-sm text-fg-primary">{label}</span>
-      <button onClick={() => setOn(!on)} className={`w-9 h-5 rounded-full transition-colors ${on ? 'bg-brand' : 'bg-border'}`}>
-        <span className={`block w-4 h-4 rounded-full bg-on-brand-surface transition-transform ${on ? 'translate-x-4' : 'translate-x-0.5'}`} />
+    <div className="flex h-8 items-center justify-between gap-3 rounded-md border border-stroke-default bg-action px-2.5">
+      <span className="type-body-md text-fg-primary">{label}</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={() => onChange(!checked)}
+        className={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+          checked ? "bg-brand" : "bg-stroke-active"
+        }`}
+      >
+        <span
+          aria-hidden="true"
+          className={`absolute top-0.5 block size-4 rounded-full bg-on-brand-surface transition-transform duration-150 ${
+            checked ? "translate-x-4.5" : "translate-x-0.5"
+          }`}
+        />
       </button>
     </div>
   );

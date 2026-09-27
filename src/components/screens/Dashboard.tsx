@@ -1,321 +1,487 @@
-import { AppIcon } from "@/components/icons";
-import { useApp } from "@/context/AppContext";
-import { Card, PillarCard, Eyebrow, AgentCard } from "@/components/shared/Card";
+import { useMemo } from "react";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { AppIcon, type IconName } from "@/components/icons";
+import { useApp, type ScreenId } from "@/context/AppContext";
+import { PageBody, PageHeader, SectionHeader } from "@/components/shared/Page";
+import { KpiRow, KpiTile, Panel, type MetricTone } from "@/components/shared/Panel";
 import { Button } from "@/components/shared/Button";
-import { ValueSignal, ConfidencePill } from "@/components/shared/Atoms";
-import { CHANGE_ACTIVITY_BY_MONTH, SEED_AUDIT_EVENTS } from "@/data/mockData";
+import { Badge } from "@/components/shared/Badge";
+import { EmptyState } from "@/components/shared/States";
+import { ValueSignal } from "@/components/shared/Atoms";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+  CHANGES,
+  CHANGE_ACTIVITY_BY_MONTH,
+  ESCALATIONS,
+  HAQ_DRAFTS,
+  REGULATORY_FEED_ITEMS,
+  SEED_AUDIT_EVENTS,
+  VALIDATION_REPORTS,
+} from "@/data/mockData";
 
-const PILLAR_DATA = [
+/**
+ * Command Centre.
+ *
+ * Ordered by what the reader needs first: what is on fire, then the portfolio
+ * counts, then the trend, then what the agents have been doing. The capability
+ * pillars moved to the bottom — they explain what the product is, which
+ * matters on a first visit and never again, so they no longer occupy the
+ * position above the operational numbers.
+ *
+ * Every figure here is derived from the data modules. The previous version
+ * carried them as string literals ("7", "4", "14", "6"), which had already
+ * drifted from the records they claimed to count.
+ */
+
+const PILLARS: {
+  n: "01" | "02" | "03" | "04";
+  name: string;
+  signal: "High Value" | "Medium-High Value" | "Conditional Value";
+  target: ScreenId;
+}[] = [
+  { n: "01", name: "Regulatory Change Intelligence", signal: "High Value", target: "feed-monitor" },
+  { n: "02", name: "AI Writing and HAQ Response", signal: "High Value", target: "haq-drafts" },
   {
-    n: "01" as const,
-    name: "Regulatory Change Intelligence",
-    signal: "High Value" as const,
-    note: "Veeva does not do this natively",
-    problem:
-      "New EMA, FDA, or CDSCO guideline drops. Determining which active dossiers require a variation, manually, takes 3 to 5 analyst-days per guideline update.",
-    benchmark: "AI-assisted impact mapping: same-day output vs 3 to 5 analyst-days",
-    target: "feed-monitor" as const,
-  },
-  {
-    n: "02" as const,
-    name: "AI Writing and HAQ Response",
-    signal: "High Value" as const,
-    note: "Benchmarked outcomes at Merck validate the model",
-    problem:
-      "CSRs, variation dossier sections, and HAQ responses authored manually. Slow first-draft cycles, cross-affiliate inconsistency, high cost-per-document.",
-    benchmark: "McKinsey-Merck 2023: first-draft time reduced 180h to 80h, 56% reduction",
-    target: "haq-drafts" as const,
-  },
-  {
-    n: "03" as const,
+    n: "03",
     name: "Dossier Compliance Validator",
-    signal: "Medium-High Value" as const,
-    note: "Additive to Veeva structural checks",
-    problem:
-      "Dossiers rejected post-submission due to formatting errors, inconsistent cross-references, or missing mandatory fields. Semantic consistency checks are absent.",
-    benchmark:
-      "AI pre-validation can reduce post-submission queries by 30 to 40% (IntuitionLabs, 2026)",
-    target: "validator" as const,
+    signal: "Medium-High Value",
+    target: "validator",
   },
-  {
-    n: "04" as const,
-    name: "CMC Change Impact Simulator",
-    signal: "High Value" as const,
-    note: "Veeva tracks; we simulate before authoring",
-    problem:
-      "One CMC change can silently trigger variation obligations across 100+ markets. Regulatory teams trace each impact manually, one market at a time.",
-    benchmark: "50 to 70% reduction in time to complete full regulatory impact assessment",
-    target: "simulator" as const,
-  },
+  { n: "04", name: "CMC Change Impact Simulator", signal: "High Value", target: "simulator" },
 ];
 
-const KPI = [
+const AGENTS: {
+  pillar: "01" | "02" | "03" | "04";
+  name: string;
+  actor: string;
+  target: ScreenId;
+}[] = [
   {
-    label: "ACTIVE CHANGES",
-    value: "7",
-    note: "3 pending simulation",
-    trend: "up",
-    trendColor: "var(--feedback-warning-icon)",
-    target: "simulator" as const,
-    trendText: "+2 this week",
+    pillar: "01",
+    name: "Regulatory Intelligence Agent",
+    actor: "Regulatory Intelligence Agent",
+    target: "agent-console",
   },
+  { pillar: "02", name: "HAQ Drafting Agent", actor: "Query Risk Agent", target: "haq-drafts" },
   {
-    label: "OPEN HAQ RESPONSES",
-    value: "4",
-    note: "2 approaching SLA deadline",
-    trend: "down",
-    trendColor: "var(--feedback-success-icon)",
-    target: "haq-drafts" as const,
-    trendText: "-1 vs last cycle",
+    pillar: "03",
+    name: "Compliance Validator",
+    actor: "Compliance Validator",
+    target: "validation-reports",
   },
-  {
-    label: "VALIDATION ISSUES OPEN",
-    value: "14",
-    note: "2 Critical, 4 Major",
-    trend: "up",
-    trendColor: "var(--feedback-error-icon)",
-    target: "validation-reports" as const,
-    trendText: "warning",
-  },
-  {
-    label: "REGULATORY FEED ITEMS",
-    value: "6",
-    note: "3 require action",
-    trend: "up",
-    trendColor: "var(--feedback-info-icon)",
-    target: "feed-monitor" as const,
-    trendText: "new this week",
-  },
+  { pillar: "04", name: "Cascade Agent", actor: "Cascade Agent", target: "heatmap" },
 ];
 
 export function Dashboard() {
-  const { navigateTo, showToast } = useApp();
+  const { navigateTo, showToast, fixedIssues, resolvedEscalations } = useApp();
+
+  const stats = useMemo(() => {
+    const pendingSimulation = CHANGES.filter((c) => c.simulationStatus !== "complete").length;
+    const overdueChanges = CHANGES.filter((c) => c.status === "Overdue").length;
+
+    const haqAtRisk = HAQ_DRAFTS.filter((d) => d.daysRemaining <= 21).length;
+
+    const openIssues = VALIDATION_REPORTS.flatMap((r) => r.issues).filter(
+      (i) => !fixedIssues.has(i.id),
+    );
+    const critical = openIssues.filter((i) => i.severity === "Critical").length;
+    const major = openIssues.filter((i) => i.severity === "Major").length;
+
+    const feedNeedingAction = REGULATORY_FEED_ITEMS.filter((f) => f.filingRequired).length;
+    const openEscalations = ESCALATIONS.filter((e) => !resolvedEscalations.has(e.id));
+
+    return {
+      changes: CHANGES.length,
+      pendingSimulation,
+      overdueChanges,
+      haq: HAQ_DRAFTS.length,
+      haqAtRisk,
+      openIssues: openIssues.length,
+      critical,
+      major,
+      feed: REGULATORY_FEED_ITEMS.length,
+      feedNeedingAction,
+      openEscalations,
+    };
+  }, [fixedIssues, resolvedEscalations]);
+
+  // The "needs attention" strip. Only conditions that are actually true are
+  // pushed, so an all-clear portfolio shows an all-clear panel rather than a
+  // row of reassuring zeroes.
+  const attention: {
+    id: string;
+    icon: IconName;
+    tone: Exclude<MetricTone, "neutral" | "brand">;
+    label: string;
+    detail: string;
+    target: ScreenId;
+  }[] = [];
+
+  if (stats.critical > 0) {
+    attention.push({
+      id: "critical",
+      icon: "error",
+      tone: "error",
+      label: `${stats.critical} critical validation ${stats.critical === 1 ? "issue" : "issues"}`,
+      detail: "Blocks submission until resolved",
+      target: "validation-reports",
+    });
+  }
+  if (stats.openEscalations.length > 0) {
+    const soonest = Math.min(...stats.openEscalations.map((e) => e.slaDaysRemaining));
+    attention.push({
+      id: "escalations",
+      icon: "escalation",
+      tone: "warning",
+      label: `${stats.openEscalations.length} open ${
+        stats.openEscalations.length === 1 ? "escalation" : "escalations"
+      }`,
+      detail: `Earliest SLA in ${soonest} days`,
+      target: "escalations",
+    });
+  }
+  if (stats.haqAtRisk > 0) {
+    attention.push({
+      id: "haq",
+      icon: "timer",
+      tone: "warning",
+      label: `${stats.haqAtRisk} HAQ ${
+        stats.haqAtRisk === 1 ? "response" : "responses"
+      } inside 21 days`,
+      detail: "Awaiting specialist sign-off",
+      target: "haq-drafts",
+    });
+  }
+  if (stats.pendingSimulation > 0) {
+    attention.push({
+      id: "simulation",
+      icon: "simulator",
+      tone: "info",
+      label: `${stats.pendingSimulation} ${
+        stats.pendingSimulation === 1 ? "change" : "changes"
+      } awaiting simulation`,
+      detail: "Market impact not yet mapped",
+      target: "simulator",
+    });
+  }
+
+  const TONE_BG: Record<string, string> = {
+    error: "text-error-icon",
+    warning: "text-warning-icon",
+    info: "text-info-icon",
+    success: "text-success-icon",
+  };
+
   return (
-    <div className="page-enter space-y-6">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 mb-1.5 text-2xs text-fg-quaternary">
-            <AppIcon name="home" size="xs" aria-label="Home" />
-            <span aria-hidden="true">/</span>
-            <span className="text-fg-tertiary">Command Centre</span>
-          </nav>
-          <h1 className="type-display-page text-fg-primary">Command Centre</h1>
-          <p className="text-sm text-fg-tertiary mt-1.5">
-            Regulatory Intelligence Platform
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-fg-tertiary rounded-md border border-stroke-default bg-action px-3 py-1.5 font-mono">
-            22 May 2025
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => showToast("Refreshing platform state...", "success")}
-          >
-            <AppIcon name="refresh" size="sm" /> Refresh
-          </Button>
-        </div>
-      </div>
-
-      <section>
-        <Eyebrow>AI Capability Pillars, Veeva Vault Accelerators</Eyebrow>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {PILLAR_DATA.map((p) => (
-            <PillarCard key={p.n} pillar={p.n}>
-              <div className="flex items-center gap-2 mb-3">
-                <span
-                  className="font-mono text-2xs font-medium"
-                  style={{ color: `var(--pillar-${p.n})` }}
-                >
-                  {p.n}
-                </span>
-                <h3 className="text-base font-medium text-fg-primary">{p.name}</h3>
-              </div>
-              <ValueSignal level={p.signal} />
-              <p className="text-xs text-fg-tertiary mt-3 leading-relaxed line-clamp-3">
-                {p.problem}
-              </p>
-              <p className="font-mono text-2xs text-fg-primary mt-3 leading-relaxed">
-                {p.benchmark}
-              </p>
-              <div className="mt-4">
-                <Button size="sm" onClick={() => navigateTo(p.target)}>
-                  Open
-                </Button>
-              </div>
-            </PillarCard>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <Eyebrow>Portfolio at a Glance</Eyebrow>
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          {KPI.map((k) => (
-            <button
-              key={k.label}
-              onClick={() => navigateTo(k.target)}
-              className="text-left rounded-2xl border border-stroke-default bg-raised p-5 shadow-sm hover:border-stroke-active hover:bg-raised-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    <>
+      <PageHeader
+        title="Command Centre"
+        description="Portfolio-wide regulatory state across all four capability pillars."
+        breadcrumb={[{ label: "Command Centre" }]}
+        actions={
+          <>
+            <span className="type-body-md tabular rounded-md border border-stroke-default bg-action px-2.5 py-1 font-mono text-fg-tertiary">
+              22 May 2025
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => showToast("Platform state refreshed.", "success")}
             >
-              <div className="type-label-md text-fg-quaternary mb-2.5">
-                {k.label}
-              </div>
-              <div className="type-display-metric text-fg-primary">{k.value}</div>
-              <div className="text-xs text-fg-tertiary mt-2.5">{k.note}</div>
-              <div
-                className="text-2xs mt-1 flex items-center gap-1"
-                style={{ color: k.trendColor }}
-              >
-                {k.trend === "up" ? (
-                  <AppIcon name="trendUp" size="xs" />
-                ) : (
-                  <AppIcon name="trendDown" size="xs" />
-                )}{" "}
-                {k.trendText}
-              </div>
-            </button>
-          ))}
-        </div>
-      </section>
+              <AppIcon name="refresh" size="sm" /> Refresh
+            </Button>
+          </>
+        }
+      />
 
-      <section>
-        <Eyebrow>AI Agent Activity</Eyebrow>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {[
-            {
-              p: "01" as const,
-              name: "Regulatory Intelligence Agent",
-              conf: 92,
-              target: "agent-console" as const,
-              btn: "Open Console",
-              action: SEED_AUDIT_EVENTS.find((e) => e.actor === "Regulatory Intelligence Agent")
-                ?.action,
-            },
-            {
-              p: "02" as const,
-              name: "HAQ Drafting Agent",
-              conf: 88,
-              target: "haq-drafts" as const,
-              btn: "View Drafts",
-              action: SEED_AUDIT_EVENTS.find((e) => e.actor === "Query Risk Agent")?.action,
-            },
-            {
-              p: "03" as const,
-              name: "Compliance Validator",
-              conf: 74,
-              target: "validation-reports" as const,
-              btn: "View Reports",
-              action: SEED_AUDIT_EVENTS.find((e) => e.actor === "Compliance Validator")?.action,
-            },
-            {
-              p: "04" as const,
-              name: "Cascade Agent",
-              conf: 94,
-              target: "heatmap" as const,
-              btn: "View Simulation",
-              action: SEED_AUDIT_EVENTS.find((e) => e.actor === "Cascade Agent")?.action,
-            },
-          ].map((a) => (
-            <AgentCard key={a.name} pillar={a.p}>
-              <div className="flex items-center justify-between mb-2 gap-2">
-                <h4 className="text-sm font-medium text-fg-primary">{a.name}</h4>
-                <ConfidencePill value={a.conf} pillar={a.p} />
-              </div>
-              <p className="text-xs text-fg-tertiary leading-relaxed line-clamp-4 mb-3">
-                {a.action}
-              </p>
-              <Button variant="secondary" size="sm" onClick={() => navigateTo(a.target)}>
-                {a.btn}
-              </Button>
-            </AgentCard>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 xl:grid-cols-5 gap-4">
-        <Card className="xl:col-span-3">
-          <Eyebrow>Change Activity, Last 6 Months</Eyebrow>
-          <div className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={CHANGE_ACTIVITY_BY_MONTH}>
-                <CartesianGrid strokeDasharray="2 4" stroke="var(--stroke-muted)" vertical={false} />
-                <XAxis dataKey="month" stroke="var(--fg-quaternary)" fontSize={11} />
-                <YAxis stroke="var(--fg-quaternary)" fontSize={11} />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--surface-raised)",
-                    border: "1px solid var(--stroke-default)", boxShadow: "var(--elevation-popover)",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="Simulated" stackId="a" fill="var(--pillar-04)" />
-                <Bar dataKey="Classified" stackId="a" fill="var(--pillar-01)" />
-                <Bar dataKey="Filed" stackId="a" fill="var(--pillar-02)" />
-                <Bar dataKey="Approved" stackId="a" fill="var(--feedback-success-icon)" />
-                <Bar dataKey="Overdue" stackId="a" fill="var(--feedback-error-icon)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card className="xl:col-span-2">
-          <Eyebrow>Recent Platform Activity</Eyebrow>
-          <ul className="space-y-3">
-            {SEED_AUDIT_EVENTS.slice(0, 5).map((e, i) => {
-              const color =
-                e.actorType === "agent"
-                  ? "var(--pillar-02)"
-                  : e.actorType === "user"
-                    ? "var(--feedback-success-icon)"
-                    : "var(--feedback-info-icon)";
-              return (
-                <li key={i} className="flex items-start gap-2.5">
-                  <span
-                    className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                    style={{ background: color }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-medium text-fg-primary truncate">
-                        {e.actor}
+      <PageBody className="gap-5">
+        <section>
+          <SectionHeader
+            title="Needs attention"
+            description="Conditions currently true across the portfolio, most severe first."
+          />
+          {attention.length === 0 ? (
+            <Panel>
+              <EmptyState
+                icon="success"
+                title="Nothing needs attention"
+                detail="No critical validation issues, open escalations, or deadlines inside 21 days."
+              />
+            </Panel>
+          ) : (
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {attention.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigateTo(item.target)}
+                    className="flex w-full items-center gap-3 rounded-lg border border-stroke-default bg-container px-3.5 py-3 text-left transition-colors duration-150 hover:border-stroke-active hover:bg-raised focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    <AppIcon name={item.icon} size="lg" className={TONE_BG[item.tone]} />
+                    <span className="min-w-0 flex-1">
+                      <span className="type-heading-sm block truncate text-fg-primary">
+                        {item.label}
                       </span>
-                      <span className="font-mono text-3xs text-fg-tertiary shrink-0">
-                        {e.timestamp.split(" ")[1] || ""}
+                      <span className="type-body-sm block truncate text-fg-tertiary">
+                        {item.detail}
+                      </span>
+                    </span>
+                    <AppIcon name="chevronRight" size="sm" className="text-icon-quaternary" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section>
+          <SectionHeader title="Portfolio at a glance" />
+          <KpiRow>
+            <KpiTile
+              label="Active changes"
+              value={stats.changes}
+              note={`${stats.pendingSimulation} pending simulation`}
+              tone={stats.overdueChanges > 0 ? "warning" : "neutral"}
+              trend={stats.overdueChanges > 0 ? `${stats.overdueChanges} overdue` : undefined}
+              trendIcon="trendUp"
+              onClick={() => navigateTo("simulator")}
+            />
+            <KpiTile
+              label="Open HAQ responses"
+              value={stats.haq}
+              note={`${stats.haqAtRisk} inside 21 days`}
+              tone={stats.haqAtRisk > 0 ? "warning" : "neutral"}
+              onClick={() => navigateTo("haq-drafts")}
+            />
+            <KpiTile
+              label="Open validation issues"
+              value={stats.openIssues}
+              note={`${stats.critical} critical · ${stats.major} major`}
+              tone={stats.critical > 0 ? "error" : "neutral"}
+              onClick={() => navigateTo("validation-reports")}
+            />
+            <KpiTile
+              label="Regulatory feed items"
+              value={stats.feed}
+              note={`${stats.feedNeedingAction} require a filing`}
+              tone="info"
+              onClick={() => navigateTo("feed-monitor")}
+            />
+          </KpiRow>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+          <Panel
+            title="Change activity, last 6 months"
+            className="xl:col-span-3"
+            action={
+              <div className="type-caption flex flex-wrap items-center gap-2.5 text-fg-tertiary">
+                {[
+                  ["Simulated", "var(--pillar-04)"],
+                  ["Classified", "var(--pillar-01)"],
+                  ["Filed", "var(--pillar-02)"],
+                  ["Approved", "var(--feedback-success-icon)"],
+                  ["Overdue", "var(--feedback-error-icon)"],
+                ].map(([label, color]) => (
+                  <span key={label} className="inline-flex items-center gap-1.5">
+                    <span
+                      aria-hidden="true"
+                      className="size-2 rounded-xs"
+                      style={{ background: color }}
+                    />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            }
+          >
+            <div className="h-[220px] min-w-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={CHANGE_ACTIVITY_BY_MONTH}
+                  margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="2 4"
+                    stroke="var(--stroke-muted)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    stroke="var(--fg-quaternary)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="var(--fg-quaternary)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    width={26}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--surface-raised)",
+                      border: "1px solid var(--stroke-default)",
+                      boxShadow: "var(--elevation-popover)",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      color: "var(--fg-primary)",
+                    }}
+                    labelStyle={{ color: "var(--fg-tertiary)" }}
+                    cursor={{ fill: "color-mix(in oklab, var(--pillar-01) 6%, transparent)" }}
+                  />
+                  <Bar
+                    dataKey="Simulated"
+                    stackId="a"
+                    fill="var(--pillar-04)"
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="Classified"
+                    stackId="a"
+                    fill="var(--pillar-01)"
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="Filed"
+                    stackId="a"
+                    fill="var(--pillar-02)"
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="Approved"
+                    stackId="a"
+                    fill="var(--feedback-success-icon)"
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="Overdue"
+                    stackId="a"
+                    fill="var(--feedback-error-icon)"
+                    radius={[3, 3, 0, 0]}
+                    isAnimationActive={false}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
+
+          <Panel
+            title="Recent activity"
+            className="xl:col-span-2"
+            action={
+              <Button variant="ghost" size="sm" onClick={() => navigateTo("audit")}>
+                Audit trail
+              </Button>
+            }
+          >
+            <ul className="space-y-2.5">
+              {SEED_AUDIT_EVENTS.slice(0, 6).map((event, index) => (
+                <li key={index} className="flex items-start gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="mt-1.5 size-1.5 shrink-0 rounded-full"
+                    style={{
+                      background:
+                        event.actorType === "agent"
+                          ? "var(--pillar-02)"
+                          : event.actorType === "user"
+                            ? "var(--feedback-success-icon)"
+                            : "var(--feedback-info-icon)",
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="type-body-md truncate font-medium text-fg-primary">
+                        {event.actor}
+                      </span>
+                      <span className="type-caption tabular shrink-0 font-mono text-fg-quaternary">
+                        {event.timestamp.split(" ")[1] ?? ""}
                       </span>
                     </div>
-                    <p className="text-xs text-fg-tertiary line-clamp-1">{e.action}</p>
+                    <p className="type-body-sm line-clamp-2 text-fg-tertiary">{event.action}</p>
                   </div>
                 </li>
+              ))}
+            </ul>
+          </Panel>
+        </section>
+
+        <section>
+          <SectionHeader
+            title="Agent activity"
+            description="Most recent action taken by each agent."
+          />
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {AGENTS.map((agent) => {
+              const last = SEED_AUDIT_EVENTS.find((e) => e.actor === agent.actor);
+              return (
+                <article
+                  key={agent.name}
+                  className="flex flex-col rounded-lg border border-stroke-default bg-container p-3.5"
+                  style={{ borderLeft: `2px solid var(--pillar-${agent.pillar})` }}
+                >
+                  <h3 className="type-heading-sm text-fg-primary">{agent.name}</h3>
+                  <p className="type-body-sm mt-1.5 line-clamp-3 flex-1 text-fg-tertiary">
+                    {last?.action ?? "No recorded activity."}
+                  </p>
+                  <div className="mt-2.5 flex items-center justify-between gap-2">
+                    <span className="type-caption tabular font-mono text-fg-quaternary">
+                      {last?.timestamp.split(" ")[1] ?? "—"}
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => navigateTo(agent.target)}>
+                      Open
+                    </Button>
+                  </div>
+                </article>
               );
             })}
-          </ul>
-          <div className="mt-4">
-            <Button variant="ghost" size="sm" onClick={() => navigateTo("audit")}>
-              View Full Audit Trail
-            </Button>
           </div>
-        </Card>
-      </section>
+        </section>
 
-      <Card className="flex items-start gap-3" style={{ borderLeft: "3px solid var(--pillar-02)" }}>
-        <AppIcon name="error" className="mt-0.5 shrink-0 text-pillar-02" />
-        <p className="text-xs text-fg-tertiary">
-          Built by Wayam AI. Niyo360 is a pre-sales proof-of-concept demonstrating four AI
-          accelerators working alongside Veeva Vault RIM. All data shown is illustrative.
+        <section>
+          <SectionHeader
+            title="Capability pillars"
+            description="The four accelerators this platform adds alongside Veeva Vault RIM."
+          />
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {PILLARS.map((pillar) => (
+              <article
+                key={pillar.n}
+                className="flex flex-col gap-2.5 rounded-lg border border-stroke-default p-3.5"
+                style={{
+                  borderLeft: `2px solid var(--pillar-${pillar.n})`,
+                  background: `color-mix(in oklab, var(--pillar-${pillar.n}) 4%, var(--surface-container))`,
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="type-caption tabular font-mono font-medium"
+                    style={{ color: `var(--pillar-${pillar.n})` }}
+                  >
+                    {pillar.n}
+                  </span>
+                  <h3 className="type-heading-sm min-w-0 flex-1 text-fg-primary">{pillar.name}</h3>
+                </div>
+                <ValueSignal level={pillar.signal} />
+                <Button variant="secondary" size="sm" onClick={() => navigateTo(pillar.target)}>
+                  Open
+                </Button>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <p className="type-body-sm flex items-start gap-2 rounded-lg border border-stroke-muted bg-container px-3.5 py-3 text-fg-tertiary">
+          <AppIcon name="info" size="sm" className="mt-0.5 shrink-0 text-icon-quaternary" />
+          <span>
+            Built by Wayam AI. Niyo360 is a pre-sales proof of concept demonstrating four AI
+            accelerators working alongside Veeva Vault RIM.{" "}
+            <Badge variant="neutral">Illustrative data</Badge>
+          </span>
         </p>
-      </Card>
-    </div>
+      </PageBody>
+    </>
   );
 }

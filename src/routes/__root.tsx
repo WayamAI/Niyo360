@@ -79,7 +79,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Niyo360 Change Intelligence by Wayam AI: monitors global regulatory authority feeds, maps new guidelines to the active product-market portfolio, and generates structured Impact Delta Reports for RA specialist review.",
       },
       { name: "author", content: "Wayam AI" },
-      { property: "og:title", content: "Niyo360 Change Intelligence — Regulatory Feed & Impact Delta Reports" },
+      {
+        property: "og:title",
+        content: "Niyo360 Change Intelligence — Regulatory Feed & Impact Delta Reports",
+      },
       {
         property: "og:description",
         content:

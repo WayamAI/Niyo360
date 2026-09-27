@@ -46,7 +46,9 @@ if (response.status !== 200) {
 const html = await response.text();
 
 if (!existsSync(dirname(OUT))) {
-  console.error(`[fix-vercel-static] ${dirname(OUT)} missing — vite build did not produce client output`);
+  console.error(
+    `[fix-vercel-static] ${dirname(OUT)} missing — vite build did not produce client output`,
+  );
   process.exit(1);
 }
 
