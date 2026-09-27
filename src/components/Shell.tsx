@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useApp, type ScreenId } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import { TopBar } from "@/components/shell/TopBar";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { RightRail } from "@/components/shell/RightRail";
 import { AIAssistant } from "@/components/overlays/AIAssistant";
 import { ToastContainer } from "@/components/shared/ToastContainer";
-import { PageBody } from "@/components/shared/Page";
 import { Dashboard } from "@/components/screens/Dashboard";
 import { FeedMonitor } from "@/components/screens/FeedMonitor";
 import { DeltaReports } from "@/components/screens/DeltaReports";
@@ -39,22 +38,6 @@ const SCREENS = {
   audit: AuditTrail,
   escalations: Escalations,
 } as const;
-
-/**
- * Screens that render their own PageHeader + PageBody.
- *
- * Transitional: the rest are still wrapped in a default PageBody below so they
- * keep working while they are migrated one at a time. When every screen is in
- * this set, the set and the fallback branch both go away.
- */
-const OWNS_LAYOUT = new Set<ScreenId>([
-  "dashboard",
-  "feed-monitor",
-  "delta-reports",
-  "haq-drafts",
-  "variation-drafts",
-  "escalations",
-]);
 
 /**
  * Application shell.
@@ -99,13 +82,7 @@ export function Shell() {
             key={currentScreen}
             className="page-enter flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
           >
-            {OWNS_LAYOUT.has(currentScreen) ? (
-              <Screen />
-            ) : (
-              <PageBody className="gap-4">
-                <Screen />
-              </PageBody>
-            )}
+            <Screen />
           </main>
           <RightRail />
         </div>
