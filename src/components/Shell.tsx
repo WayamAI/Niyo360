@@ -47,7 +47,7 @@ const SCREENS = {
  * keep working while they are migrated one at a time. When every screen is in
  * this set, the set and the fallback branch both go away.
  */
-const OWNS_LAYOUT = new Set<ScreenId>(["dashboard", "feed-monitor"]);
+const OWNS_LAYOUT = new Set<ScreenId>(["dashboard", "feed-monitor", "delta-reports"]);
 
 /**
  * Application shell.
