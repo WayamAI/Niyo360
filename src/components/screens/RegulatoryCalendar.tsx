@@ -8,9 +8,56 @@ import { CALENDAR_EVENTS, CHANGES, EXTERNAL_MILESTONES } from "@/data/mockData";
 
 /** The date the demo dataset is written against. */
 const TODAY = new Date("2025-05-22");
-const WINDOW_START = new Date("2025-05-01");
-const WINDOW_END = new Date("2025-12-31");
-const MONTHS = ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/**
+ * The window is derived from the changes themselves, snapped out to whole
+ * months, rather than hard-coded. A fixed May-Dec window silently clamped two
+ * changes whose deadlines fall in April, drawing them as stubs against the
+ * left edge as though they were due in May.
+ */
+const { WINDOW_START, WINDOW_END } = (() => {
+  const stamps = CHANGES.flatMap((change) => [
+    new Date(change.initiatedDate).getTime(),
+    new Date(change.filingDeadline).getTime(),
+  ]);
+  const first = new Date(Math.min(...stamps, TODAY.getTime()));
+  const last = new Date(Math.max(...stamps, TODAY.getTime()));
+  return {
+    WINDOW_START: new Date(first.getFullYear(), first.getMonth(), 1),
+    // Exclusive end: the first of the month after the last date.
+    WINDOW_END: new Date(last.getFullYear(), last.getMonth() + 1, 1),
+  };
+})();
+const LABEL_GUTTER = "140px";
+
+/**
+ * The single date-to-position function for this timeline.
+ *
+ * The axis labels, the today marker and every bar are all placed with this, so
+ * they cannot drift apart. The month header used to be eight equal-width 1fr
+ * columns while the bars were positioned linearly in days — and months are not
+ * equal length, so a bar's end could land a column away from the month its
+ * deadline actually falls in. A change due 30 June rendered past the Jun/Jul
+ * boundary.
+ */
+function positionOf(date: Date | string): number {
+  const ms = (typeof date === "string" ? new Date(date) : date).getTime();
+  const span = WINDOW_END.getTime() - WINDOW_START.getTime();
+  return ((ms - WINDOW_START.getTime()) / span) * 100;
+}
+
+/** First of each month in the window, placed at its true fractional offset. */
+const MONTH_TICKS = (() => {
+  const ticks: { label: string; left: number }[] = [];
+  const cursor = new Date(WINDOW_START);
+  while (cursor < WINDOW_END) {
+    ticks.push({
+      label: cursor.toLocaleString("en-GB", { month: "short" }),
+      left: positionOf(cursor),
+    });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return ticks;
+})();
 
 function urgencyTone(days: number): string {
   if (days < 21) return "var(--feedback-error-icon)";
@@ -26,8 +73,7 @@ export function RegulatoryCalendar() {
     [],
   );
 
-  const span = WINDOW_END.getTime() - WINDOW_START.getTime();
-  const todayOffset = ((TODAY.getTime() - WINDOW_START.getTime()) / span) * 100;
+  const todayOffset = positionOf(TODAY);
 
   const imminent = deadlines.filter((event) => event.daysRemaining < 21).length;
   const withinQuarter = deadlines.filter((event) => event.daysRemaining < 90).length;
@@ -43,7 +89,13 @@ export function RegulatoryCalendar() {
 
       <PageBody className="gap-4">
         <KpiRow>
-          <KpiTile label="Tracked deadlines" value={deadlines.length} note="May to Dec 2025" />
+          <KpiTile
+            label="Tracked deadlines"
+            value={deadlines.length}
+            note={`${WINDOW_START.toLocaleString("en-GB", { month: "short", year: "numeric" })} to ${new Date(
+              WINDOW_END.getTime() - 1,
+            ).toLocaleString("en-GB", { month: "short", year: "numeric" })}`}
+          />
           <KpiTile
             label="Inside 21 days"
             value={imminent}
@@ -103,17 +155,21 @@ export function RegulatoryCalendar() {
         >
           <div className="min-w-0 overflow-x-auto">
             <div className="min-w-[560px]">
-              <div
-                className="mb-2 grid border-b border-stroke-muted pb-1"
-                style={{ gridTemplateColumns: `140px repeat(${MONTHS.length}, 1fr)` }}
-                aria-hidden="true"
-              >
-                <span />
-                {MONTHS.map((month) => (
-                  <span key={month} className="type-label-sm font-mono text-fg-quaternary">
-                    {month}
-                  </span>
-                ))}
+              {/* Same flex shape and gap as a row below, so the tick track and
+                  the bar track share one origin and width. */}
+              <div className="mb-2 flex gap-3 border-b border-stroke-muted pb-1" aria-hidden="true">
+                <span className="shrink-0" style={{ width: LABEL_GUTTER }} />
+                <span className="relative block h-4 flex-1">
+                  {MONTH_TICKS.map((tick) => (
+                    <span
+                      key={tick.label}
+                      className="type-label-sm absolute top-0 font-mono text-fg-quaternary"
+                      style={{ left: `${tick.left}%` }}
+                    >
+                      {tick.label}
+                    </span>
+                  ))}
+                </span>
               </div>
 
               <ul className="relative space-y-2">
@@ -121,16 +177,17 @@ export function RegulatoryCalendar() {
                 <span
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-y-0 z-10 w-px bg-brand"
-                  style={{ left: `calc(140px + (100% - 140px) * ${todayOffset / 100})` }}
+                  style={{
+                    left: `calc(${LABEL_GUTTER} + (100% - ${LABEL_GUTTER}) * ${todayOffset / 100})`,
+                  }}
                 />
                 {CHANGES.map((change) => {
-                  const start = new Date(change.initiatedDate).getTime();
-                  const due = new Date(change.filingDeadline).getTime();
-                  const left = Math.max(0, ((start - WINDOW_START.getTime()) / span) * 100);
-                  const width = Math.max(
-                    3,
-                    ((due - Math.max(start, WINDOW_START.getTime())) / span) * 100,
-                  );
+                  // Clamped to the window, then measured with positionOf —
+                  // the same function the axis ticks and today marker use.
+                  const startPct = Math.max(0, positionOf(change.initiatedDate));
+                  const endPct = Math.min(100, positionOf(change.filingDeadline));
+                  const left = startPct;
+                  const width = Math.max(3, endPct - startPct);
                   const overdue = change.status === "Overdue";
                   return (
                     <li key={change.id} className="flex items-center gap-3">
@@ -140,7 +197,8 @@ export function RegulatoryCalendar() {
                           setSelectedChangeId(change.id);
                           navigateTo("heatmap");
                         }}
-                        className="type-body-md w-[140px] shrink-0 truncate rounded text-left font-mono text-fg-secondary transition-colors duration-150 hover:text-fg-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        style={{ width: LABEL_GUTTER }}
+                        className="type-body-md shrink-0 truncate rounded text-left font-mono text-fg-secondary transition-colors duration-150 hover:text-fg-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         title={change.title}
                       >
                         {change.id}
