@@ -239,6 +239,7 @@ export function DeltaReports() {
                     name={series.label}
                     fill={series.color}
                     radius={[3, 3, 0, 0]}
+                    isAnimationActive={false}
                   />
                 ))}
               </BarChart>

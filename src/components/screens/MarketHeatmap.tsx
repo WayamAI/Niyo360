@@ -362,7 +362,12 @@ export function MarketHeatmap() {
                           }}
                           cursor={{ fill: "color-mix(in oklab, var(--pillar-04) 8%, transparent)" }}
                         />
-                        <Bar dataKey="count" fill="var(--pillar-04)" radius={[3, 3, 0, 0]} />
+                        <Bar
+                          dataKey="count"
+                          fill="var(--pillar-04)"
+                          radius={[3, 3, 0, 0]}
+                          isAnimationActive={false}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

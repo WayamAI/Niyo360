@@ -331,15 +331,36 @@ export function Dashboard() {
                     labelStyle={{ color: "var(--fg-tertiary)" }}
                     cursor={{ fill: "color-mix(in oklab, var(--pillar-01) 6%, transparent)" }}
                   />
-                  <Bar dataKey="Simulated" stackId="a" fill="var(--pillar-04)" />
-                  <Bar dataKey="Classified" stackId="a" fill="var(--pillar-01)" />
-                  <Bar dataKey="Filed" stackId="a" fill="var(--pillar-02)" />
-                  <Bar dataKey="Approved" stackId="a" fill="var(--feedback-success-icon)" />
+                  <Bar
+                    dataKey="Simulated"
+                    stackId="a"
+                    fill="var(--pillar-04)"
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="Classified"
+                    stackId="a"
+                    fill="var(--pillar-01)"
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="Filed"
+                    stackId="a"
+                    fill="var(--pillar-02)"
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    dataKey="Approved"
+                    stackId="a"
+                    fill="var(--feedback-success-icon)"
+                    isAnimationActive={false}
+                  />
                   <Bar
                     dataKey="Overdue"
                     stackId="a"
                     fill="var(--feedback-error-icon)"
                     radius={[3, 3, 0, 0]}
+                    isAnimationActive={false}
                   />
                 </BarChart>
               </ResponsiveContainer>

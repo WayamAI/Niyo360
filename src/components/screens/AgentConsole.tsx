@@ -348,6 +348,7 @@ export function AgentConsole() {
                       stroke="var(--pillar-02)"
                       strokeWidth={2}
                       fill="url(#confGradient)"
+                      isAnimationActive={false}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
