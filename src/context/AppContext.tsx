@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { SEED_AUDIT_EVENTS } from "@/data/mockData";
+import { demoTimestamp } from "@/lib/demo-clock";
 
 export type ScreenId =
   | "dashboard"
@@ -67,12 +68,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-const nowStamp = () => {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
-
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>("dashboard");
   const [auditLog, setAuditLog] = useState<AuditEvent[]>(
@@ -118,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logAudit = useCallback((e: Omit<AuditEvent, "id" | "timestamp">) => {
     setAuditLog((prev) => [
-      { ...e, id: `evt-${Date.now()}-${Math.random()}`, timestamp: nowStamp() },
+      { ...e, id: `evt-${Date.now()}-${Math.random()}`, timestamp: demoTimestamp() },
       ...prev,
     ]);
   }, []);
