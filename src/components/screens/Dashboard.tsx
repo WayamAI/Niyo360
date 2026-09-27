@@ -476,7 +476,7 @@ export function Dashboard() {
         <p className="type-body-sm flex items-start gap-2 rounded-lg border border-stroke-muted bg-container px-3.5 py-3 text-fg-tertiary">
           <AppIcon name="info" size="sm" className="mt-0.5 shrink-0 text-icon-quaternary" />
           <span>
-            Built by Wayam AI. Niyo360 is a pre-sales proof of concept demonstrating four AI
+            Built by Wayam AI. PARIVART is a pre-sales proof of concept demonstrating four AI
             accelerators working alongside Veeva Vault RIM.{" "}
             <Badge variant="neutral">Illustrative data</Badge>
           </span>

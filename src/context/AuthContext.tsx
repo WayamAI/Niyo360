@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
-const STORAGE_KEY = "niyo360.demo-session";
+const STORAGE_KEY = "parivart.demo-session";
+/** Read once on load so a session opened before the rebrand is not dropped. */
+const LEGACY_STORAGE_KEYS = ["niyo360.demo-session"];
 
 interface DemoSession {
   email: string;
@@ -24,7 +26,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const raw =
+        window.localStorage.getItem(STORAGE_KEY) ??
+        LEGACY_STORAGE_KEYS.map((key) => window.localStorage.getItem(key)).find(Boolean) ??
+        null;
       if (raw) setSession(JSON.parse(raw));
     } catch {
       // ignore malformed/unavailable storage
@@ -54,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     try {
       window.localStorage.removeItem(STORAGE_KEY);
+      for (const key of LEGACY_STORAGE_KEYS) window.localStorage.removeItem(key);
     } catch {
       // ignore storage failures
     }

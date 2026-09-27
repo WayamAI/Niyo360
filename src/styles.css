@@ -190,7 +190,8 @@
   --feedback-error-stroke:  var(--ref-red-200);
   --feedback-error-bg:      var(--ref-red-50);
 
-  /* brand — orange is the established Niyo360 accent (kept per spec S9) */
+  /* brand — orange is the established PARIVART accent, and matches the
+     gradient in the supplied logo artwork (#DC440C to #FFA12B) */
   --brand: var(--ref-orange-600);
   --brand-hover: var(--ref-orange-700);
   --on-brand: var(--ref-white);
