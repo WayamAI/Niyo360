@@ -85,6 +85,7 @@ const SECTIONS: Array<{
       { id: "api-markets", label: "Markets", icon: "map" },
       { id: "api-processes", label: "Processes", icon: "layers" },
       { id: "api-controls", label: "Controls", icon: "validator" },
+      { id: "api-registrations", label: "Registrations", icon: "audit" },
     ],
   },
   {

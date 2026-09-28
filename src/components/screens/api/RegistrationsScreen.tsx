@@ -12,10 +12,10 @@ export function RegistrationsScreen() {
 
   const columns: Column<Registration>[] = [
     {
-      key: "registration_id",
+      key: "id",
       header: "ID",
-      value: (row) => row.registration_id,
-      render: (row) => <span className="font-mono text-fg-primary">{row.registration_id}</span>,
+      value: (row) => row.id,
+      render: (row) => <span className="font-mono text-fg-primary">{row.id}</span>,
     },
     {
       key: "product_id",
@@ -61,11 +61,11 @@ export function RegistrationsScreen() {
       render: (row) => (
         row.status ? (
           <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-            row.status === "Registered"
+            row.status === "ACTIVE"
               ? "success-bg text-success-icon"
-              : row.status === "Pending"
+              : row.status === "PENDING"
                 ? "warning-bg text-warning-icon"
-                : row.status === "Rejected"
+                : row.status === "REJECTED"
                   ? "error-bg text-error-icon"
                   : "text-fg-tertiary"
           }`}>
@@ -77,14 +77,14 @@ export function RegistrationsScreen() {
       ),
     },
     {
-      key: "registered_at",
-      header: "Registered",
+      key: "valid_from",
+      header: "Valid from",
       hide: "lg",
-      value: (row) => row.registered_at ?? null,
+      value: (row) => row.valid_from ?? null,
       render: (row) => (
-        row.registered_at ? (
+        row.valid_from ? (
           <span className="tabular font-mono text-fg-tertiary">
-            {row.registered_at.slice(0, 10)}
+            {row.valid_from.slice(0, 10)}
           </span>
         ) : (
           <span className="text-fg-quaternary">—</span>
@@ -116,9 +116,9 @@ export function RegistrationsScreen() {
             <DataTable
               rows={rows}
               columns={columns}
-              rowKey={(row) => row.registration_id}
+              rowKey={(row) => row.id}
               searchPlaceholder="Search registrations by ID or product"
-              getSearchText={(row) => `${row.registration_id} ${row.product_id ?? ""} ${row.market_id ?? ""} ${row.authority_id ?? ""}`}
+              getSearchText={(row) => `${row.id} ${row.product_id ?? ""} ${row.market_id ?? ""} ${row.authority_id ?? ""}`}
               exportName="parivart-registrations"
               emptyTitle="No registrations match this search"
             />
