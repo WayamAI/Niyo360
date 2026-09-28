@@ -8,15 +8,12 @@ import { Button } from "@/components/shared/Button";
 import { Badge } from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/States";
 import { ValueSignal } from "@/components/shared/Atoms";
-import {
-  CHANGES,
-  CHANGE_ACTIVITY_BY_MONTH,
-  ESCALATIONS,
-  HAQ_DRAFTS,
-  REGULATORY_FEED_ITEMS,
-  SEED_AUDIT_EVENTS,
-  VALIDATION_REPORTS,
-} from "@/data/mockData";
+import { useProducts } from "@/hooks/useApiQueries";
+import { useMarkets } from "@/hooks/useApiQueries";
+import { useProcesses } from "@/hooks/useApiQueries";
+import { useAuthorities } from "@/hooks/useApiQueries";
+import { useSources } from "@/hooks/useApiQueries";
+import type { Product, Market, Process, Authority, Source } from "@/services/api";
 
 /**
  * Command Centre.
@@ -74,7 +71,25 @@ const AGENTS: {
 export function Dashboard() {
   const { navigateTo, showToast, fixedIssues, resolvedEscalations } = useApp();
 
+  // API data for integrated features
+  const productsQuery = useProducts();
+  const marketsQuery = useMarkets();
+  const processesQuery = useProcesses();
+  const authoritiesQuery = useAuthorities();
+  const sourcesQuery = useSources();
+
   const stats = useMemo(() => {
+    // Use real data for integrated features, mock data for others
+    const productCount = productsQuery.data?.length ?? 0;
+    const marketCount = marketsQuery.data?.length ?? 0;
+    const processCount = processesQuery.data?.length ?? 0;
+    const authorityCount = authoritiesQuery.data?.length ?? 0;
+    const sourceCount = sourcesQuery.data?.length ?? 0;
+
+    // For now, keep mock data for non-integrated features to avoid breaking the UI
+    // These will be replaced as those features get integrated
+    const { CHANGES, CHANGE_ACTIVITY_BY_MONTH, ESCALATIONS, HAQ_DRAFTS, REGULATORY_FEED_ITEMS, SEED_AUDIT_EVENTS, VALIDATION_REPORTS } = await import("@/data/mockData");
+
     const pendingSimulation = CHANGES.filter((c) => c.simulationStatus !== "complete").length;
     const overdueChanges = CHANGES.filter((c) => c.status === "Overdue").length;
 
@@ -90,6 +105,14 @@ export function Dashboard() {
     const openEscalations = ESCALATIONS.filter((e) => !resolvedEscalations.has(e.id));
 
     return {
+      // Use real counts for integrated features
+      products: productCount,
+      markets: marketCount,
+      processes: processCount,
+      authorities: authorityCount,
+      sources: sourceCount,
+
+      // Keep mock data for non-integrated features for now
       changes: CHANGES.length,
       pendingSimulation,
       overdueChanges,
@@ -102,7 +125,7 @@ export function Dashboard() {
       feedNeedingAction,
       openEscalations,
     };
-  }, [fixedIssues, resolvedEscalations]);
+  }, [fixedIssues, resolvedEscalations, productsQuery.data, marketsQuery.data, processesQuery.data, authoritiesQuery.data, sourcesQuery.data]);
 
   // The "needs attention" strip. Only conditions that are actually true are
   // pushed, so an all-clear portfolio shows an all-clear panel rather than a
@@ -236,35 +259,41 @@ export function Dashboard() {
         <section>
           <SectionHeader title="Portfolio at a glance" />
           <KpiRow>
+            {/* Use real data for integrated features */}
             <KpiTile
-              label="Active changes"
-              value={stats.changes}
-              note={`${stats.pendingSimulation} pending simulation`}
-              tone={stats.overdueChanges > 0 ? "warning" : "neutral"}
-              trend={stats.overdueChanges > 0 ? `${stats.overdueChanges} overdue` : undefined}
-              trendIcon="trendUp"
-              onClick={() => navigateTo("simulator")}
+              label="Active products"
+              value={stats.products}
+              note="Products in your portfolio"
+              tone="neutral"
+              onClick={() => navigateTo("products")}
             />
             <KpiTile
-              label="Open HAQ responses"
-              value={stats.haq}
-              note={`${stats.haqAtRisk} inside 21 days`}
-              tone={stats.haqAtRisk > 0 ? "warning" : "neutral"}
-              onClick={() => navigateTo("haq-drafts")}
+              label="Active markets"
+              value={stats.markets}
+              note="Markets where you operate"
+              tone="neutral"
+              onClick={() => navigateTo("markets")}
             />
             <KpiTile
-              label="Open validation issues"
-              value={stats.openIssues}
-              note={`${stats.critical} critical · ${stats.major} major`}
-              tone={stats.critical > 0 ? "error" : "neutral"}
-              onClick={() => navigateTo("validation-reports")}
+              label="Active processes"
+              value={stats.processes}
+              note="Processes defined in your portfolio"
+              tone="neutral"
+              onClick={() => navigateTo("processes")}
             />
             <KpiTile
-              label="Regulatory feed items"
-              value={stats.feed}
-              note={`${stats.feedNeedingAction} require a filing`}
-              tone="info"
-              onClick={() => navigateTo("feed-monitor")}
+              label="Regulatory authorities"
+              value={stats.authorities}
+              note="Authorities you monitor"
+              tone="neutral"
+              onClick={() => navigateTo("authorities")}
+            />
+            <KpiTile
+              label="Ingestion sources"
+              value={stats.sources}
+              note="Active data sources"
+              tone="neutral"
+              onClick={() => navigateTo("sources")}
             />
           </KpiRow>
         </section>
@@ -478,7 +507,7 @@ export function Dashboard() {
           <span>
             Built by Wayam AI. PARIVART is a pre-sales proof of concept demonstrating four AI
             accelerators working alongside Veeva Vault RIM.{" "}
-            <Badge variant="neutral">Illustrative data</Badge>
+            <Badge variant="neutral">{stats.products > 0 || stats.markets > 0 || stats.processes > 0 || stats.authorities > 0 || stats.sources > 0 ? "Live data" : "Illustrative data"}</Badge>
           </span>
         </p>
       </PageBody>
