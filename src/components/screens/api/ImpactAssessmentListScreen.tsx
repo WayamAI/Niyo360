@@ -1,0 +1,106 @@
+import { PageBody, PageHeader } from "@/components/shared/Page";
+import { DataTable, type Column } from "@/components/shared/DataTable";
+import { Badge } from "@/components/shared/Badge";
+import { AppIcon } from "@/components/icons";
+import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { useImpactAssessments } from "@/hooks/useApiQueries";
+import type { ImpactAssessment } from "@/services/api";
+
+/** Impact assessments list, from GET /api/v1/impact/. */
+export function ImpactAssessmentListScreen() {
+  const query = useImpactAssessments();
+
+  const columns: Column<ImpactAssessment>[] = [
+    {
+      key: "id",
+      header: "ID",
+      value: (row) => row.id,
+      render: (row) => <span className="font-mono text-fg-primary">{row.id}</span>,
+    },
+    {
+      key: "title",
+      header: "Title",
+      value: (row) => row.title ?? null,
+      render: (row) => (
+        row.title ? (
+          <span className="text-fg-primary">{row.title}</span>
+        ) : (
+          <span className="text-fg-quaternary">—</span>
+        )
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      value: (row) => row.status ?? null,
+      render: (row) => {
+        if (!row.status) return <span className="text-fg-quaternary">—</span>;
+
+        const status = row.status;
+        return (
+          <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
+            status === "COMPLETED"
+              ? "success-bg text-success-icon"
+              : status === "FAILED"
+                ? "error-bg text-error-icon"
+                : status === "PENDING" || status === "RUNNING" || status === "ANALYZING"
+                  ? "warning-bg text-warning-icon"
+                  : "text-fg-tertiary"
+          }`}>
+            {status}
+          </span>
+        );
+      },
+    },
+    {
+      key: "created_at",
+      header: "Created",
+      hide: "lg",
+      value: (row) => row.created_at ?? null,
+      render: (row) => (
+        row.created_at ? (
+          <span className="tabular font-mono text-fg-tertiary">
+            {row.created_at.slice(0, 10)}
+          </span>
+        ) : (
+          <span className="text-fg-quaternary">—</span>
+        )
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        title="Impact Assessments"
+        description="Assessments of regulatory changes impact on your products."
+        breadcrumb={[{ label: "Impact" }, { label: "Assessments" }]}
+        actions={
+          <>
+            <ApiCount query={query} />
+            <ApiRefresh query={query} />
+          </>
+        }
+      />
+      <PageBody>
+        <ApiState
+          query={query}
+          emptyTitle="No assessments yet"
+          emptyDetail="Impact assessments appear here once you analyze regulatory changes."
+        >
+          {(rows) => (
+            <DataTable
+              rows={rows}
+              columns={columns}
+              rowKey={(row) => row.id}
+              searchPlaceholder="Search assessments by ID or title"
+              getSearchText={(row) => `${row.id} ${row.title ?? ""}`}
+              exportName="parivart-impact-assessments"
+              emptyTitle="No assessments match this search"
+            />
+          )}
+        </ApiState>
+      </PageBody>
+    </>
+  );
+}
