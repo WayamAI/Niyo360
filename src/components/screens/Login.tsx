@@ -18,16 +18,18 @@ export function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (submitting) return; // guards a double submit creating two requests
     setSubmitting(true);
     setError(null);
-    // Demo auth: any well-formed email plus any non-empty password is accepted.
-    const result = login(email, password);
+    const result = await login(email, password);
     if (!result.ok) {
-      setError(result.error);
+      setError(result.error ?? "Sign-in failed.");
       setSubmitting(false);
     }
+    // On success the auth state flips and the route swaps to the app shell,
+    // so this component unmounts — no need to clear `submitting`.
   }
 
   return (
@@ -49,7 +51,7 @@ export function Login() {
           <div>
             <h2 className="type-heading-md text-fg-primary">Sign in</h2>
             <p className="type-body-sm mt-0.5 text-fg-tertiary">
-              Demo build — any email address and password will sign you in.
+              Sign in with your PARIVART account.
             </p>
           </div>
 
@@ -112,7 +114,7 @@ export function Login() {
         </form>
 
         <p className="type-caption mt-4 text-center text-fg-quaternary">
-          Demo environment. No real credentials are required or stored.
+          Credentials are verified by the PARIVART API.
         </p>
       </div>
     </main>

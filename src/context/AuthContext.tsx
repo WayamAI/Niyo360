@@ -1,75 +1,134 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  ApiError,
+  authApi,
+  getAccessToken,
+  isApiConfigured,
+  setAccessToken,
+  setUnauthorizedHandler,
+  type User,
+} from "@/services/api";
 
-const STORAGE_KEY = "parivart.demo-session";
-/** Read once on load so a session opened before the rebrand is not dropped. */
-const LEGACY_STORAGE_KEYS = ["niyo360.demo-session"];
+/**
+ * Authentication against the PARIVART backend.
+ *
+ * This replaces the demo session that accepted any email and password. There
+ * is no local fallback: if the backend rejects the credentials or cannot be
+ * reached, sign-in fails and says why. Faking a successful login would mean
+ * the rest of the app renders as though it had data it does not have.
+ *
+ * Three states, so nothing protected renders before the answer is known:
+ *
+ *   checking        a token exists and is being validated against /auth/me
+ *   authenticated   /auth/me returned a user
+ *   unauthenticated no token, or the token was rejected
+ */
+export type AuthStatus = "checking" | "authenticated" | "unauthenticated";
 
-interface DemoSession {
-  email: string;
+export interface LoginResult {
+  ok: boolean;
+  /** Present when ok is false — safe to show the user. */
+  error?: string;
+  /** Per-field messages from a 422, keyed by field name. */
+  fieldErrors?: Record<string, string>;
 }
 
 interface AuthContextType {
-  session: DemoSession | null;
+  status: AuthStatus;
+  user: User | null;
   isAuthenticated: boolean;
-  /** Demo-only login: any non-empty email + any non-empty password succeeds. */
-  login: (email: string, password: string) => { ok: true } | { ok: false; error: string };
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<DemoSession | null>(null);
-  const [hydrated, setHydrated] = useState(false);
+  const [status, setStatus] = useState<AuthStatus>("checking");
+  const [user, setUser] = useState<User | null>(null);
 
+  const clearSession = useCallback(() => {
+    setAccessToken(null);
+    setUser(null);
+    setStatus("unauthenticated");
+  }, []);
+
+  // One place reacts to a 401 from any request: drop the session. The router
+  // then renders sign-in, so there is no redirect to loop on.
   useEffect(() => {
-    try {
-      const raw =
-        window.localStorage.getItem(STORAGE_KEY) ??
-        LEGACY_STORAGE_KEYS.map((key) => window.localStorage.getItem(key)).find(Boolean) ??
-        null;
-      if (raw) setSession(JSON.parse(raw));
-    } catch {
-      // ignore malformed/unavailable storage
-    }
-    setHydrated(true);
-  }, []);
+    setUnauthorizedHandler(clearSession);
+    return () => setUnauthorizedHandler(null);
+  }, [clearSession]);
 
-  const login = useCallback((email: string, password: string) => {
-    const trimmedEmail = email.trim();
-    if (!EMAIL_RE.test(trimmedEmail)) {
-      return { ok: false as const, error: "Enter a valid email address." };
+  // Restore a session on load by validating the stored token. A token that is
+  // present but expired must not count as signed in, so this asks the server
+  // rather than trusting the token's existence.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function restore() {
+      if (!isApiConfigured || !getAccessToken()) {
+        if (!cancelled) setStatus("unauthenticated");
+        return;
+      }
+      try {
+        const me = await authApi.me();
+        if (cancelled) return;
+        setUser(me);
+        setStatus("authenticated");
+      } catch {
+        // Covers an expired token (401, already cleared by the client) and a
+        // backend that is down — either way there is no usable session.
+        if (!cancelled) clearSession();
+      }
     }
-    if (password.length === 0) {
-      return { ok: false as const, error: "Enter a password." };
-    }
-    const next: DemoSession = { email: trimmedEmail };
-    setSession(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // ignore storage failures — session still holds for this tab
-    }
-    return { ok: true as const };
-  }, []);
+
+    void restore();
+    return () => {
+      cancelled = true;
+    };
+  }, [clearSession]);
+
+  const login = useCallback(
+    async (email: string, password: string): Promise<LoginResult> => {
+      try {
+        const token = await authApi.login(email.trim(), password);
+        setUser(token.user);
+        setStatus("authenticated");
+        return { ok: true };
+      } catch (error) {
+        clearSession();
+        if (error instanceof ApiError) {
+          // 401 here means "wrong credentials", not "session expired" — the
+          // generic message from the client would be misleading on this screen.
+          const message =
+            error.kind === "unauthorized" ? "Incorrect email or password." : error.message;
+          return { ok: false, error: message, fieldErrors: error.fieldErrors };
+        }
+        return { ok: false, error: "Sign-in failed unexpectedly." };
+      }
+    },
+    [clearSession],
+  );
 
   const logout = useCallback(() => {
-    setSession(null);
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-      for (const key of LEGACY_STORAGE_KEYS) window.localStorage.removeItem(key);
-    } catch {
-      // ignore storage failures
-    }
+    // The backend issues a stateless token and exposes no /logout, so signing
+    // out is a client-side discard.
+    authApi.logout();
+    setUser(null);
+    setStatus("unauthenticated");
   }, []);
 
-  // Avoid a flash of the login screen before we've checked localStorage.
-  if (!hydrated) return null;
-
   return (
-    <AuthContext.Provider value={{ session, isAuthenticated: !!session, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        status,
+        user,
+        isAuthenticated: status === "authenticated",
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
