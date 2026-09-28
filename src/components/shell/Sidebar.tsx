@@ -78,6 +78,7 @@ const SECTIONS: Array<{
     items: [
       { id: "api-authorities", label: "Authorities", icon: "organisation" },
       { id: "api-sources", label: "Sources", icon: "feed" },
+      { id: "api-documents", label: "Documents", icon: "document" },
       { id: "api-products", label: "Products", icon: "document" },
       { id: "api-markets", label: "Markets", icon: "map" },
       { id: "api-processes", label: "Processes", icon: "layers" },

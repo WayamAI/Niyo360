@@ -55,9 +55,8 @@ export function DocumentsScreen() {
               ? "success-bg text-success-icon"
               : status === "FAILED"
                 ? "error-bg text-error-icon"
-                : status === "PENDING" || status === "UPLOADED" || status === "ANALYZING"
-                  ? "warning-bg text-warning-icon"
-                  : "text-fg-tertiary"
+                  // Every remaining state is mid-pipeline.
+                  : "warning-bg text-warning-icon"
           }`}>
             {status}
           </span>

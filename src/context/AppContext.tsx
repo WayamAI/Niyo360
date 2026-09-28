@@ -32,7 +32,8 @@ export type ScreenId =
   | "api-markets"
   | "api-processes"
   | "api-authorities"
-  | "api-sources";
+  | "api-sources"
+  | "api-documents";
 
 export interface AuditEvent {
   id: string;
