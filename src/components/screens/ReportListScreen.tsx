@@ -7,10 +7,15 @@ import type { ImpactReport, ImpactReportStatus } from "@/services/api";
 
 /** Impact reports, from GET /api/v1/reports/. */
 
+// ReportStatus is a review lifecycle, not a job outcome: there is no COMPLETED
+// or FAILED. A report that has been produced or signed off reads as complete,
+// one still moving through review as pending, and an archived one as neutral.
 const STATUS_VARIANT: Record<ImpactReportStatus, "complete" | "neutral" | "pending"> = {
-  COMPLETED: "complete",
   DRAFT: "pending",
-  FAILED: "neutral",
+  GENERATED: "complete",
+  UNDER_REVIEW: "pending",
+  REVIEWED: "complete",
+  ARCHIVED: "neutral",
 };
 
 export function ReportListScreen() {

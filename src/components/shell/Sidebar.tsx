@@ -80,6 +80,7 @@ const SECTIONS: Array<{
       { id: "api-sources", label: "Sources", icon: "feed" },
       { id: "api-documents", label: "Documents", icon: "document" },
       { id: "api-impact", label: "Impact Assessments", icon: "layers" },
+      { id: "api-reports", label: "Impact Reports", icon: "deltaReport" },
       { id: "api-products", label: "Products", icon: "document" },
       { id: "api-markets", label: "Markets", icon: "map" },
       { id: "api-processes", label: "Processes", icon: "layers" },
