@@ -18,12 +18,13 @@ export function ImpactAssessmentListScreen() {
       render: (row) => <span className="font-mono text-fg-primary">{row.id}</span>,
     },
     {
-      key: "title",
-      header: "Title",
-      value: (row) => row.title ?? null,
+      // The assessment carries a generated summary, not a title.
+      key: "summary",
+      header: "Summary",
+      value: (row) => row.summary ?? null,
       render: (row) => (
-        row.title ? (
-          <span className="text-fg-primary">{row.title}</span>
+        row.summary ? (
+          <span className="text-fg-primary">{row.summary}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
         )
@@ -43,7 +44,7 @@ export function ImpactAssessmentListScreen() {
               ? "success-bg text-success-icon"
               : status === "FAILED"
                 ? "error-bg text-error-icon"
-                : status === "PENDING" || status === "RUNNING" || status === "ANALYZING"
+                : status === "PENDING" || status === "ANALYZING"
                   ? "warning-bg text-warning-icon"
                   : "text-fg-tertiary"
           }`}>
@@ -93,8 +94,8 @@ export function ImpactAssessmentListScreen() {
               rows={rows}
               columns={columns}
               rowKey={(row) => row.id}
-              searchPlaceholder="Search assessments by ID or title"
-              getSearchText={(row) => `${row.id} ${row.title ?? ""}`}
+              searchPlaceholder="Search assessments by ID or summary"
+              getSearchText={(row) => `${row.id} ${row.summary ?? ""}`}
               exportName="parivart-impact-assessments"
               emptyTitle="No assessments match this search"
             />
