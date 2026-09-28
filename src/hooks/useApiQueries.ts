@@ -136,15 +136,6 @@ export function useDocument(id: string | null) {
   });
 }
 
-export function useDocument(id: string | null) {
-  return useQuery({
-    ...baseQuery,
-    queryKey: queryKeys.regulatory.document(id ?? ""),
-    queryFn: () => regulatoryApi.documents.get(id!),
-    enabled: Boolean(id),
-  });
-}
-
 /**
  * A document's pipeline state, polled while it is still moving.
  *
