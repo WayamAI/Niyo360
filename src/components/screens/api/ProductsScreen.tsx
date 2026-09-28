@@ -19,9 +19,10 @@ const STATUS_VARIANT: Record<ProductStatus, "complete" | "neutral" | "pending" |
   DRAFT: "pending",
 };
 
-function formatDate(value: string): string {
+function formatDate(value: string | null | undefined): string {
   // Backend sends ISO 8601; show the date part, which is what a list needs.
-  return value.slice(0, 10);
+  // updated_at is null until a row is first edited, so there is nothing to slice.
+  return value ? value.slice(0, 10) : "—";
 }
 
 export function ProductsScreen() {
