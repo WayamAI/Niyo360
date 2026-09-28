@@ -42,13 +42,13 @@ export function ControlsScreen() {
       value: (row) => row.status ?? null,
       render: (row) => (
         row.status ? (
-          <span className="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
+          <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
             row.status === "Active"
               ? "success-bg text-success-icon"
               : row.status === "Inactive"
                 ? "error-bg text-error-icon"
                 : "warning-bg text-warning-icon"
-          }">
+          }`}>
             {row.status}
           </span>
         ) : (

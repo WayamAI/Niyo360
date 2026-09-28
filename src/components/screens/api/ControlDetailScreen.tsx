@@ -19,11 +19,11 @@ export function ControlDetailScreen() {
         title="Control Detail"
         description="Detailed view of a portfolio control"
         breadcrumb={[
-          { label: "Portfolio", onClick: () => /* navigate to portfolio */ },
-          { label: "Controls", onClick: () => /* navigate to controls list */ },
+          { label: "Portfolio", onClick: () => {/* navigate to portfolio */} },
+          { label: "Controls", onClick: () => {/* navigate to controls list */} },
           { label: controlId ?? "Select a control" },
         ]}
-        onBack={() => /* navigate to controls list */}
+        onBack={() => {/* navigate to controls list */}}
       />
       <PageBody>
         <ApiState
