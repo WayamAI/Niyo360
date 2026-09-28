@@ -20,6 +20,11 @@ import { MarketHeatmap } from "@/components/screens/MarketHeatmap";
 import { RegulatoryCalendar } from "@/components/screens/RegulatoryCalendar";
 import { AuditTrail } from "@/components/screens/AuditTrail";
 import { Escalations } from "@/components/screens/Escalations";
+import { ProductsScreen } from "@/components/screens/api/ProductsScreen";
+import { MarketsScreen } from "@/components/screens/api/MarketsScreen";
+import { ProcessesScreen } from "@/components/screens/api/ProcessesScreen";
+import { AuthoritiesScreen } from "@/components/screens/api/AuthoritiesScreen";
+import { SourcesScreen } from "@/components/screens/api/SourcesScreen";
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -37,6 +42,11 @@ const SCREENS = {
   calendar: RegulatoryCalendar,
   audit: AuditTrail,
   escalations: Escalations,
+  "api-products": ProductsScreen,
+  "api-markets": MarketsScreen,
+  "api-processes": ProcessesScreen,
+  "api-authorities": AuthoritiesScreen,
+  "api-sources": SourcesScreen,
 } as const;
 
 /**

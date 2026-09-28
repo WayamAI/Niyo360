@@ -26,7 +26,13 @@ export type ScreenId =
   | "heatmap"
   | "calendar"
   | "audit"
-  | "escalations";
+  | "escalations"
+  // Screens backed by the real PARIVART API (see src/components/screens/api).
+  | "api-products"
+  | "api-markets"
+  | "api-processes"
+  | "api-authorities"
+  | "api-sources";
 
 export interface AuditEvent {
   id: string;

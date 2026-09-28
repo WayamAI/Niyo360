@@ -71,6 +71,19 @@ const SECTIONS: Array<{
     ],
   },
   {
+    // Screens reading the real PARIVART API. Separated from the sections above,
+    // which still render the illustrative dataset in src/data.
+    label: "Live data · PARIVART API",
+    short: "API",
+    items: [
+      { id: "api-authorities", label: "Authorities", icon: "organisation" },
+      { id: "api-sources", label: "Sources", icon: "feed" },
+      { id: "api-products", label: "Products", icon: "document" },
+      { id: "api-markets", label: "Markets", icon: "map" },
+      { id: "api-processes", label: "Processes", icon: "layers" },
+    ],
+  },
+  {
     label: "Governance",
     short: "GV",
     items: [

@@ -21,19 +21,19 @@ export function TopBar({
   collapsed: boolean;
 }) {
   const { toggleAssistant, theme, toggleTheme, navigateTo, resolvedEscalations } = useApp();
-  const { session, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   // Open escalations are the app's only real "needs your attention" count, so
   // the bell reports that rather than a hard-coded 3.
   const openEscalations = ESCALATIONS.filter((e) => !resolvedEscalations.has(e.id)).length;
 
+  // Prefer the user's name; fall back to the local part of their email.
   const initials =
-    (session?.email ?? "?")
-      .split("@")[0]
-      .split(/[._-]/)
+    (user?.name || user?.email?.split("@")[0] || "?")
+      .split(/[\s._-]+/)
       .filter(Boolean)
       .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
+      .map((part: string) => part[0]?.toUpperCase() ?? "")
       .join("") || "?";
 
   return (
@@ -118,7 +118,7 @@ export function TopBar({
             background: "color-mix(in oklab, var(--pillar-03) 12%, transparent)",
             borderColor: "color-mix(in oklab, var(--pillar-03) 30%, transparent)",
           }}
-          title={session?.email}
+          title={user?.email}
         >
           <span className="type-body-sm font-medium">{initials}</span>
         </div>
