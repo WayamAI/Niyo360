@@ -274,35 +274,35 @@ export function Dashboard() {
               value={stats.products}
               note="Products in your portfolio"
               tone="neutral"
-              onClick={() => navigateTo("products")}
+              onClick={() => navigateTo("api-products")}
             />
             <KpiTile
               label="Active markets"
               value={stats.markets}
               note="Markets where you operate"
               tone="neutral"
-              onClick={() => navigateTo("markets")}
+              onClick={() => navigateTo("api-markets")}
             />
             <KpiTile
               label="Active processes"
               value={stats.processes}
               note="Processes defined in your portfolio"
               tone="neutral"
-              onClick={() => navigateTo("processes")}
+              onClick={() => navigateTo("api-processes")}
             />
             <KpiTile
               label="Regulatory authorities"
               value={stats.authorities}
               note="Authorities you monitor"
               tone="neutral"
-              onClick={() => navigateTo("authorities")}
+              onClick={() => navigateTo("api-authorities")}
             />
             <KpiTile
               label="Ingestion sources"
               value={stats.sources}
               note="Active data sources"
               tone="neutral"
-              onClick={() => navigateTo("sources")}
+              onClick={() => navigateTo("api-sources")}
             />
           </KpiRow>
         </section>
