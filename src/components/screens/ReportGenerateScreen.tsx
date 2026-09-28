@@ -35,10 +35,10 @@ export function ReportGenerateScreen() {
         title="Generate Report"
         description="Create a new impact report"
         breadcrumb={[
-          { label: "Reports", onClick: () => /* navigate to reports list */ },
+          { label: "Reports" },
           { label: "Generate Report" },
         ]}
-        onBack={() => /* navigate to reports list */}
+        onBack={() => {/* navigate to reports list */}}
       />
       <PageBody>
         <Form onSubmit={onSubmit} resettable defaultValues={{ title: "", description: "" }}>
