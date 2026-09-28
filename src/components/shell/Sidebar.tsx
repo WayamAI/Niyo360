@@ -84,6 +84,7 @@ const SECTIONS: Array<{
       { id: "api-products", label: "Products", icon: "document" },
       { id: "api-markets", label: "Markets", icon: "map" },
       { id: "api-processes", label: "Processes", icon: "layers" },
+      { id: "api-controls", label: "Controls", icon: "validator" },
     ],
   },
   {

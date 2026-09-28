@@ -12,16 +12,16 @@ export function ControlsScreen() {
 
   const columns: Column<Control>[] = [
     {
-      key: "control_id",
+      key: "id",
       header: "ID",
-      value: (row) => row.control_id,
-      render: (row) => <span className="font-mono text-fg-primary">{row.control_id}</span>,
+      value: (row) => row.id,
+      render: (row) => <span className="font-mono text-fg-primary">{row.id}</span>,
     },
     {
-      key: "title",
-      header: "Title",
-      value: (row) => row.title,
-      render: (row) => <span className="text-fg-primary">{row.title}</span>,
+      key: "name",
+      header: "Name",
+      value: (row) => row.name,
+      render: (row) => <span className="text-fg-primary">{row.name}</span>,
     },
     {
       key: "category",
@@ -43,9 +43,9 @@ export function ControlsScreen() {
       render: (row) => (
         row.status ? (
           <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-            row.status === "Active"
+            row.status === "ACTIVE"
               ? "success-bg text-success-icon"
-              : row.status === "Inactive"
+              : row.status === "INACTIVE"
                 ? "error-bg text-error-icon"
                 : "warning-bg text-warning-icon"
           }`}>
@@ -94,9 +94,9 @@ export function ControlsScreen() {
             <DataTable
               rows={rows}
               columns={columns}
-              rowKey={(row) => row.control_id}
-              searchPlaceholder="Search controls by ID or title"
-              getSearchText={(row) => `${row.control_id} ${row.title} ${row.category ?? ""} ${row.description ?? ""}`}
+              rowKey={(row) => row.id}
+              searchPlaceholder="Search controls by ID or name"
+              getSearchText={(row) => `${row.id} ${row.name} ${row.category ?? ""} ${row.description ?? ""}`}
               exportName="parivart-controls"
               emptyTitle="No controls match this search"
             />

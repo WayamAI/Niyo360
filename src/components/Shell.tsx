@@ -28,6 +28,7 @@ import { SourcesScreen } from "@/components/screens/api/SourcesScreen";
 import { DocumentsScreen } from "@/components/screens/api/DocumentsScreen";
 import { ImpactAssessmentListScreen } from "@/components/screens/api/ImpactAssessmentListScreen";
 import { ReportListScreen } from "@/components/screens/ReportListScreen";
+import { ControlsScreen } from "@/components/screens/api/ControlsScreen";
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -53,6 +54,7 @@ const SCREENS = {
   "api-documents": DocumentsScreen,
   "api-impact": ImpactAssessmentListScreen,
   "api-reports": ReportListScreen,
+  "api-controls": ControlsScreen,
 } as const;
 
 /**
