@@ -14,6 +14,15 @@ import { useProcesses } from "@/hooks/useApiQueries";
 import { useAuthorities } from "@/hooks/useApiQueries";
 import { useSources } from "@/hooks/useApiQueries";
 import type { Product, Market, Process, Authority, Source } from "@/services/api";
+import {
+  CHANGES,
+  CHANGE_ACTIVITY_BY_MONTH,
+  ESCALATIONS,
+  HAQ_DRAFTS,
+  REGULATORY_FEED_ITEMS,
+  SEED_AUDIT_EVENTS,
+  VALIDATION_REPORTS,
+} from "@/data/mockData";
 
 /**
  * Command Centre.
@@ -87,8 +96,8 @@ export function Dashboard() {
     const sourceCount = sourcesQuery.data?.length ?? 0;
 
     // For now, keep mock data for non-integrated features to avoid breaking the UI
-    // These will be replaced as those features get integrated
-    const { CHANGES, CHANGE_ACTIVITY_BY_MONTH, ESCALATIONS, HAQ_DRAFTS, REGULATORY_FEED_ITEMS, SEED_AUDIT_EVENTS, VALIDATION_REPORTS } = await import("@/data/mockData");
+    // These will be replaced as those features get integrated (imported statically at the
+    // top of this file -- useMemo's callback is synchronous and cannot await).
 
     const pendingSimulation = CHANGES.filter((c) => c.simulationStatus !== "complete").length;
     const overdueChanges = CHANGES.filter((c) => c.status === "Overdue").length;
