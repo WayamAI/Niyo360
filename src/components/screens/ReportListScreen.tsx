@@ -2,6 +2,7 @@ import { PageBody, PageHeader } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { Button } from "@/components/shared/Button";
 import { useApp } from "@/context/AppContext";
 import { useReports } from "@/hooks/useApiQueries";
 import type { ImpactReport, ImpactReportStatus } from "@/services/api";
@@ -20,7 +21,7 @@ const STATUS_VARIANT: Record<ImpactReportStatus, "complete" | "neutral" | "pendi
 };
 
 export function ReportListScreen() {
-  const { openRecord } = useApp();
+  const { openRecord, navigateTo } = useApp();
   const query = useReports();
 
   const columns: Column<ImpactReport>[] = [
@@ -67,6 +68,9 @@ export function ReportListScreen() {
           <>
             <ApiCount query={query} />
             <ApiRefresh query={query} />
+            <Button variant="primary" size="sm" onClick={() => navigateTo("api-report-generate")}>
+              Generate report
+            </Button>
           </>
         }
       />
