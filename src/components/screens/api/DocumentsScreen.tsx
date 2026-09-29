@@ -24,25 +24,23 @@ export function DocumentsScreen() {
       key: "title",
       header: "Title",
       value: (row) => row.title ?? null,
-      render: (row) => (
+      render: (row) =>
         row.title ? (
           <span className="text-fg-primary">{row.title}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
     {
       key: "document_type",
       header: "Type",
       value: (row) => row.document_type ?? null,
-      render: (row) => (
+      render: (row) =>
         row.document_type ? (
           <span className="text-fg-primary">{row.document_type}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
     {
       key: "processing_status",
@@ -53,14 +51,16 @@ export function DocumentsScreen() {
 
         const status = row.processing_status;
         return (
-          <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-            status === "ANALYZED"
-              ? "success-bg text-success-icon"
-              : status === "FAILED"
-                ? "error-bg text-error-icon"
-                  // Every remaining state is mid-pipeline.
-                  : "warning-bg text-warning-icon"
-          }`}>
+          <span
+            className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
+              status === "ANALYZED"
+                ? "success-bg text-success-icon"
+                : status === "FAILED"
+                  ? "error-bg text-error-icon"
+                  : // Every remaining state is mid-pipeline.
+                    "warning-bg text-warning-icon"
+            }`}
+          >
             {status}
           </span>
         );
@@ -71,15 +71,12 @@ export function DocumentsScreen() {
       header: "Created",
       hide: "lg",
       value: (row) => row.created_at ?? null,
-      render: (row) => (
+      render: (row) =>
         row.created_at ? (
-          <span className="tabular font-mono text-fg-tertiary">
-            {row.created_at.slice(0, 10)}
-          </span>
+          <span className="tabular font-mono text-fg-tertiary">{row.created_at.slice(0, 10)}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
   ];
 

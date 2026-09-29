@@ -134,7 +134,15 @@ export function Dashboard() {
       feedNeedingAction,
       openEscalations,
     };
-  }, [fixedIssues, resolvedEscalations, productsQuery.data, marketsQuery.data, processesQuery.data, authoritiesQuery.data, sourcesQuery.data]);
+  }, [
+    fixedIssues,
+    resolvedEscalations,
+    productsQuery.data,
+    marketsQuery.data,
+    processesQuery.data,
+    authoritiesQuery.data,
+    sourcesQuery.data,
+  ]);
 
   // The "needs attention" strip. Only conditions that are actually true are
   // pushed, so an all-clear portfolio shows an all-clear panel rather than a
@@ -516,7 +524,15 @@ export function Dashboard() {
           <span>
             Built by Wayam AI. PARIVART is a pre-sales proof of concept demonstrating four AI
             accelerators working alongside Veeva Vault RIM.{" "}
-            <Badge variant="neutral">{stats.products > 0 || stats.markets > 0 || stats.processes > 0 || stats.authorities > 0 || stats.sources > 0 ? "Live data" : "Illustrative data"}</Badge>
+            <Badge variant="neutral">
+              {stats.products > 0 ||
+              stats.markets > 0 ||
+              stats.processes > 0 ||
+              stats.authorities > 0 ||
+              stats.sources > 0
+                ? "Live data"
+                : "Illustrative data"}
+            </Badge>
           </span>
         </p>
       </PageBody>

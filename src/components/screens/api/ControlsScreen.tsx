@@ -29,47 +29,46 @@ export function ControlsScreen() {
       key: "category",
       header: "Category",
       value: (row) => row.category ?? null,
-      render: (row) => (
+      render: (row) =>
         row.category ? (
           <span className="text-fg-tertiary">{row.category}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
     {
       key: "status",
       header: "Status",
       card: "meta",
       value: (row) => row.status ?? null,
-      render: (row) => (
+      render: (row) =>
         row.status ? (
-          <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-            row.status === "ACTIVE"
-              ? "success-bg text-success-icon"
-              : row.status === "INACTIVE"
-                ? "error-bg text-error-icon"
-                : "warning-bg text-warning-icon"
-          }`}>
+          <span
+            className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
+              row.status === "ACTIVE"
+                ? "success-bg text-success-icon"
+                : row.status === "INACTIVE"
+                  ? "error-bg text-error-icon"
+                  : "warning-bg text-warning-icon"
+            }`}
+          >
             {row.status}
           </span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
     {
       key: "description",
       header: "Description",
       hide: "md",
       value: (row) => row.description ?? null,
-      render: (row) => (
+      render: (row) =>
         row.description ? (
           <span className="text-fg-tertiary">{row.description}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
   ];
 
@@ -99,7 +98,9 @@ export function ControlsScreen() {
               rowKey={(row) => row.id}
               onRowOpen={(row) => openRecord("api-control-detail", row.id)}
               searchPlaceholder="Search controls by ID or name"
-              getSearchText={(row) => `${row.id} ${row.name} ${row.category ?? ""} ${row.description ?? ""}`}
+              getSearchText={(row) =>
+                `${row.id} ${row.name} ${row.category ?? ""} ${row.description ?? ""}`
+              }
               exportName="parivart-controls"
               emptyTitle="No controls match this search"
             />

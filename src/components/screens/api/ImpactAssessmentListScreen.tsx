@@ -25,13 +25,12 @@ export function ImpactAssessmentListScreen() {
       key: "summary",
       header: "Summary",
       value: (row) => row.summary ?? null,
-      render: (row) => (
+      render: (row) =>
         row.summary ? (
           <span className="text-fg-primary">{row.summary}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
     {
       key: "status",
@@ -42,15 +41,17 @@ export function ImpactAssessmentListScreen() {
 
         const status = row.status;
         return (
-          <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-            status === "COMPLETED"
-              ? "success-bg text-success-icon"
-              : status === "FAILED"
-                ? "error-bg text-error-icon"
-                : status === "PENDING" || status === "ANALYZING"
-                  ? "warning-bg text-warning-icon"
-                  : "text-fg-tertiary"
-          }`}>
+          <span
+            className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
+              status === "COMPLETED"
+                ? "success-bg text-success-icon"
+                : status === "FAILED"
+                  ? "error-bg text-error-icon"
+                  : status === "PENDING" || status === "ANALYZING"
+                    ? "warning-bg text-warning-icon"
+                    : "text-fg-tertiary"
+            }`}
+          >
             {status}
           </span>
         );
@@ -61,15 +62,12 @@ export function ImpactAssessmentListScreen() {
       header: "Created",
       hide: "lg",
       value: (row) => row.created_at ?? null,
-      render: (row) => (
+      render: (row) =>
         row.created_at ? (
-          <span className="tabular font-mono text-fg-tertiary">
-            {row.created_at.slice(0, 10)}
-          </span>
+          <span className="tabular font-mono text-fg-tertiary">{row.created_at.slice(0, 10)}</span>
         ) : (
           <span className="text-fg-quaternary">—</span>
-        )
-      ),
+        ),
     },
   ];
 
