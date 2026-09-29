@@ -14,70 +14,67 @@ backend's roadmap or its contract document.
 
 ## Current state
 
-Verified by signing in against a locally running backend and calling each
-endpoint with a real Bearer token.
+Last verified 2026-09-29, by signing in against a locally running backend as
+`admin@asterion.com` and driving each screen in the browser.
 
 | Capability | Status | Detail |
 |---|---|---|
-| Authentication | `INTEGRATED` | `register`, `login`, `me` all return 200. Login works end to end from the UI. |
-| Portfolio — products | `INTEGRATED` | 200, returns `[]`. Products screen wired. |
-| Portfolio — markets | `INTEGRATED` | 200, returns `[]`. Markets screen wired. |
-| Portfolio — processes | `INTEGRATED` | 200, returns `[]`. Processes screen wired. |
-| Portfolio — controls | `READY` | Typed client exists; no screen yet. |
-| Portfolio — registrations | `READY` | Typed client exists; no screen yet. |
-| Regulatory authorities | `INTEGRATED` | 200, returns `[]`. Authorities screen wired. |
-| Regulatory sources | `INTEGRATED` | 200, returns `[]`. Sources screen wired, including Run. |
-| Reports | `READY` | 200, returns `[]`. Typed client exists; no screen yet. |
-| Documents | `BLOCKED` | 500 — `NameError: name 'RegulatoryDocument' is not defined` in the backend's documents router. |
-| Impact assessments | `BLOCKED` | 500 — `column impact_assessments.ai_enrichment_status does not exist`. The ORM model has AI-status columns the table lacks. |
+| Authentication | `INTEGRATED` | `register`, `login`, `me`. Sign-in works end to end, and a 401 clears the session. |
+| Portfolio — products | `INTEGRATED` | 200, 5 rows. |
+| Portfolio — markets | `INTEGRATED` | 200, 5 rows. |
+| Portfolio — processes | `INTEGRATED` | 200, 9 rows. |
+| Portfolio — controls | `INTEGRATED` | 200, 4 rows, with a drill-in. |
+| Portfolio — registrations | `INTEGRATED` | 200, 0 rows — renders its empty state. |
+| Regulatory authorities | `INTEGRATED` | 200, 5 rows. |
+| Regulatory sources | `INTEGRATED` | 200, 3 rows, including Run. |
+| Regulatory documents | `INTEGRATED` | 200, 1 row, with a drill-in and the upload flow. |
+| Impact assessments | `INTEGRATED` | 200, 1 row. Drill-in resolves matched entity ids to portfolio names and shows the engine's match evidence. |
+| Impact items | `INTEGRATED` | 200, 5 rows, with per-signal evidence. |
+| Impact reports | `INTEGRATED` | 200, 1 row, with versions and the generate flow. |
+| Human review | `INTEGRATED` | 200. List, plus filing a decision from an assessment. **Requires a backend serving the reviews router — see below.** |
+| Actions | `INTEGRATED` | 200. List, status filter and status transitions. **Same backend requirement.** |
 | Health | `INTEGRATED` | 200. |
-| Dashboard metrics | `BACKEND_PENDING` | No `/dashboard` route in the schema. |
-| Regulatory changes | `BACKEND_PENDING` | Model and pipeline exist; no router. |
+| Dashboard metrics | `BACKEND_PENDING` | No `/dashboard` route. The Command Centre's live tiles are derived from the portfolio collections; every other section is marked Illustrative in the UI. |
+| Regulatory changes | `BACKEND_PENDING` | Model and pipeline exist; no router. See below. |
 | Regulatory obligations | `BACKEND_PENDING` | Same. |
-| Actions | `BACKEND_PENDING` | `governance.py` models landed; no router yet. |
-| Evidence | `BACKEND_PENDING` | Same. |
-| Audit | `BACKEND_PENDING` | Same. |
-| Report download/export | `BACKEND_PENDING` | In the backend's contract doc, not in the served schema. |
+| Audit | `BACKEND_PENDING` | No router. The Audit Trail screen says plainly that only this session's entries are real. |
+| Report download/export | `BACKEND_PENDING` | In the backend's contract doc, not in the served schema. Screens export CSV client-side instead. |
 
 ## Backend-side prerequisites
 
-Three things are owned by the backend repository. None were changed from here.
+Two things are owned by the backend repository (`reg_iq_Parivart_backend`).
 
-**1. Documents router raises NameError**
+**1. The reviews and actions routers are not committed**
+
+The Phase 7 work — `app/api/routers/reviews.py`, `app/api/routers/actions.py`,
+their schemas and services — exists in the backend working tree but is not
+committed to `main`, and the long-running dev processes on :8010 and :8011 were
+started before it was written, so neither serves it. Their `/openapi.json` has
+37 paths; the code on disk serves 42.
+
+Verified working by starting the backend's own code on a spare port:
 
 ```
-GET /api/v1/regulatory/documents/  ->  500
-NameError: name 'RegulatoryDocument' is not defined
+GET /api/v1/reviews/   ->  200
+GET /api/v1/actions/   ->  200
 ```
 
-A missing import in the documents router.
+`api/openapi.json` in this repo is captured from that 42-path document, so the
+frontend's types are against the contract the backend already implements.
 
-**2. Impact table is behind its model**
+To run the Human Review and Actions screens: commit that work and restart the
+backend. Until then both screens render `ApiState`'s honest 404 state — "Not
+available on this backend" — rather than failing or inventing rows. That was
+verified too.
 
-```
-GET /api/v1/impact/  ->  500
-asyncpg.exceptions.UndefinedColumnError:
-column impact_assessments.ai_enrichment_status does not exist
-```
+**2. No router for regulatory changes or obligations**
 
-`ImpactAssessment` declares `ai_enrichment_status`, `ai_enrichment_error` and
-`ai_narrative`; the created table has none of them. A migration is needed. These
-are the AI-status fields the frontend would use to distinguish "assessment
-available, AI enrichment unavailable" from "API unavailable".
-
-**3. No seed data**
-
-All 18 tables exist and every one is empty, so every working endpoint returns
-`[]`. The repo has `app/seeds/demo_data.py` for Asterion Medical Systems but it
-is not invoked by any entry point. Running it is a backend-side task.
-
-**4. passlib/bcrypt backend detection is unstable**
-
-`passlib 1.7.4` cannot read `bcrypt.__about__` (removed in bcrypt 4.1+), and
-`requirements.txt` pins neither. In one server process this poisoned password
-hashing and every `register`/`login` returned
-`ValueError: password cannot be longer than 72 bytes`; a fresh process worked.
-Pinning bcrypt `<4.1`, or moving off passlib, would make it deterministic.
+The document-processing pipeline extracts and stores both, and an impact
+assessment references `regulatory_change_id`, but nothing serves them. The
+consequence in the UI is that an assessment shows the change's id and the
+engine's summary of it, and cannot link through to the change itself or list
+the obligations behind a match. A read-only `GET /api/v1/regulatory/changes`
+and `.../obligations` would close it.
 
 **A note on how backend 5xx appears in the browser**
 
@@ -86,20 +83,24 @@ unhandled exceptions, so a 500 is blocked by the browser and JavaScript sees
 only `TypeError: Failed to fetch` — identical to the API being down. The client
 therefore words that failure to cover both cases rather than asserting one.
 
-## Screens
+## Live and illustrative data
 
-Five screens read the real API, grouped under "Live data · PARIVART API" in the
-sidebar: Authorities, Sources, Products, Markets, Processes. Each renders an
-honest loading, empty, error, forbidden or populated state — there is no path
-through `ApiState` that substitutes invented rows for an empty response. All
-five currently show their empty state, because the database has no data.
+The app renders two things side by side, and the split is now visible in the
+UI rather than left to be discovered:
 
-The screens above that group still render the illustrative dataset in
-`src/data/`, badged as such in the UI. They cover domains the backend does not
-expose (HAQ drafts, variation sections, CMC simulation, market heatmap,
-validation reports) and were not converted, since there is no endpoint to
-convert them to.
+- Screens under **Live data · PARIVART API** read the backend. So do the
+  Command Centre's "Portfolio at a glance" tiles.
+- The four capability-pillar groups (Change Intelligence, AI Writing,
+  Compliance Validator, Change Simulator) and the Command Centre's other
+  sections render the worked example in `src/data/`. Each carries an
+  **Illustrative** marker in its page header, section header or nav group.
 
-Next, in order, once the backend prerequisites are met: Documents and Impact
-(both have typed clients and pollers already written, and are one backend fix
-away), then Reports, Controls and Registrations.
+They were not converted because there is no endpoint to convert them to: the
+backend serves nothing for HAQ drafts, variation sections, CMC simulation,
+market heatmaps or validation reports.
+
+## Deep links
+
+Every screen and drill-in is addressable: `?screen=<id>` and, for a detail
+screen, `&id=<record id>`. Back, Forward, Reload and a pasted link all resolve,
+and an unrecognised `screen` falls back to the Command Centre.
