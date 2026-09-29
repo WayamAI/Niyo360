@@ -1,42 +1,95 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { PageBody, PageHeader } from "@/components/shared/Page";
 import { Button } from "@/components/shared/Button";
-import { Form, FormControl, FormLabel, FormMessage, FormDescription, useForm } from "@/components/shared/Form";
-import { useUploadDocument } from "@/hooks/useApiQueries";
 import { useApp } from "@/context/AppContext";
-import * as React from "react";
+import { useAuthorities, useSources, useUploadDocument } from "@/hooks/useApiQueries";
+import type { DocumentType } from "@/services/api";
 
-/** Document upload screen */
+/**
+ * Upload a regulatory document, POST /api/v1/regulatory/documents/upload.
+ *
+ * The multipart body requires file, title, authority_id and source_id; the
+ * scaffold sent title and a camelCase documentType and omitted both ids, so
+ * every upload would have been rejected. Authority and source are picked from
+ * the live lists rather than typed, which is also what keeps the upload inside
+ * the caller's own organization.
+ *
+ * Field styling follows the sign-in form, as the generate-report screen does.
+ */
+
+const FIELD =
+  "type-body-lg h-9 w-full rounded-md border border-stroke-default bg-action px-2.5 text-fg-primary placeholder:text-fg-quaternary transition-colors duration-150 hover:border-stroke-active focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+
+const DOCUMENT_TYPES: DocumentType[] = [
+  "REGULATION",
+  "GUIDANCE",
+  "NOTICE",
+  "SAFETY_ALERT",
+  "STANDARD",
+  "AMENDMENT",
+  "RULE",
+  "DRAFT",
+  "FINAL",
+  "OTHER",
+];
+
+interface UploadFields {
+  title: string;
+  authority_id: string;
+  source_id: string;
+  document_type: DocumentType;
+  description: string;
+}
+
 export function DocumentUploadScreen() {
+  const { showToast, navigateTo, openRecord } = useApp();
+  const authoritiesQuery = useAuthorities();
+  const sourcesQuery = useSources();
   const uploadDocument = useUploadDocument();
-  const { showToast } = useApp();
-  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isSuccess },
-  } = useForm<{
-    title: string;
-    documentType: string;
-  }>();
+    formState: { errors, isSubmitting },
+  } = useForm<UploadFields>({
+    defaultValues: {
+      title: "",
+      authority_id: "",
+      source_id: "",
+      document_type: "REGULATION",
+      description: "",
+    },
+  });
 
   const onSubmit = handleSubmit(async (data) => {
+    if (!file) {
+      showToast("Choose a file to upload.", "error");
+      return;
+    }
     try {
-      if (!selectedFile) {
-        showToast("Please select a file to upload.", "error");
-        return;
-      }
-
-      await uploadDocument.mutateAsync({
-        file: selectedFile,
+      const result = await uploadDocument.mutateAsync({
+        file,
         fields: {
           title: data.title,
-          documentType: data.documentType,
+          authority_id: data.authority_id,
+          source_id: data.source_id,
+          document_type: data.document_type,
+          // Omitted rather than sent empty when the box is blank.
+          ...(data.description.trim() ? { description: data.description.trim() } : {}),
         },
       });
-      showToast("Document uploaded successfully.", "success");
-      setSelectedFile(null); // Reset file selection
-    } catch (error) {
-      showToast("Failed to upload document.", "error");
+      // The backend de-duplicates by SHA-256 and says so; reporting it as a
+      // fresh upload would misrepresent what happened.
+      showToast(
+        result.is_duplicate ? "That document was already uploaded." : "Document uploaded.",
+        result.is_duplicate ? "warning" : "success",
+      );
+      setFile(null);
+      openRecord("api-document-detail", result.document_id);
+    } catch {
+      showToast("Could not upload the document.", "error");
     }
   });
 
@@ -44,90 +97,122 @@ export function DocumentUploadScreen() {
     <>
       <PageHeader
         title="Upload Document"
-        description="Upload a regulatory document for processing"
+        description="Add a regulatory document for the processing pipeline."
         breadcrumb={[
-          { label: "Regulatory", onClick: () => {/* navigate to regulatory */} },
-          { label: "Documents", onClick: () => {/* navigate to documents list */} },
-          { label: "Upload Document" },
+          { label: "Regulatory" },
+          { label: "Documents", onClick: () => navigateTo("api-documents") },
+          { label: "Upload" },
         ]}
-        onBack={() => {/* navigate to documents list */}}
+        onBack={() => navigateTo("api-documents")}
       />
       <PageBody>
-        <Form onSubmit={onSubmit} resettable defaultValues={{ title: "", documentType: "" }}>
-          <FormLabel htmlFor="title">Document Title</FormLabel>
-          <FormControl
-            id="title"
-            placeholder="Enter document title"
-            {...register("title", {
-              required: "Title is required",
-              maxLength: { value: 200, message: "Maximum 200 characters" },
-            })}
-          />
-          {errors.title && <FormMessage>{errors.title.message}</FormMessage>}
-
-          <FormLabel htmlFor="documentType">Document Type</FormLabel>
-          <FormControl
-            id="documentType"
-            placeholder="Enter document type (e.g., REGULATORY_GUIDANCE, PRODUCT_LICENSE)"
-            {...register("documentType", {
-              required: "Document type is required",
-              maxLength: { value: 100, message: "Maximum 100 characters" },
-            })}
-          />
-          {errors.documentType && <FormMessage>{errors.documentType.message}</FormMessage>}
-
-          <FormDescription>
-            Select a regulatory document file to upload. Supported formats include PDF, DOC, DOCX, and image files.
-            The document will be processed automatically after upload to extract relevant regulatory information.
-          </FormDescription>
-
-          <div className="mb-4">
-            <label className="form-label" htmlFor="documentFile">
-              Document File
+        <form
+          onSubmit={onSubmit}
+          className="max-w-xl space-y-5 rounded-lg border border-stroke-default bg-container p-5"
+        >
+          <div className="space-y-1.5">
+            <label className="type-label-sm text-fg-quaternary" htmlFor="title">
+              Title
             </label>
-            <div className="form-control">
-              <input
-                type="file"
-                id="documentFile"
-                className="input input-bordered w-full"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.tiff"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setSelectedFile(e.target.files[0]);
-                  } else {
-                    setSelectedFile(null);
-                  }
-                }}
-              />
-              {selectedFile && (
-                <p className="form-help-text text-fg-primary">
-                  Selected: {selectedFile.name}
-                </p>
-              )}
-              <p className="form-help-text">
-                Maximum file size: 50MB
+            <input
+              id="title"
+              className={FIELD}
+              placeholder="Document title"
+              aria-invalid={Boolean(errors.title)}
+              {...register("title", {
+                required: "A title is required.",
+                maxLength: { value: 200, message: "Maximum 200 characters." },
+              })}
+            />
+            {errors.title && <p className="type-body-md text-error">{errors.title.message}</p>}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="type-label-sm text-fg-quaternary" htmlFor="authority_id">
+              Authority
+            </label>
+            <select
+              id="authority_id"
+              className={FIELD}
+              aria-invalid={Boolean(errors.authority_id)}
+              {...register("authority_id", { required: "Choose the issuing authority." })}
+            >
+              <option value="">Select an authority…</option>
+              {(authoritiesQuery.data ?? []).map((authority) => (
+                <option key={authority.id} value={authority.id}>
+                  {authority.short_name} — {authority.name}
+                </option>
+              ))}
+            </select>
+            {errors.authority_id && (
+              <p className="type-body-md text-error">{errors.authority_id.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="type-label-sm text-fg-quaternary" htmlFor="source_id">
+              Source
+            </label>
+            <select
+              id="source_id"
+              className={FIELD}
+              aria-invalid={Boolean(errors.source_id)}
+              {...register("source_id", { required: "Choose the source to file this under." })}
+            >
+              <option value="">Select a source…</option>
+              {(sourcesQuery.data ?? []).map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.name}
+                </option>
+              ))}
+            </select>
+            {errors.source_id && (
+              <p className="type-body-md text-error">{errors.source_id.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="type-label-sm text-fg-quaternary" htmlFor="document_type">
+              Type
+            </label>
+            <select id="document_type" className={FIELD} {...register("document_type")}>
+              {DOCUMENT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="type-label-sm text-fg-quaternary" htmlFor="description">
+              Description <span className="text-fg-quaternary">(optional)</span>
+            </label>
+            <input id="description" className={FIELD} {...register("description")} />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="type-label-sm text-fg-quaternary" htmlFor="file">
+              File
+            </label>
+            <input
+              id="file"
+              type="file"
+              className={FIELD + " py-1.5"}
+              accept=".pdf,.doc,.docx,.txt,.html"
+              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+            />
+            {file && (
+              <p className="type-body-md text-fg-tertiary">
+                {file.name} · {(file.size / 1024).toFixed(0)} kB
               </p>
-            </div>
+            )}
           </div>
 
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSubmitting || !selectedFile}
-            className="w-full"
-          >
-            {isSubmitting ? "Uploading..." : "Upload Document"}
+          <Button type="submit" variant="primary" disabled={isSubmitting || !file}>
+            {isSubmitting ? "Uploading…" : "Upload document"}
           </Button>
-        </Form>
-
-        {isSuccess && (
-          <div className="mt-6 p-4 bg-success-bg rounded-lg border border-success-border">
-            <h3 className="type-heading-sm text-success-icon">Document Uploaded</h3>
-            <p className="type-body-sm text-fg-tertiary">
-              Your document has been uploaded and is being processed. Check the documents list for updates.
-            </p>
-          </div>
-        )}
+        </form>
       </PageBody>
     </>
   );

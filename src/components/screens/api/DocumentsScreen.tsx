@@ -3,13 +3,14 @@ import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { Button } from "@/components/shared/Button";
 import { useApp } from "@/context/AppContext";
 import { useDocuments } from "@/hooks/useApiQueries";
 import type { RegulatoryDocument } from "@/services/api";
 
 /** Portfolio documents, from GET /api/v1/regulatory/documents/. */
 export function DocumentsScreen() {
-  const { openRecord } = useApp();
+  const { openRecord, navigateTo } = useApp();
   const query = useDocuments();
 
   const columns: Column<RegulatoryDocument>[] = [
@@ -92,6 +93,9 @@ export function DocumentsScreen() {
           <>
             <ApiCount query={query} />
             <ApiRefresh query={query} />
+            <Button variant="primary" size="sm" onClick={() => navigateTo("api-document-upload")}>
+              Upload document
+            </Button>
           </>
         }
       />
