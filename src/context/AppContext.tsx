@@ -53,6 +53,9 @@ export const SCREEN_IDS = [
   "api-report-generate",
   "api-document-upload",
   "api-impact-analyze",
+  // Phase 7 — human review and actions.
+  "api-reviews",
+  "api-actions",
 ] as const;
 
 export type ScreenId = (typeof SCREEN_IDS)[number];

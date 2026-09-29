@@ -98,6 +98,8 @@ const SECTIONS: Array<{
       { id: "api-processes", label: "Processes", icon: "layers" },
       { id: "api-controls", label: "Controls", icon: "validator" },
       { id: "api-registrations", label: "Registrations", icon: "audit" },
+      { id: "api-reviews", label: "Human Review", icon: "validator" },
+      { id: "api-actions", label: "Actions", icon: "escalation" },
     ],
   },
   {
