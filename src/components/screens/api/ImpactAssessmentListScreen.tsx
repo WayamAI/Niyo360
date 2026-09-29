@@ -3,11 +3,13 @@ import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { useApp } from "@/context/AppContext";
 import { useImpactAssessments } from "@/hooks/useApiQueries";
 import type { ImpactAssessment } from "@/services/api";
 
 /** Impact assessments list, from GET /api/v1/impact/. */
 export function ImpactAssessmentListScreen() {
+  const { openRecord } = useApp();
   const query = useImpactAssessments();
 
   const columns: Column<ImpactAssessment>[] = [
@@ -94,6 +96,7 @@ export function ImpactAssessmentListScreen() {
               rows={rows}
               columns={columns}
               rowKey={(row) => row.id}
+              onRowOpen={(row) => openRecord("api-impact-detail", row.id)}
               searchPlaceholder="Search assessments by ID or summary"
               getSearchText={(row) => `${row.id} ${row.summary ?? ""}`}
               exportName="parivart-impact-assessments"
