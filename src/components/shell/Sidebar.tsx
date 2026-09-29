@@ -102,6 +102,7 @@ const SECTIONS: Array<{
 /** Screens reachable only by drilling in; they light up their parent's row. */
 const PARENT_OF: Partial<Record<ScreenId, ScreenId>> = {
   "report-detail": "delta-reports",
+  "api-control-detail": "api-controls",
   "new-change": "simulator",
 };
 

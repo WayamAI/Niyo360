@@ -3,11 +3,13 @@ import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { useApp } from "@/context/AppContext";
 import { useControls } from "@/hooks/useApiQueries";
 import type { Control } from "@/services/api";
 
 /** Portfolio controls, from GET /api/v1/portfolio/controls/. */
 export function ControlsScreen() {
+  const { openRecord } = useApp();
   const query = useControls();
 
   const columns: Column<Control>[] = [
@@ -95,6 +97,7 @@ export function ControlsScreen() {
               rows={rows}
               columns={columns}
               rowKey={(row) => row.id}
+              onRowOpen={(row) => openRecord("api-control-detail", row.id)}
               searchPlaceholder="Search controls by ID or name"
               getSearchText={(row) => `${row.id} ${row.name} ${row.category ?? ""} ${row.description ?? ""}`}
               exportName="parivart-controls"

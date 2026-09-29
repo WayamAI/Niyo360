@@ -1,84 +1,75 @@
 import { PageBody, PageHeader } from "@/components/shared/Page";
-import { ApiState } from "@/components/shared/ApiState";
+import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
+import { Badge } from "@/components/shared/Badge";
+import { useApp } from "@/context/AppContext";
 import { useControl } from "@/hooks/useApiQueries";
-import type { Control } from "@/services/api";
+import type { ControlStatus } from "@/services/api";
 
-/** Control detail view, from GET /api/v1/portfolio/controls/{control_id}. */
+/** Control detail, from GET /api/v1/portfolio/controls/{control_id}. */
+
+const STATUS_VARIANT: Record<ControlStatus, "complete" | "neutral" | "pending"> = {
+  ACTIVE: "complete",
+  INACTIVE: "neutral",
+  DRAFT: "pending",
+};
+
 export function ControlDetailScreen() {
-  // In a real implementation, we would get the control ID from route params
-  // For now, we'll use a placeholder approach similar to how other detail screens work
-  const [controlId, setControlId] = React.useState<string | null>(null);
-
-  // This would normally come from route parameters
-  // We're using state to simulate route params for now
-  const query = useControl(controlId ?? "");
+  const { selectedRecordId, navigateTo } = useApp();
+  const query = useControl(selectedRecordId);
 
   return (
     <>
       <PageHeader
-        title="Control Detail"
-        description="Detailed view of a portfolio control"
+        title="Control"
+        description="A single control from your portfolio's regulatory framework."
         breadcrumb={[
-          { label: "Portfolio", onClick: () => {/* navigate to portfolio */} },
-          { label: "Controls", onClick: () => {/* navigate to controls list */} },
-          { label: controlId ?? "Select a control" },
+          { label: "Portfolio" },
+          { label: "Controls", onClick: () => navigateTo("api-controls") },
+          { label: selectedRecordId ?? "—" },
         ]}
-        onBack={() => {/* navigate to controls list */}}
+        onBack={() => navigateTo("api-controls")}
+        actions={<ApiRefresh query={query} />}
       />
       <PageBody>
-        <ApiState
+        <ApiRecord
           query={query}
-          emptyTitle="Select a control"
-          emptyDetail="Choose a control from the list to view its details."
+          notFoundTitle="Control not found"
+          notFoundDetail="This control does not exist, or it belongs to another organization."
         >
           {(control) => (
-            <div className="space-y-6">
-              <div>
-                <h2 className="type-heading-md text-fg-primary">{control.title}</h2>
-                <p className="type-body-sm text-fg-tertiary">
-                  Control ID: {control.control_id}
-                </p>
-                <p className="type-body-sm text-fg-tertiary">
-                  Category:{" "}
-                  <span className="text-fg-tertiary">
-                    {control.category ?? "—"}
-                  </span>
-                </p>
-                <p className="type-body-sm text-fg-tertiary">
-                  Status:{" "}
-                  <span
-                    className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-                      control.status === "Active"
-                        ? "success-bg text-success-icon"
-                        : control.status === "Inactive"
-                          ? "error-bg text-error-icon"
-                          : "warning-bg text-warning-icon"
-                    }`}
-                  >
-                    {control.status ?? "—"}
-                  </span>
-                </p>
-                <p className="type-body-sm text-fg-tertiary">
-                  Description:{" "}
-                  <span className="text-fg-tertiary">
-                    {control.description ?? "—"}
-                  </span>
-                </p>
+            <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+              <Field label="Name">
+                <span className="type-body-md text-fg-primary">{control.name}</span>
+              </Field>
+              <Field label="Status">
+                <Badge variant={STATUS_VARIANT[control.status]}>{control.status}</Badge>
+              </Field>
+              <Field label="Category">{control.category}</Field>
+              <Field label="Owner">{control.owner ?? "—"}</Field>
+              <Field label="Control ID">
+                <span className="font-mono text-fg-tertiary">{control.id}</span>
+              </Field>
+              <Field label="Created">
+                <span className="tabular font-mono text-fg-tertiary">
+                  {control.created_at.slice(0, 10)}
+                </span>
+              </Field>
+              <div className="sm:col-span-2">
+                <Field label="Description">{control.description ?? "—"}</Field>
               </div>
-
-              {/* Additional control details would go here based on actual API response */}
-              {/* For now, showing placeholder for other potential fields */}
-              <div className="border-t border-stroke-default pt-4">
-                <h3 className="type-heading-sm text-fg-primary">Control Details</h3>
-                <p className="type-body-sm text-fg-tertiary">
-                  Detailed control information would be displayed here based on the
-                  actual ControlResponse structure from the backend.
-                </p>
-              </div>
-            </div>
+            </dl>
           )}
-        </ApiState>
+        </ApiRecord>
       </PageBody>
     </>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <dt className="type-label-sm text-fg-quaternary">{label}</dt>
+      <dd className="type-body-md mt-1 text-fg-secondary">{children}</dd>
+    </div>
   );
 }
