@@ -3,13 +3,14 @@ import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { Button } from "@/components/shared/Button";
 import { useApp } from "@/context/AppContext";
 import { useImpactAssessments } from "@/hooks/useApiQueries";
 import type { ImpactAssessment } from "@/services/api";
 
 /** Impact assessments list, from GET /api/v1/impact/. */
 export function ImpactAssessmentListScreen() {
-  const { openRecord } = useApp();
+  const { openRecord, navigateTo } = useApp();
   const query = useImpactAssessments();
 
   const columns: Column<ImpactAssessment>[] = [
@@ -82,6 +83,9 @@ export function ImpactAssessmentListScreen() {
           <>
             <ApiCount query={query} />
             <ApiRefresh query={query} />
+            <Button variant="primary" size="sm" onClick={() => navigateTo("api-impact-analyze")}>
+              Run analysis
+            </Button>
           </>
         }
       />
