@@ -3,8 +3,11 @@ import { PageBody, PageHeader } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { DataTable, type Column } from "@/components/shared/DataTable";
+import { Drawer } from "@/components/shared/Drawer";
 import { useApp } from "@/context/AppContext";
 import { useImpactAssessment, useImpactItems } from "@/hooks/useApiQueries";
+import { usePortfolioNames } from "@/hooks/usePortfolioNames";
+import { parseEvidence } from "@/services/api/evidence";
 import type { ImpactItem, ImpactLevel } from "@/services/api";
 
 /**
@@ -43,20 +46,37 @@ export function ImpactAssessmentDetailScreen() {
   const [tab, setTab] = useState<TabId>("overview");
   const assessmentQuery = useImpactAssessment(selectedRecordId);
   const itemsQuery = useImpactItems(tab === "items" ? selectedRecordId : null);
+  const [openItem, setOpenItem] = useState<ImpactItem | null>(null);
+
+  // The matcher records what it hit as a type plus a UUID. Joining against the
+  // portfolio collections turns "PRODUCT 18f5a6da-…" into "Asterion PulseSense",
+  // which is the difference between a debugging view and an answer to "what of
+  // ours is affected?". Names come from the API, never from a local table.
+  const names = usePortfolioNames();
 
   const columns: Column<ImpactItem>[] = [
     {
-      key: "entity_type",
-      header: "Entity",
+      key: "entity",
+      header: "Portfolio entity",
       card: "title",
-      value: (row) => row.entity_type,
-      render: (row) => <span className="text-fg-primary">{row.entity_type}</span>,
-    },
-    {
-      key: "entity_id",
-      header: "Entity ID",
-      value: (row) => row.entity_id,
-      render: (row) => <span className="font-mono text-fg-tertiary">{row.entity_id}</span>,
+      value: (row) => names.resolve(row.entity_type, row.entity_id).name ?? row.entity_id,
+      render: (row) => {
+        const entity = names.resolve(row.entity_type, row.entity_id);
+        return (
+          <div className="min-w-0">
+            <span className="block truncate text-fg-primary">
+              {entity.name ?? (
+                <span className="font-mono text-fg-quaternary" title={row.entity_id}>
+                  {names.isLoading ? "Resolving…" : "Not in current portfolio"}
+                </span>
+              )}
+            </span>
+            <span className="type-caption block truncate text-fg-quaternary">
+              {[row.entity_type, entity.detail].filter(Boolean).join(" · ")}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: "impact_level",
@@ -69,6 +89,7 @@ export function ImpactAssessmentDetailScreen() {
       key: "confidence",
       header: "Confidence",
       align: "right",
+      card: "meta",
       value: (row) => row.confidence,
       render: (row) => (
         <span className="tabular font-mono text-fg-tertiary">{percent(row.confidence)}</span>
@@ -85,11 +106,31 @@ export function ImpactAssessmentDetailScreen() {
       ),
     },
     {
+      // Why the engine matched this entity. This is the evidence half of the
+      // product's promise, so it is a first-class column rather than something
+      // only the CSV export carries.
       key: "reason",
-      header: "Reason",
+      header: "Why it matched",
       hide: "lg",
       value: (row) => row.reason,
-      render: (row) => <span className="text-fg-tertiary">{row.reason}</span>,
+      render: (row) => (
+        <div className="min-w-0">
+          <span className="block text-fg-tertiary">{row.reason}</span>
+          {row.match_types && (
+            <span className="type-caption block truncate font-mono text-fg-quaternary">
+              {row.match_types}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "entity_id",
+      header: "Entity ID",
+      hide: "lg",
+      card: "field",
+      value: (row) => row.entity_id,
+      render: (row) => <span className="font-mono text-fg-quaternary">{row.entity_id}</span>,
     },
   ];
 
@@ -220,8 +261,12 @@ export function ImpactAssessmentDetailScreen() {
                   rows={items}
                   columns={columns}
                   rowKey={(row) => row.id}
-                  searchPlaceholder="Search entities by ID or reason"
-                  getSearchText={(row) => `${row.entity_id} ${row.entity_type} ${row.reason}`}
+                  onRowOpen={setOpenItem}
+                  isRowActive={(row) => row.id === openItem?.id}
+                  searchPlaceholder="Search entities by name, type or reason"
+                  getSearchText={(row) =>
+                    `${names.resolve(row.entity_type, row.entity_id).name ?? ""} ${row.entity_id} ${row.entity_type} ${row.reason}`
+                  }
                   exportName="parivart-impact-items"
                   emptyTitle="No entities match this search"
                 />
@@ -230,7 +275,143 @@ export function ImpactAssessmentDetailScreen() {
           )}
         </div>
       </PageBody>
+
+      <MatchEvidenceDrawer
+        item={openItem}
+        entityName={openItem ? names.resolve(openItem.entity_type, openItem.entity_id).name : null}
+        onClose={() => setOpenItem(null)}
+      />
     </>
+  );
+}
+
+/**
+ * Why one entity was matched, in full.
+ *
+ * The table has room for the one-line reason; this is the audit view behind it
+ * — every signal the deterministic engine recorded, shown as the regulatory
+ * field that met the portfolio field. Nothing here is computed by the frontend:
+ * each row is a comparison the backend wrote into the item's evidence.
+ */
+function MatchEvidenceDrawer({
+  item,
+  entityName,
+  onClose,
+}: {
+  item: ImpactItem | null;
+  entityName: string | null;
+  onClose: () => void;
+}) {
+  const evidence = item ? parseEvidence(item.evidence) : null;
+
+  return (
+    <Drawer
+      open={item !== null}
+      onClose={onClose}
+      width={620}
+      title={entityName ?? evidence?.entity_label ?? item?.entity_id ?? "Matched entity"}
+      subtitle={item ? `${item.entity_type} · match evidence` : undefined}
+    >
+      {item && (
+        <>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+            <Field label="Impact">
+              <Badge variant={LEVEL_VARIANT[item.impact_level]}>{item.impact_level}</Badge>
+            </Field>
+            <Field label="Confidence">
+              <Mono>{percent(item.confidence)}</Mono>
+            </Field>
+            <Field label="Match score">
+              <Mono>{percent(item.match_score)}</Mono>
+            </Field>
+          </dl>
+
+          <div>
+            <h3 className="type-label-sm text-fg-quaternary">Reason</h3>
+            <p className="type-body-md mt-1 text-fg-secondary">{item.reason}</p>
+          </div>
+
+          {item.match_types && (
+            <div>
+              <h3 className="type-label-sm text-fg-quaternary">Match types</h3>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {item.match_types.split(",").map((type) => (
+                  <Badge key={type} variant="neutral">
+                    {type.trim()}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <h3 className="type-label-sm text-fg-quaternary">
+              Signals{evidence ? ` · ${evidence.signals.length}` : ""}
+            </h3>
+            {/* No evidence is a real answer for an item recorded before the
+                engine emitted signals — say so rather than showing an empty
+                grid that looks like a rendering failure. */}
+            {!evidence || evidence.signals.length === 0 ? (
+              <p className="type-body-md mt-1 text-fg-tertiary">
+                The engine recorded no structured signals for this match.
+              </p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {evidence.signals.map((signal, index) => (
+                  <li
+                    key={`${signal.match_type}-${signal.axis}-${index}`}
+                    className="rounded-md border border-stroke-muted bg-raised p-3"
+                  >
+                    {signal.match_type && (
+                      <p className="type-label-sm text-fg-quaternary">{signal.match_type}</p>
+                    )}
+                    <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                      <SignalSide
+                        heading="Regulatory"
+                        field={signal.regulatory_field}
+                        value={signal.regulatory_value}
+                      />
+                      <SignalSide
+                        heading="Portfolio"
+                        field={signal.portfolio_field}
+                        value={signal.portfolio_value}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <h3 className="type-label-sm text-fg-quaternary">Entity ID</h3>
+            <p className="type-body-md mt-1 font-mono break-all text-fg-tertiary">
+              {item.entity_id}
+            </p>
+          </div>
+        </>
+      )}
+    </Drawer>
+  );
+}
+
+function SignalSide({
+  heading,
+  field,
+  value,
+}: {
+  heading: string;
+  field: string | null;
+  value: string | null;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="type-caption text-fg-quaternary">{heading}</p>
+      <p className="type-body-md mt-0.5 break-words text-fg-primary">{value ?? "—"}</p>
+      {field && (
+        <p className="type-caption mt-0.5 font-mono break-all text-fg-quaternary">{field}</p>
+      )}
+    </div>
   );
 }
 
