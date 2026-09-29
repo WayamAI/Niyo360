@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppIcon, type IconName } from "@/components/icons";
 import { useApp, type ScreenId } from "@/context/AppContext";
-import { PageBody, PageHeader, SectionHeader } from "@/components/shared/Page";
+import { DataSourceTag, PageBody, PageHeader, SectionHeader } from "@/components/shared/Page";
 import { KpiRow, KpiTile, Panel, type MetricTone } from "@/components/shared/Panel";
 import { Button } from "@/components/shared/Button";
 import { Badge } from "@/components/shared/Badge";
@@ -237,6 +237,7 @@ export function Dashboard() {
         <section>
           <SectionHeader
             title="Needs attention"
+            source="illustrative"
             description="Conditions currently true across the portfolio, most severe first."
           />
           {attention.length === 0 ? (
@@ -274,7 +275,7 @@ export function Dashboard() {
         </section>
 
         <section>
-          <SectionHeader title="Portfolio at a glance" />
+          <SectionHeader title="Portfolio at a glance" source="live" />
           <KpiRow>
             {/* Use real data for integrated features */}
             <KpiTile
@@ -318,6 +319,7 @@ export function Dashboard() {
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
           <Panel
             title="Change activity, last 6 months"
+            source="illustrative"
             className="xl:col-span-3"
             action={
               <div className="type-caption flex flex-wrap items-center gap-2.5 text-fg-tertiary">
@@ -415,6 +417,7 @@ export function Dashboard() {
 
           <Panel
             title="Recent activity"
+            source="illustrative"
             className="xl:col-span-2"
             action={
               <Button variant="ghost" size="sm" onClick={() => navigateTo("audit")}>
@@ -457,6 +460,7 @@ export function Dashboard() {
         <section>
           <SectionHeader
             title="Agent activity"
+            source="illustrative"
             description="Most recent action taken by each agent."
           />
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -523,16 +527,10 @@ export function Dashboard() {
           <AppIcon name="info" size="sm" className="mt-0.5 shrink-0 text-icon-quaternary" />
           <span>
             Built by Wayam AI. PARIVART is a pre-sales proof of concept demonstrating four AI
-            accelerators working alongside Veeva Vault RIM.{" "}
-            <Badge variant="neutral">
-              {stats.products > 0 ||
-              stats.markets > 0 ||
-              stats.processes > 0 ||
-              stats.authorities > 0 ||
-              stats.sources > 0
-                ? "Live data"
-                : "Illustrative data"}
-            </Badge>
+            accelerators working alongside Veeva Vault RIM. Sections marked{" "}
+            <DataSourceTag source="live" /> are read from the PARIVART API; sections marked{" "}
+            <DataSourceTag source="illustrative" /> are a worked example for capabilities the
+            backend does not serve yet.
           </span>
         </p>
       </PageBody>
