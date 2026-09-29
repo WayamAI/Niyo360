@@ -56,6 +56,7 @@ export function PageHeader({
   actions,
   onBack,
   children,
+  source,
 }: {
   title: string;
   /** One sentence on what the screen is for. Kept to ~2 lines at any width. */
@@ -69,6 +70,12 @@ export function PageHeader({
   onBack?: () => void;
   /** Optional second row: filter chips, tabs, or a toolbar. */
   children?: ReactNode;
+  /**
+   * Marks the whole screen live or illustrative. Every screen that renders the
+   * bundled example dataset rather than the PARIVART API sets
+   * `source="illustrative"`, so nobody has to guess which is which.
+   */
+  source?: DataSource;
 }) {
   return (
     <header className="shrink-0 border-b border-stroke-muted bg-page px-4 py-3.5 sm:px-5">
@@ -88,6 +95,7 @@ export function PageHeader({
             {breadcrumb && <Breadcrumb items={breadcrumb} />}
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <h1 className="type-display-page-sm min-w-0 text-fg-primary">{title}</h1>
+              {source && <DataSourceTag source={source} />}
               {badges}
             </div>
             {description && (
@@ -132,21 +140,67 @@ export function SectionHeader({
   title,
   description,
   action,
+  source,
 }: {
   title: string;
   description?: string;
   action?: ReactNode;
+  /**
+   * Where this section's numbers come from. The app shows live PARIVART API
+   * data next to an illustrative dataset for capabilities the backend does not
+   * expose yet, and a viewer cannot tell them apart by looking. Stating it per
+   * section is the only honest way to render both on one page — a single badge
+   * on the page cannot be true of all of it.
+   */
+  source?: DataSource;
 }) {
   return (
     <div className="mb-2.5 flex items-end justify-between gap-3">
       <div className="min-w-0">
-        <h2 className="type-label-md text-fg-quaternary">{title}</h2>
+        <h2 className="type-label-md flex flex-wrap items-center gap-2 text-fg-quaternary">
+          {title}
+          {source && <DataSourceTag source={source} />}
+        </h2>
         {description && (
           <p className="type-body-sm mt-1 max-w-[80ch] text-fg-tertiary">{description}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>
+  );
+}
+
+export type DataSource = "live" | "illustrative";
+
+const SOURCE_COPY: Record<DataSource, { label: string; title: string; className: string }> = {
+  live: {
+    label: "Live",
+    title: "Read from the PARIVART API.",
+    className: "border-success-icon/40 text-success",
+  },
+  illustrative: {
+    label: "Illustrative",
+    title:
+      "A worked example shipped with the app. The PARIVART API does not serve this capability yet, so these figures are not your organisation's data.",
+    className: "border-stroke-default text-fg-quaternary",
+  },
+};
+
+/**
+ * Marks a block of the UI as live or illustrative.
+ *
+ * Deliberately quiet — it sits beside a section heading rather than shouting
+ * over the content — but never absent from an illustrative block.
+ */
+export function DataSourceTag({ source }: { source: DataSource }) {
+  const copy = SOURCE_COPY[source];
+  return (
+    <span
+      title={copy.title}
+      className={`type-caption rounded border px-1.5 py-px font-medium ${copy.className}`}
+    >
+      {copy.label}
+    </span>
   );
 }
 

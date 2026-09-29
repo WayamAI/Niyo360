@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AppIcon, type IconName } from "@/components/icons";
+import { DataSourceTag, type DataSource } from "@/components/shared/Page";
 
 /**
  * Bounded content surfaces.
@@ -17,6 +18,7 @@ export function Panel({
   className = "",
   /** Flush bodies are for tables and charts that manage their own padding. */
   padded = true,
+  source,
 }: {
   title?: string;
   description?: string;
@@ -24,6 +26,8 @@ export function Panel({
   children: ReactNode;
   className?: string;
   padded?: boolean;
+  /** Marks the panel's contents live or illustrative. See DataSourceTag. */
+  source?: DataSource;
 }) {
   return (
     <section
@@ -34,7 +38,12 @@ export function Panel({
       {(title || action) && (
         <header className="flex min-h-10 shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b border-stroke-muted px-4 py-2">
           <div className="min-w-0">
-            {title && <h2 className="type-label-md text-fg-quaternary">{title}</h2>}
+            {title && (
+              <h2 className="type-label-md flex flex-wrap items-center gap-2 text-fg-quaternary">
+                {title}
+                {source && <DataSourceTag source={source} />}
+              </h2>
+            )}
             {description && (
               <p className="type-body-sm mt-0.5 truncate text-fg-tertiary">{description}</p>
             )}
