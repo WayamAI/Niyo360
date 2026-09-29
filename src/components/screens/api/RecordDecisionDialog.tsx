@@ -156,7 +156,12 @@ export function RecordDecisionDialog({
         >
           {error.kind === "conflict"
             ? "This assessment is not in a state that can carry a decision yet. Refresh and check its status."
-            : error.message}
+            : error.kind === "not_found"
+              ? // A 404 here is almost always the endpoint, not the record: the
+                // assessment was on screen a moment ago. Say both rather than
+                // repeating the backend's bare "Not Found".
+                "The backend did not accept this decision. Either it does not serve the review endpoint, or this assessment is no longer available."
+              : error.message}
         </p>
       )}
     </Modal>

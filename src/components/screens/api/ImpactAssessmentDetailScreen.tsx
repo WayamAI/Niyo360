@@ -275,6 +275,15 @@ export function ImpactAssessmentDetailScreen() {
                           </li>
                         ))}
                       </ul>
+                    ) : reviewsQuery.isError ? (
+                      // "No decisions" and "this backend has no review endpoint"
+                      // are different facts, and reporting the second as the
+                      // first would claim the assessment is unreviewed when we
+                      // simply cannot tell.
+                      <p className="type-body-md mt-1 text-fg-tertiary">
+                        The review history could not be loaded, so whether this assessment has been
+                        reviewed is unknown.
+                      </p>
                     ) : (
                       <p className="type-body-md mt-1 text-fg-tertiary">
                         No decision has been recorded against this assessment yet.
