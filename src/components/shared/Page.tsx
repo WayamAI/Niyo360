@@ -16,6 +16,20 @@ export interface Crumb {
   onClick?: () => void;
 }
 
+/**
+ * A record id as a breadcrumb label.
+ *
+ * Backend ids are UUIDs. Spelling one out in full pushes the rest of the trail
+ * off a narrow screen and reads as noise, so only the first segment is shown —
+ * enough to tell two records apart, and the full id is always on the page
+ * itself. Used only where the record has no name to show instead.
+ */
+export function recordCrumb(id: string | null | undefined): string {
+  if (!id) return "—";
+  const [head] = id.split("-");
+  return head && head.length < id.length ? `${head}…` : id;
+}
+
 /** Compact trail above the page title. Home is an icon, not the word "Home". */
 export function Breadcrumb({ items }: { items: Crumb[] }) {
   return (

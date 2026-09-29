@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { PageBody, PageHeader } from "@/components/shared/Page";
+import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { DataTable, type Column } from "@/components/shared/DataTable";
@@ -142,7 +142,7 @@ export function ImpactAssessmentDetailScreen() {
         breadcrumb={[
           { label: "Impact" },
           { label: "Assessments", onClick: () => navigateTo("api-impact") },
-          { label: selectedRecordId ?? "—" },
+          { label: recordCrumb(selectedRecordId) },
         ]}
         onBack={() => navigateTo("api-impact")}
         actions={<ApiRefresh query={assessmentQuery} />}

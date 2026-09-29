@@ -1,4 +1,4 @@
-import { PageBody, PageHeader } from "@/components/shared/Page";
+import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { useApp } from "@/context/AppContext";
@@ -20,12 +20,15 @@ export function ControlDetailScreen() {
   return (
     <>
       <PageHeader
-        title="Control"
+        // The record's own name once it has loaded. A detail page headed
+        // "Control" over a UUID crumb tells the reader nothing they did not
+        // already know from clicking the row.
+        title={query.data?.name ?? "Control"}
         description="A single control from your portfolio's regulatory framework."
         breadcrumb={[
           { label: "Portfolio" },
           { label: "Controls", onClick: () => navigateTo("api-controls") },
-          { label: selectedRecordId ?? "—" },
+          { label: query.data?.name ?? recordCrumb(selectedRecordId) },
         ]}
         onBack={() => navigateTo("api-controls")}
         actions={<ApiRefresh query={query} />}

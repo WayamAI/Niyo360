@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { PageBody, PageHeader } from "@/components/shared/Page";
+import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { useApp } from "@/context/AppContext";
@@ -40,11 +40,11 @@ export function ReportDetailScreen() {
   return (
     <>
       <PageHeader
-        title="Impact Report"
+        title={reportQuery.data?.title ?? "Impact Report"}
         description="A generated impact delta report and its version history."
         breadcrumb={[
           { label: "Reports", onClick: () => navigateTo("api-reports") },
-          { label: selectedRecordId ?? "—" },
+          { label: reportQuery.data?.title ?? recordCrumb(selectedRecordId) },
         ]}
         onBack={() => navigateTo("api-reports")}
         actions={<ApiRefresh query={reportQuery} />}

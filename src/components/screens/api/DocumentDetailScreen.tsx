@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { PageBody, PageHeader } from "@/components/shared/Page";
+import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { useApp } from "@/context/AppContext";
-import { useDocument } from "@/hooks/useApiQueries";
+import { useDocument, useSources } from "@/hooks/useApiQueries";
 import type { DocumentProcessingStatus } from "@/services/api";
 
 /** Document detail, from GET /api/v1/regulatory/documents/{document_id}. */
@@ -32,16 +32,21 @@ function formatSize(bytes: number | null | undefined): string {
 export function DocumentDetailScreen() {
   const { selectedRecordId, navigateTo } = useApp();
   const query = useDocument(selectedRecordId);
+  // The document carries the id of the source it was ingested from. The name
+  // is one list away and is what anyone reading this page is looking for.
+  const sourcesQuery = useSources();
+  const sourceName = (id: string | null | undefined) =>
+    sourcesQuery.data?.find((source) => source.id === id)?.name ?? null;
 
   return (
     <>
       <PageHeader
-        title="Document"
+        title={query.data?.title ?? "Document"}
         description="A single regulatory document and its processing state."
         breadcrumb={[
           { label: "Regulatory" },
           { label: "Documents", onClick: () => navigateTo("api-documents") },
-          { label: selectedRecordId ?? "—" },
+          { label: query.data?.title ?? recordCrumb(selectedRecordId) },
         ]}
         onBack={() => navigateTo("api-documents")}
         actions={<ApiRefresh query={query} />}
@@ -87,7 +92,9 @@ export function DocumentDetailScreen() {
                   <Mono>{doc.id}</Mono>
                 </Field>
                 <Field label="Source">
-                  <Mono>{doc.source_id}</Mono>
+                  {/* Falls back to the id when the source is not in the
+                      current list — a document can outlive its source. */}
+                  {sourceName(doc.source_id) ?? <Mono>{doc.source_id ?? "—"}</Mono>}
                 </Field>
                 <div className="sm:col-span-2">
                   <Field label="Source URL">
