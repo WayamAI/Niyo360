@@ -4,8 +4,13 @@ import { ApiRecord, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Drawer } from "@/components/shared/Drawer";
+import { Button } from "@/components/shared/Button";
+import {
+  RecordDecisionDialog,
+  REVIEWABLE_STATUSES,
+} from "@/components/screens/api/RecordDecisionDialog";
 import { useApp } from "@/context/AppContext";
-import { useImpactAssessment, useImpactItems } from "@/hooks/useApiQueries";
+import { useImpactAssessment, useImpactItems, useReviews } from "@/hooks/useApiQueries";
 import { usePortfolioNames } from "@/hooks/usePortfolioNames";
 import { parseEvidence } from "@/services/api/evidence";
 import type { ImpactItem, ImpactLevel } from "@/services/api";
@@ -47,6 +52,14 @@ export function ImpactAssessmentDetailScreen() {
   const assessmentQuery = useImpactAssessment(selectedRecordId);
   const itemsQuery = useImpactItems(tab === "items" ? selectedRecordId : null);
   const [openItem, setOpenItem] = useState<ImpactItem | null>(null);
+  const [decisionOpen, setDecisionOpen] = useState(false);
+  // Decisions already filed against this assessment. Shown on the overview so
+  // the drill-in answers "has anyone looked at this?" without leaving it.
+  const reviewsQuery = useReviews(
+    selectedRecordId ? { impact_assessment_id: selectedRecordId } : {},
+  );
+  const assessment = assessmentQuery.data;
+  const reviewable = assessment ? REVIEWABLE_STATUSES.includes(assessment.status) : false;
 
   // The matcher records what it hit as a type plus a UUID. Joining against the
   // portfolio collections turns "PRODUCT 18f5a6da-…" into "Asterion PulseSense",
@@ -145,7 +158,16 @@ export function ImpactAssessmentDetailScreen() {
           { label: recordCrumb(selectedRecordId) },
         ]}
         onBack={() => navigateTo("api-impact")}
-        actions={<ApiRefresh query={assessmentQuery} />}
+        actions={
+          <>
+            <ApiRefresh query={assessmentQuery} />
+            {/* Only offered when the backend will accept it: an assessment
+                still analysing, or one that failed, has nothing to decide on. */}
+            {reviewable && selectedRecordId && (
+              <Button onClick={() => setDecisionOpen(true)}>Record decision</Button>
+            )}
+          </>
+        }
       />
       <PageBody>
         <div
@@ -218,6 +240,49 @@ export function ImpactAssessmentDetailScreen() {
                   </dl>
 
                   <section>
+                    <h2 className="type-label-sm text-fg-quaternary">Human review</h2>
+                    {reviewsQuery.data && reviewsQuery.data.length > 0 ? (
+                      <ul className="mt-2 space-y-2">
+                        {reviewsQuery.data.map((review) => (
+                          <li
+                            key={review.id}
+                            className="rounded-md border border-stroke-muted bg-raised p-3"
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge
+                                variant={
+                                  review.decision === "ACCEPT"
+                                    ? "complete"
+                                    : review.decision === "REJECT"
+                                      ? "high-risk"
+                                      : "pending"
+                                }
+                              >
+                                {review.decision.replace(/_/g, " ")}
+                              </Badge>
+                              <span className="type-caption font-mono text-fg-quaternary">
+                                {review.previous_state ?? "—"} → {review.new_state ?? "—"}
+                              </span>
+                              <span className="type-caption ml-auto font-mono text-fg-quaternary">
+                                {(review.reviewed_at ?? review.created_at ?? "").slice(0, 10)}
+                              </span>
+                            </div>
+                            {review.notes && (
+                              <p className="type-body-md mt-1.5 text-fg-secondary">
+                                {review.notes}
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="type-body-md mt-1 text-fg-tertiary">
+                        No decision has been recorded against this assessment yet.
+                      </p>
+                    )}
+                  </section>
+
+                  <section>
                     <h2 className="type-label-sm text-fg-quaternary">AI enrichment</h2>
                     <dl className="mt-2 grid gap-x-8 gap-y-5 sm:grid-cols-2">
                       <Field label="Status">
@@ -275,6 +340,14 @@ export function ImpactAssessmentDetailScreen() {
           )}
         </div>
       </PageBody>
+
+      {selectedRecordId && (
+        <RecordDecisionDialog
+          open={decisionOpen}
+          onClose={() => setDecisionOpen(false)}
+          assessmentId={selectedRecordId}
+        />
+      )}
 
       <MatchEvidenceDrawer
         item={openItem}
