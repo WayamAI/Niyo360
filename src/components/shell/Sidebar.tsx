@@ -104,6 +104,7 @@ const PARENT_OF: Partial<Record<ScreenId, ScreenId>> = {
   "report-detail": "delta-reports",
   "api-control-detail": "api-controls",
   "api-document-detail": "api-documents",
+  "api-report-detail": "api-reports",
   "new-change": "simulator",
 };
 

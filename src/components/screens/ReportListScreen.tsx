@@ -2,6 +2,7 @@ import { PageBody, PageHeader } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { useApp } from "@/context/AppContext";
 import { useReports } from "@/hooks/useApiQueries";
 import type { ImpactReport, ImpactReportStatus } from "@/services/api";
 
@@ -19,6 +20,7 @@ const STATUS_VARIANT: Record<ImpactReportStatus, "complete" | "neutral" | "pendi
 };
 
 export function ReportListScreen() {
+  const { openRecord } = useApp();
   const query = useReports();
 
   const columns: Column<ImpactReport>[] = [
@@ -79,6 +81,7 @@ export function ReportListScreen() {
               rows={rows}
               columns={columns}
               rowKey={(row) => row.id}
+              onRowOpen={(row) => openRecord("api-report-detail", row.id)}
               searchPlaceholder="Search reports by ID or title"
               getSearchText={(row) => `${row.id} ${row.title}`}
               exportName="parivart-reports"
