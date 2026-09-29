@@ -22,7 +22,9 @@ export const queryKeys = {
     processes: (params?: PageParams) => ["portfolio", "processes", params ?? {}] as const,
     process: (id: string) => ["portfolio", "processes", "detail", id] as const,
     controls: (params?: PageParams) => ["portfolio", "controls", params ?? {}] as const,
+    control: (id: string) => ["portfolio", "controls", "detail", id] as const,
     registrations: (params?: PageParams) => ["portfolio", "registrations", params ?? {}] as const,
+    registration: (id: string) => ["portfolio", "registrations", "detail", id] as const,
   },
   regulatory: {
     all: ["regulatory"] as const,

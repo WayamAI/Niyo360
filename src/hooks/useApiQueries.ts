@@ -92,6 +92,24 @@ export function useRegistrations(params: PageParams = {}) {
   });
 }
 
+export function useControl(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.portfolio.control(id ?? ""),
+    queryFn: () => portfolioApi.controls.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+export function useRegistration(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.portfolio.registration(id ?? ""),
+    queryFn: () => portfolioApi.registrations.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
 // --- regulatory ------------------------------------------------------------
 
 export function useAuthorities(params: PageParams = {}) {
@@ -212,6 +230,15 @@ export function useReports(params: PageParams = {}) {
     ...baseQuery,
     queryKey: queryKeys.reports.list(params),
     queryFn: () => reportsApi.list(params),
+  });
+}
+
+export function useReport(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.reports.detail(id ?? ""),
+    queryFn: () => reportsApi.get(id!),
+    enabled: Boolean(id),
   });
 }
 
