@@ -68,6 +68,8 @@ export type ImpactAssessmentCreate = S["ImpactAssessmentCreate"];
 export type ImpactAssessmentStatus = S["ImpactAssessmentStatus"];
 export type ImpactItem = S["ImpactItemResponse"];
 export type ImpactLevel = S["ImpactLevel"];
+/** What an impact item matched against: PRODUCT | MARKET | PROCESS | CONTROL | REGISTRATION. */
+export type EntityType = S["EntityType"];
 
 // --- reports ---------------------------------------------------------------
 export type ImpactReport = S["ImpactReportResponse"];
