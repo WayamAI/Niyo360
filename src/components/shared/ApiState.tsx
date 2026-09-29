@@ -84,6 +84,67 @@ export function ApiState<T>({
 }
 
 /**
+ * The single-record counterpart to ApiState, for a detail route.
+ *
+ * Same contract, same failure vocabulary — the difference is what "nothing"
+ * means. A collection that comes back empty is a legitimate empty state; a
+ * record that comes back 404 is a dead link, so it reads as not found rather
+ * than as an empty list. Detail screens previously passed their query to
+ * ApiState, whose T is an array, which silently widened every field access to
+ * `unknown[]`.
+ */
+export function ApiRecord<T>({
+  query,
+  notFoundTitle,
+  notFoundDetail,
+  skeletonCols = 2,
+  children,
+}: {
+  query: UseQueryResult<T>;
+  notFoundTitle: string;
+  notFoundDetail?: string;
+  skeletonCols?: number;
+  /** Rendered only when the query succeeded and returned a record. */
+  children: (record: T) => ReactNode;
+}) {
+  if (query.isPending) return <TableSkeleton cols={skeletonCols} />;
+
+  if (query.isError) {
+    const error = query.error instanceof ApiError ? query.error : null;
+
+    if (error?.kind === "forbidden") {
+      return (
+        <UnauthorizedState detail="Your role does not include access to this record. Ask an administrator to grant it." />
+      );
+    }
+
+    if (error?.kind === "not_found") {
+      return <EmptyState icon="warning" title={notFoundTitle} detail={notFoundDetail} />;
+    }
+
+    return (
+      <ErrorState
+        title={
+          error?.kind === "server"
+            ? "The PARIVART API could not complete this request"
+            : "Could not load this record"
+        }
+        detail={error?.message}
+        onRetry={() => void query.refetch()}
+      />
+    );
+  }
+
+  // A 200 with no body is not a record. Treated as not found rather than
+  // rendered as a shell of empty fields.
+  if (query.data == null) {
+    return <EmptyState icon="warning" title={notFoundTitle} detail={notFoundDetail} />;
+  }
+
+  return <>{children(query.data)}</>;
+}
+
+/**
  * Small header control showing where the rows came from and letting the user
  * refetch. `isFetching` covers a background refresh, which `isPending` does
  * not — so a refresh reads as activity rather than appearing to do nothing.
