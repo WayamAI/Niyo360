@@ -103,6 +103,7 @@ const SECTIONS: Array<{
 const PARENT_OF: Partial<Record<ScreenId, ScreenId>> = {
   "report-detail": "delta-reports",
   "api-control-detail": "api-controls",
+  "api-document-detail": "api-documents",
   "new-change": "simulator",
 };
 
