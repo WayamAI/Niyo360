@@ -618,6 +618,120 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reviews/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Reviews
+         * @description The organization's review trail, newest first.
+         */
+        get: operations["list_reviews_api_v1_reviews__get"];
+        put?: never;
+        /**
+         * Create Review
+         * @description File a review decision against an impact assessment.
+         *
+         *     The reviewer is the authenticated user and the tenant is their organization; neither
+         *     is taken from the request. An assessment belonging to another tenant is reported as
+         *     missing, exactly like one that does not exist.
+         */
+        post: operations["create_review_api_v1_reviews__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews/{review_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review */
+        get: operations["get_review_api_v1_reviews__review_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Actions
+         * @description The organization's actions, newest first, or the due-date window when asked.
+         */
+        get: operations["list_actions_api_v1_actions__get"];
+        put?: never;
+        /**
+         * Create Action
+         * @description Open a remediation action.
+         *
+         *     The owning organization is the authenticated user's, so an action can never be
+         *     created inside another tenant. An owner or impact item outside that tenant is
+         *     reported as missing.
+         */
+        post: operations["create_action_api_v1_actions__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/{action_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Action */
+        get: operations["get_action_api_v1_actions__action_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Action */
+        patch: operations["update_action_api_v1_actions__action_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/actions/{action_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Transition Action Status
+         * @description Move an action along its state machine.
+         *
+         *     A transition the machine does not allow -- reopening closed work, for instance --
+         *     is a 409 against current state, not a validation error.
+         */
+        patch: operations["transition_action_status_api_v1_actions__action_id__status_patch"];
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -683,6 +797,91 @@ export interface components {
          * @enum {string}
          */
         AIEnrichmentStatus: "DISABLED" | "SUCCESS" | "RATE_LIMITED" | "TIMEOUT" | "UNAVAILABLE" | "INVALID_RESPONSE" | "AUTH_ERROR" | "PROVIDER_ERROR";
+        /**
+         * ActionCreate
+         * @description A new remediation action.
+         *
+         *     organization_id is deliberately absent: the owning tenant comes from the
+         *     authenticated user, not from the request body, so a caller cannot create work
+         *     inside another organization.
+         */
+        ActionCreate: {
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /** Owner Id */
+            owner_id?: string | null;
+            /** Impact Item Id */
+            impact_item_id?: string | null;
+            /** @default MEDIUM */
+            priority: components["schemas"]["ActionPriority"];
+            /** Due Date */
+            due_date?: string | null;
+        };
+        /**
+         * ActionPriority
+         * @enum {string}
+         */
+        ActionPriority: "LOW" | "MEDIUM" | "HIGH";
+        /** ActionResponse */
+        ActionResponse: {
+            /** Id */
+            id: string;
+            /** Organization Id */
+            organization_id: string;
+            /** Owner Id */
+            owner_id?: string | null;
+            /** Impact Item Id */
+            impact_item_id?: string | null;
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            status: components["schemas"]["ActionStatus"];
+            priority: components["schemas"]["ActionPriority"];
+            /** Due Date */
+            due_date?: string | null;
+            /** Created At */
+            created_at?: string | null;
+            /** Updated At */
+            updated_at?: string | null;
+            /** Completed At */
+            completed_at?: string | null;
+        };
+        /**
+         * ActionStatus
+         * @enum {string}
+         */
+        ActionStatus: "OPEN" | "IN_PROGRESS" | "BLOCKED" | "COMPLETED" | "CANCELLED";
+        /**
+         * ActionStatusUpdate
+         * @description A status change on its own.
+         *
+         *     Carried in the body rather than the query string so the transition is an explicit,
+         *     loggable payload like every other write in the API.
+         */
+        ActionStatusUpdate: {
+            status: components["schemas"]["ActionStatus"];
+        };
+        /**
+         * ActionUpdate
+         * @description Partial update. Omitted fields are left alone.
+         */
+        ActionUpdate: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Owner Id */
+            owner_id?: string | null;
+            /** Impact Item Id */
+            impact_item_id?: string | null;
+            priority?: components["schemas"]["ActionPriority"] | null;
+            /** Due Date */
+            due_date?: string | null;
+            status?: components["schemas"]["ActionStatus"] | null;
+        };
         /** AuthorityCreate */
         AuthorityCreate: {
             /** Name */
@@ -1399,6 +1598,50 @@ export interface components {
             valid_until?: string | null;
             /** Registration Metadata */
             registration_metadata?: string | null;
+        };
+        /**
+         * ReviewCreate
+         * @description A review decision filed against an assessment.
+         *
+         *     Neither the organization nor the reviewer appears here. Both are taken from the
+         *     authenticated user, so a caller cannot file a review as somebody else or against
+         *     another tenant's assessment by editing the request body.
+         */
+        ReviewCreate: {
+            /** Impact Assessment Id */
+            impact_assessment_id: string;
+            decision: components["schemas"]["ReviewDecision"];
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * ReviewDecision
+         * @enum {string}
+         */
+        ReviewDecision: "ACCEPT" | "MODIFY" | "REJECT" | "NEEDS_MORE_INFORMATION";
+        /** ReviewResponse */
+        ReviewResponse: {
+            /** Id */
+            id: string;
+            /** Organization Id */
+            organization_id: string;
+            /** Impact Assessment Id */
+            impact_assessment_id: string;
+            /** Reviewer Id */
+            reviewer_id: string;
+            decision: components["schemas"]["ReviewDecision"];
+            /** Notes */
+            notes?: string | null;
+            /** Previous State */
+            previous_state?: string | null;
+            /** New State */
+            new_state?: string | null;
+            /** Reviewed At */
+            reviewed_at?: string | null;
+            /** Created At */
+            created_at?: string | null;
+            /** Updated At */
+            updated_at?: string | null;
         };
         /** SourceCreate */
         SourceCreate: {
@@ -3299,6 +3542,274 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImpactReportResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reviews_api_v1_reviews__get: {
+        parameters: {
+            query?: {
+                impact_assessment_id?: string | null;
+                reviewer_id?: string | null;
+                skip?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_review_api_v1_reviews__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_review_api_v1_reviews__review_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                review_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_actions_api_v1_actions__get: {
+        parameters: {
+            query?: {
+                owner_id?: string | null;
+                impact_item_id?: string | null;
+                status?: components["schemas"]["ActionStatus"] | null;
+                due_within_days?: number | null;
+                skip?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_action_api_v1_actions__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_action_api_v1_actions__action_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_action_api_v1_actions__action_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transition_action_status_api_v1_actions__action_id__status_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionStatusUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResponse"];
                 };
             };
             /** @description Validation Error */
