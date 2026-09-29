@@ -71,6 +71,15 @@ interface AppContextType {
   setSelectedChangeId: (id: string | null) => void;
   selectedReportId: string | null;
   setSelectedReportId: (id: string | null) => void;
+  /**
+   * Id of the record an API drill-in screen should load.
+   *
+   * Screens are switched by state rather than by URL, so a detail screen has
+   * no route parameter to read. openRecord sets the id and navigates in one
+   * step, which keeps the id and the screen from disagreeing.
+   */
+  selectedRecordId: string | null;
+  openRecord: (screen: ScreenId, id: string) => void;
   fixedIssues: Set<string>;
   markIssueFixed: (id: string) => void;
   resolvedEscalations: Set<string>;
@@ -97,6 +106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAssistantOpen, setAssistantOpen] = useState(false);
   const [selectedChangeId, setSelectedChangeId] = useState<string | null>("CHG-2025-0047");
   const [selectedReportId, setSelectedReportId] = useState<string | null>("IDR-2025-0041");
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [fixedIssues, setFixed] = useState<Set<string>>(new Set());
   const [resolvedEscalations, setResolved] = useState<Set<string>>(new Set());
   const [reviewedFeed, setReviewed] = useState<Set<string>>(new Set());
@@ -152,6 +162,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [logAudit],
   );
 
+  const openRecord = useCallback(
+    (screen: ScreenId, id: string) => {
+      setSelectedRecordId(id);
+      navigateTo(screen);
+    },
+    [navigateTo],
+  );
+
   const value: AppContextType = {
     currentScreen,
     navigateTo,
@@ -168,6 +186,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSelectedChangeId,
     selectedReportId,
     setSelectedReportId,
+    selectedRecordId,
+    openRecord,
     fixedIssues,
     markIssueFixed: (id) => setFixed((prev) => new Set(prev).add(id)),
     resolvedEscalations,
