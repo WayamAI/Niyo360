@@ -1,13 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppProvider } from "@/context/AppContext";
+import { AppProvider, isScreenId, type ScreenId } from "@/context/AppContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Shell } from "@/components/Shell";
 import { Login } from "@/components/screens/Login";
 import { BrandLockup } from "@/components/shared/Logo";
 
+/**
+ * Which screen the shell is showing, and which record it is showing, are
+ * carried in the URL.
+ *
+ * The shell switches screens by state rather than by route, which is why
+ * refreshing a drill-in used to drop the user back on the dashboard and why
+ * the browser's Back button skipped the whole session in one step. Putting the
+ * pair in the query string gives every screen a shareable address and makes
+ * Back, Forward and Reload behave, without splitting a 30-screen shell into 30
+ * file routes.
+ *
+ * `screen` is validated against the real screen list, so a hand-edited URL
+ * falls back to the dashboard instead of rendering nothing.
+ */
+export interface ShellSearch {
+  screen?: ScreenId;
+  id?: string;
+}
+
 export const Route = createFileRoute("/")({
   component: Index,
+  validateSearch: (search: Record<string, unknown>): ShellSearch => ({
+    screen: isScreenId(search.screen) ? search.screen : undefined,
+    id: typeof search.id === "string" && search.id.length > 0 ? search.id : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "PARIVART — Regulatory Change Intelligence" },

@@ -7,44 +7,60 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { SEED_AUDIT_EVENTS } from "@/data/mockData";
 import { useTheme, type Theme } from "@/context/ThemeContext";
 import { demoTimestamp } from "@/lib/demo-clock";
 
-export type ScreenId =
-  | "dashboard"
-  | "feed-monitor"
-  | "delta-reports"
-  | "report-detail"
-  | "agent-console"
-  | "haq-drafts"
-  | "variation-drafts"
-  | "validator"
-  | "validation-reports"
-  | "simulator"
-  | "new-change"
-  | "heatmap"
-  | "calendar"
-  | "audit"
-  | "escalations"
+/**
+ * Every screen the shell can show.
+ *
+ * A runtime array rather than a bare type union, because the screen id is now
+ * part of the URL and an incoming `?screen=` has to be validated against the
+ * real set before it is trusted.
+ */
+export const SCREEN_IDS = [
+  "dashboard",
+  "feed-monitor",
+  "delta-reports",
+  "report-detail",
+  "agent-console",
+  "haq-drafts",
+  "variation-drafts",
+  "validator",
+  "validation-reports",
+  "simulator",
+  "new-change",
+  "heatmap",
+  "calendar",
+  "audit",
+  "escalations",
   // Screens backed by the real PARIVART API (see src/components/screens/api).
-  | "api-products"
-  | "api-markets"
-  | "api-processes"
-  | "api-authorities"
-  | "api-sources"
-  | "api-documents"
-  | "api-impact"
-  | "api-reports"
-  | "api-controls"
-  | "api-registrations"
-  | "api-control-detail"
-  | "api-document-detail"
-  | "api-report-detail"
-  | "api-impact-detail"
-  | "api-report-generate"
-  | "api-document-upload"
-  | "api-impact-analyze";
+  "api-products",
+  "api-markets",
+  "api-processes",
+  "api-authorities",
+  "api-sources",
+  "api-documents",
+  "api-impact",
+  "api-reports",
+  "api-controls",
+  "api-registrations",
+  "api-control-detail",
+  "api-document-detail",
+  "api-report-detail",
+  "api-impact-detail",
+  "api-report-generate",
+  "api-document-upload",
+  "api-impact-analyze",
+] as const;
+
+export type ScreenId = (typeof SCREEN_IDS)[number];
+
+/** Narrows an untrusted value — a URL parameter — to a real screen id. */
+export function isScreenId(value: unknown): value is ScreenId {
+  return typeof value === "string" && (SCREEN_IDS as readonly string[]).includes(value);
+}
 
 export interface AuditEvent {
   id: string;
@@ -100,7 +116,12 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>("dashboard");
+  // The URL is the source of truth for which screen and record are open, so
+  // Back, Forward, Reload and a pasted link all land where they should.
+  const search = useSearch({ from: "/" });
+  const navigate = useNavigate({ from: "/" });
+  const currentScreen: ScreenId = search.screen ?? "dashboard";
+  const selectedRecordId = search.id ?? null;
   const [auditLog, setAuditLog] = useState<AuditEvent[]>(
     SEED_AUDIT_EVENTS.map((e, i) => ({ ...e, id: `seed-${i}` })),
   );
@@ -113,7 +134,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAssistantOpen, setAssistantOpen] = useState(false);
   const [selectedChangeId, setSelectedChangeId] = useState<string | null>("CHG-2025-0047");
   const [selectedReportId, setSelectedReportId] = useState<string | null>("IDR-2025-0041");
-  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [fixedIssues, setFixed] = useState<Set<string>>(new Set());
   const [resolvedEscalations, setResolved] = useState<Set<string>>(new Set());
   const [reviewedFeed, setReviewed] = useState<Set<string>>(new Set());
@@ -161,21 +181,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const navigateTo = useCallback(
-    (s: ScreenId) => {
-      setCurrentScreen(s);
-      logAudit({ actor: "Regulatory Operations", actorType: "user", action: `Navigated to ${s}` });
+  // One writer for both halves of the address. A list screen drops the record
+  // id so going back to a list does not leave a stale `?id=` behind it.
+  const go = useCallback(
+    (screen: ScreenId, id: string | null) => {
+      navigate({
+        search: {
+          screen: screen === "dashboard" ? undefined : screen,
+          id: id ?? undefined,
+        },
+      });
+      logAudit({
+        actor: "Regulatory Operations",
+        actorType: "user",
+        action: `Navigated to ${screen}`,
+      });
     },
-    [logAudit],
+    [navigate, logAudit],
   );
 
-  const openRecord = useCallback(
-    (screen: ScreenId, id: string) => {
-      setSelectedRecordId(id);
-      navigateTo(screen);
-    },
-    [navigateTo],
-  );
+  const navigateTo = useCallback((s: ScreenId) => go(s, null), [go]);
+
+  const openRecord = useCallback((screen: ScreenId, id: string) => go(screen, id), [go]);
 
   const value: AppContextType = {
     currentScreen,
