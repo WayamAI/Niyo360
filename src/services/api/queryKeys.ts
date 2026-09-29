@@ -45,6 +45,24 @@ export const queryKeys = {
     detail: (id: string) => ["impact", "detail", id] as const,
     items: (id: string) => ["impact", "detail", id, "items"] as const,
   },
+  reviews: {
+    all: ["reviews"] as const,
+    list: (params?: PageParams & { impact_assessment_id?: string; reviewer_id?: string }) =>
+      ["reviews", "list", params ?? {}] as const,
+    detail: (id: string) => ["reviews", "detail", id] as const,
+  },
+  actions: {
+    all: ["actions"] as const,
+    list: (
+      params?: PageParams & {
+        owner_id?: string;
+        impact_item_id?: string;
+        status?: string;
+        due_within_days?: number;
+      },
+    ) => ["actions", "list", params ?? {}] as const,
+    detail: (id: string) => ["actions", "detail", id] as const,
+  },
   reports: {
     all: ["reports"] as const,
     list: (params?: PageParams) => ["reports", "list", params ?? {}] as const,

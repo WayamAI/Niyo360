@@ -71,6 +71,17 @@ export type ImpactLevel = S["ImpactLevel"];
 /** What an impact item matched against: PRODUCT | MARKET | PROCESS | CONTROL | REGISTRATION. */
 export type EntityType = S["EntityType"];
 
+// --- human review and actions (Phase 7) ------------------------------------
+export type Review = S["ReviewResponse"];
+export type ReviewCreate = S["ReviewCreate"];
+export type ReviewDecision = S["ReviewDecision"];
+
+export type Action = S["ActionResponse"];
+export type ActionCreate = S["ActionCreate"];
+export type ActionUpdate = S["ActionUpdate"];
+export type ActionStatus = S["ActionStatus"];
+export type ActionPriority = S["ActionPriority"];
+
 // --- reports ---------------------------------------------------------------
 export type ImpactReport = S["ImpactReportResponse"];
 export type ImpactReportCreate = S["ImpactReportCreate"];

@@ -1,13 +1,16 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
+  actionsApi,
   ApiError,
   impactApi,
   isTransient,
   portfolioApi,
   regulatoryApi,
   reportsApi,
+  reviewsApi,
   isDocumentSettled,
   isIngestionSettled,
+  type ActionStatus,
   type PageParams,
   type ProductStatus,
 } from "@/services/api";
@@ -251,6 +254,51 @@ export function useReportVersions(id: string | null) {
   });
 }
 
+// --- human review and actions (Phase 7) ------------------------------------
+
+export function useReviews(
+  params: PageParams & { impact_assessment_id?: string; reviewer_id?: string } = {},
+) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.reviews.list(params),
+    queryFn: () => reviewsApi.list(params),
+  });
+}
+
+export function useReview(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.reviews.detail(id ?? ""),
+    queryFn: () => reviewsApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+export function useActions(
+  params: PageParams & {
+    owner_id?: string;
+    impact_item_id?: string;
+    status?: ActionStatus;
+    due_within_days?: number;
+  } = {},
+) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.actions.list(params),
+    queryFn: () => actionsApi.list(params),
+  });
+}
+
+export function useAction(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.actions.detail(id ?? ""),
+    queryFn: () => actionsApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
 // --- mutations -------------------------------------------------------------
 //
 // Each invalidates the collection it changed. React Query's `isPending` is what
@@ -322,6 +370,43 @@ export function useGenerateReport() {
     mutationFn: reportsApi.generate,
     retry: false,
     onSuccess: () => invalidate(client, queryKeys.reports.all),
+  });
+}
+
+export function useCreateReview() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: reviewsApi.create,
+    retry: false,
+    onSuccess: (review) => {
+      invalidate(client, queryKeys.reviews.all);
+      // A decision moves the assessment's own state, so its cached copy is
+      // stale the moment the review lands.
+      invalidate(client, queryKeys.impact.detail(review.impact_assessment_id));
+      invalidate(client, queryKeys.impact.all);
+    },
+  });
+}
+
+export function useCreateAction() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: actionsApi.create,
+    retry: false,
+    onSuccess: () => invalidate(client, queryKeys.actions.all),
+  });
+}
+
+export function useSetActionStatus() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ actionId, status }: { actionId: string; status: ActionStatus }) =>
+      actionsApi.setStatus(actionId, status),
+    retry: false,
+    onSuccess: (_action, { actionId }) => {
+      invalidate(client, queryKeys.actions.detail(actionId));
+      invalidate(client, queryKeys.actions.all);
+    },
   });
 }
 

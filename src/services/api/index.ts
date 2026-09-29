@@ -12,9 +12,8 @@
  *   dashboard metrics      no /dashboard route
  *   regulatory changes     extracted and stored, but no router
  *   obligations            extracted and stored, but no router
- *   actions                Phase 7
- *   evidence               Phase 7
- *   audit                  Phase 7
+ *   report download        in the backend's contract doc, not in the schema
+ *   audit                  no router
  *
  * Status of each is tracked in PARIVART_BACKEND_INTEGRATION_STATUS.md.
  */
@@ -26,5 +25,6 @@ export { authApi } from "./auth";
 export { portfolioApi, type PageParams } from "./portfolio";
 export { regulatoryApi } from "./regulatory";
 export { impactApi, reportsApi } from "./impact";
+export { reviewsApi, actionsApi } from "./governance";
 
 export * from "./types";
