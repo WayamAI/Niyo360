@@ -14,7 +14,10 @@ import type { ImpactItem, ImpactLevel } from "@/services/api";
  * Tabs follow the right rail's markup, as the report drill-in does.
  */
 
-const LEVEL_VARIANT: Record<ImpactLevel, "critical" | "high-risk" | "medium-risk" | "low-risk" | "neutral" | "pending"> = {
+const LEVEL_VARIANT: Record<
+  ImpactLevel,
+  "critical" | "high-risk" | "medium-risk" | "low-risk" | "neutral" | "pending"
+> = {
   HIGH: "high-risk",
   MEDIUM: "medium-risk",
   LOW: "low-risk",
@@ -67,7 +70,9 @@ export function ImpactAssessmentDetailScreen() {
       header: "Confidence",
       align: "right",
       value: (row) => row.confidence,
-      render: (row) => <span className="tabular font-mono text-fg-tertiary">{percent(row.confidence)}</span>,
+      render: (row) => (
+        <span className="tabular font-mono text-fg-tertiary">{percent(row.confidence)}</span>
+      ),
     },
     {
       key: "match_score",
@@ -75,7 +80,9 @@ export function ImpactAssessmentDetailScreen() {
       align: "right",
       hide: "md",
       value: (row) => row.match_score,
-      render: (row) => <span className="tabular font-mono text-fg-tertiary">{percent(row.match_score)}</span>,
+      render: (row) => (
+        <span className="tabular font-mono text-fg-tertiary">{percent(row.match_score)}</span>
+      ),
     },
     {
       key: "reason",

@@ -140,8 +140,8 @@ export function ImpactAnalysisScreen() {
                 <span>
                   <span className="type-body-md text-fg-secondary">Force re-analysis</span>
                   <span className="type-body-md block text-fg-quaternary">
-                    Analysis is idempotent: without this, a change that already has an
-                    assessment returns the existing one instead of producing a new version.
+                    Analysis is idempotent: without this, a change that already has an assessment
+                    returns the existing one instead of producing a new version.
                   </span>
                 </span>
               </label>
