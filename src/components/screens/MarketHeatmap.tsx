@@ -106,6 +106,7 @@ export function MarketHeatmap() {
     <>
       <PageHeader
         title="Market Impact Heatmap"
+        source="illustrative"
         description={`${change.id} · ${change.title}`}
         breadcrumb={[
           { label: "Change Simulator", onClick: () => navigateTo("simulator") },

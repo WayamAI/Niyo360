@@ -59,6 +59,7 @@ export function ValidationReports() {
     <>
       <PageHeader
         title={`Validation Report ${report.id}`}
+        source="illustrative"
         description={`${report.dossierTitle} · ${report.jurisdiction}`}
         breadcrumb={[{ label: "Compliance Validator" }, { label: "Validation Reports" }]}
         badges={<Badge variant="pillar-03">Pillar 03</Badge>}

@@ -126,6 +126,7 @@ export function AgentConsole() {
     <>
       <PageHeader
         title={AGENT.name}
+        source="illustrative"
         description={AGENT.description}
         breadcrumb={[{ label: "Change Intelligence" }, { label: "Intelligence Agent" }]}
         badges={

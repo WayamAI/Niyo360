@@ -108,7 +108,7 @@ export function AuditTrail() {
     <>
       <PageHeader
         title="Audit Trail"
-        description="End-to-end traceability across all four pillars. Every agent action, user action and system event is logged with a timestamp and entity reference."
+        description="End-to-end traceability across all four pillars. Every agent action, user action and system event is logged with a timestamp and entity reference. Entries from this session are real; the history it opens with is illustrative."
         breadcrumb={[{ label: "Governance" }, { label: "Audit Trail" }]}
       />
 

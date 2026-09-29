@@ -1,4 +1,5 @@
 import { useApp, type ScreenId } from "@/context/AppContext";
+import { DataSourceTag, type DataSource } from "@/components/shared/Page";
 import { AppIcon, type IconName } from "@/components/icons";
 import { AUTHORITY_SYNC } from "@/data/regulatoryData";
 import { ESCALATIONS } from "@/data/mockData";
@@ -19,6 +20,12 @@ const SECTIONS: Array<{
   label: string;
   /** Short form shown in the collapsed icon rail as a group separator. */
   short: string;
+  /**
+   * Whether this group's screens read the PARIVART API or the bundled example
+   * dataset. Shown beside the group label so the split is visible from the
+   * navigation, not only once a screen is open.
+   */
+  source?: DataSource;
   pillar?: "01" | "02" | "03" | "04";
   items: Array<{
     id: ScreenId;
@@ -35,6 +42,7 @@ const SECTIONS: Array<{
   },
   {
     label: "01 · Change Intelligence",
+    source: "illustrative",
     short: "01",
     pillar: "01",
     items: [
@@ -45,6 +53,7 @@ const SECTIONS: Array<{
   },
   {
     label: "02 · AI Writing",
+    source: "illustrative",
     short: "02",
     pillar: "02",
     items: [
@@ -54,6 +63,7 @@ const SECTIONS: Array<{
   },
   {
     label: "03 · Compliance Validator",
+    source: "illustrative",
     short: "03",
     pillar: "03",
     items: [
@@ -63,6 +73,7 @@ const SECTIONS: Array<{
   },
   {
     label: "04 · Change Simulator",
+    source: "illustrative",
     short: "04",
     pillar: "04",
     items: [
@@ -74,6 +85,7 @@ const SECTIONS: Array<{
     // Screens reading the real PARIVART API. Separated from the sections above,
     // which still render the illustrative dataset in src/data.
     label: "Live data · PARIVART API",
+    source: "live",
     short: "API",
     items: [
       { id: "api-authorities", label: "Authorities", icon: "organisation" },
@@ -154,7 +166,12 @@ export function Sidebar({
                 }`}
                 style={section.pillar ? { color: `var(--pillar-${section.pillar})` } : undefined}
               >
-                <span className={collapsed ? "lg:hidden" : ""}>{section.label}</span>
+                <span
+                  className={`${collapsed ? "lg:hidden" : ""} inline-flex items-center gap-1.5`}
+                >
+                  {section.label}
+                  {section.source === "illustrative" && <DataSourceTag source="illustrative" />}
+                </span>
                 <span className={collapsed ? "hidden lg:inline" : "hidden"} aria-hidden="true">
                   {section.short}
                 </span>

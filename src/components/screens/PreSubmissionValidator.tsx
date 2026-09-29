@@ -70,6 +70,7 @@ export function PreSubmissionValidator() {
     <>
       <PageHeader
         title="Pre-Submission Validator"
+        source="illustrative"
         description="Semantic validation across CTD modules: cross-module consistency, jurisdiction-specific mandatory fields, and labelling compliance against current authority requirements."
         breadcrumb={[{ label: "Compliance Validator" }, { label: "Pre-Submission Validator" }]}
         badges={<Badge variant="pillar-03">Pillar 03</Badge>}

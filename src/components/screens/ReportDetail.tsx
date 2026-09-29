@@ -38,6 +38,7 @@ export function ReportDetail() {
       <>
         <PageHeader
           title="Impact Delta Report"
+          source="illustrative"
           breadcrumb={[
             { label: "Impact Delta Reports", onClick: () => navigateTo("delta-reports") },
             { label: selectedReportId ?? "Not found" },
@@ -74,6 +75,7 @@ export function ReportDetail() {
     <>
       <PageHeader
         title={event.title}
+        source="illustrative"
         breadcrumb={[
           { label: "Impact Delta Reports", onClick: () => navigateTo("delta-reports") },
           { label: event.reportId ?? "" },

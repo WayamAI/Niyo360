@@ -83,6 +83,7 @@ export function RegulatoryCalendar() {
     <>
       <PageHeader
         title="Regulatory Calendar"
+        source="illustrative"
         description="Filing deadlines, health-authority review windows, external milestones and feed-driven obligations."
         breadcrumb={[{ label: "Governance" }, { label: "Regulatory Calendar" }]}
       />

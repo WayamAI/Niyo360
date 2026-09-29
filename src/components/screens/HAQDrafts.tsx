@@ -137,6 +137,7 @@ export function HAQDrafts() {
     <>
       <PageHeader
         title="HAQ Response Drafts"
+        source="illustrative"
         description="AI-drafted Health Authority Query responses grounded in approved dossier content. Every draft requires specialist review before submission."
         breadcrumb={[{ label: "AI Writing" }, { label: "HAQ Responses" }]}
         badges={<Badge variant="pillar-02">Pillar 02</Badge>}
