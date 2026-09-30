@@ -265,6 +265,104 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/regulatory/changes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Regulatory Changes
+         * @description Changes extracted from this organization's documents, newest first.
+         */
+        get: operations["list_regulatory_changes_api_v1_regulatory_changes__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/regulatory/changes/{change_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Regulatory Change */
+        get: operations["get_regulatory_change_api_v1_regulatory_changes__change_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/regulatory/changes/{change_id}/obligations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Obligations For Change
+         * @description The obligations this change creates.
+         *
+         *     Ownership is established on the change first, so an unknown or cross-tenant id
+         *     is a 404 rather than an empty list -- "this change has no obligations" and "you
+         *     cannot see this change" are different answers and should not look alike.
+         */
+        get: operations["list_obligations_for_change_api_v1_regulatory_changes__change_id__obligations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/regulatory/obligations/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Regulatory Obligations
+         * @description Obligations extracted from this organization's documents.
+         */
+        get: operations["list_regulatory_obligations_api_v1_regulatory_obligations__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/regulatory/obligations/{obligation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Regulatory Obligation */
+        get: operations["get_regulatory_obligation_api_v1_regulatory_obligations__obligation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portfolio/products/": {
         parameters: {
             query?: never;
@@ -732,6 +830,155 @@ export interface paths {
         patch: operations["transition_action_status_api_v1_actions__action_id__status_patch"];
         trace?: never;
     };
+    "/api/v1/audit/event-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Event Types
+         * @description The vocabulary this backend writes, so a client can offer a filter without
+         *     hardcoding a list that would drift from the server.
+         *
+         *     This describes what can be written, not what this organization has. An event
+         *     type appearing here with no matching rows is the normal case.
+         */
+        get: operations["list_event_types_api_v1_audit_event_types_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/audit/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Audit Events
+         * @description This organization's audit trail, newest first.
+         *
+         *     `entity_type` + `entity_id` together answer "the history of this record", which
+         *     is how a detail screen links to its own provenance.
+         */
+        get: operations["list_audit_events_api_v1_audit__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/audit/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Audit Event */
+        get: operations["get_audit_event_api_v1_audit__event_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evidence/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Evidence
+         * @description Attach a file to an action as evidence.
+         *
+         *     The uploader and the tenant come from the access token, never the form, so a
+         *     caller cannot file evidence as somebody else. An action belonging to another
+         *     tenant is reported as missing, exactly like one that does not exist -- and the
+         *     check happens before the file is stored, so such a request writes nothing.
+         */
+        post: operations["upload_evidence_api_v1_evidence_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evidence/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Evidence
+         * @description This organization's evidence, newest first, optionally for one action.
+         */
+        get: operations["list_evidence_api_v1_evidence__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evidence/{evidence_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Evidence */
+        get: operations["get_evidence_api_v1_evidence__evidence_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evidence/{evidence_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Evidence
+         * @description Stream the stored file back.
+         *
+         *     The record is resolved and its tenant checked first; only then is the storage
+         *     key used. That ordering is the reason `storage_key` need never leave the server.
+         */
+        get: operations["download_evidence_api_v1_evidence__evidence_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -882,6 +1129,49 @@ export interface components {
             due_date?: string | null;
             status?: components["schemas"]["ActionStatus"] | null;
         };
+        /**
+         * AuditEventResponse
+         * @description One recorded change: who, what, which entity, when, and what changed.
+         *
+         *     The actor is reported as an id *and* as the name and email resolved from it, so a
+         *     reader does not have to look up a UUID to learn who acted. `actor_*` are null for
+         *     an event with no attributable user.
+         */
+        AuditEventResponse: {
+            /** Id */
+            id: string;
+            /** Actor Id */
+            actor_id?: string | null;
+            /** Actor Name */
+            actor_name?: string | null;
+            /** Actor Email */
+            actor_email?: string | null;
+            /** Event Type */
+            event_type: string;
+            /** Entity Type */
+            entity_type?: string | null;
+            /** Entity Id */
+            entity_id?: string | null;
+            /** Payload */
+            payload?: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at?: string | null;
+        };
+        /**
+         * AuditEventTypesResponse
+         * @description The vocabulary this application writes.
+         *
+         *     Served so a client can build a filter without hardcoding a list that would drift
+         *     from the backend. It describes what *can* be written, not what is present.
+         */
+        AuditEventTypesResponse: {
+            /** Event Types */
+            event_types: string[];
+            /** Entity Types */
+            entity_types: string[];
+        };
         /** AuthorityCreate */
         AuthorityCreate: {
             /** Name */
@@ -1001,6 +1291,20 @@ export interface components {
             /** Source Id */
             source_id: string;
         };
+        /** Body_upload_evidence_api_v1_evidence_upload_post */
+        Body_upload_evidence_api_v1_evidence_upload_post: {
+            /** File */
+            file: string;
+            /** Action Id */
+            action_id: string;
+            /** Description */
+            description?: string | null;
+        };
+        /**
+         * ChangeType
+         * @enum {string}
+         */
+        ChangeType: "NEW_REQUIREMENT" | "REQUIREMENT_CHANGE" | "DELETED_REQUIREMENT" | "SCOPE_CHANGE" | "DEADLINE_CHANGE" | "LABELING_CHANGE" | "REPORTING_CHANGE" | "PROCESS_CHANGE" | "SAFETY_CHANGE" | "DEFINITION_CHANGE" | "OTHER";
         /**
          * ConnectorType
          * @enum {string}
@@ -1162,6 +1466,33 @@ export interface components {
          * @enum {string}
          */
         EntityType: "PRODUCT" | "MARKET" | "PROCESS" | "CONTROL" | "REGISTRATION";
+        /**
+         * EvidenceResponse
+         * @description One attached file.
+         *
+         *     `sha256` is the integrity anchor: it is what lets someone assert months later
+         *     that the file they are looking at is the file that was filed.
+         */
+        EvidenceResponse: {
+            /** Id */
+            id: string;
+            /** Action Id */
+            action_id?: string | null;
+            /** Uploaded By Id */
+            uploaded_by_id?: string | null;
+            /** Uploaded By Name */
+            uploaded_by_name?: string | null;
+            /** Uploaded By Email */
+            uploaded_by_email?: string | null;
+            /** Filename */
+            filename?: string | null;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Created At */
+            created_at?: string | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1406,6 +1737,11 @@ export interface components {
             regulatory_jurisdiction?: string | null;
             status?: components["schemas"]["MarketStatus"] | null;
         };
+        /**
+         * ObligationCategory
+         * @enum {string}
+         */
+        ObligationCategory: "LABELING" | "MANUFACTURING" | "QUALITY" | "SAFETY" | "REPORTING" | "REGISTRATION" | "SUBMISSION" | "POST_MARKET" | "CLINICAL" | "PACKAGING" | "DATA" | "CYBERSECURITY" | "RECORDKEEPING" | "OTHER";
         /** OrganizationCreate */
         OrganizationCreate: {
             /** Name */
@@ -1598,6 +1934,77 @@ export interface components {
             valid_until?: string | null;
             /** Registration Metadata */
             registration_metadata?: string | null;
+        };
+        /**
+         * RegulatoryChangeResponse
+         * @description One extracted change, with the provenance of the extraction.
+         *
+         *     `previous_text` and `new_text` are the before and after as they appeared in the
+         *     source, and `ai_model`/`prompt_version` say what produced the reading -- so a
+         *     reviewer can weigh the interpretation rather than having to trust it.
+         */
+        RegulatoryChangeResponse: {
+            /** Id */
+            id: string;
+            /** Document Id */
+            document_id?: string | null;
+            /** Version Id */
+            version_id?: string | null;
+            /** Section */
+            section?: string | null;
+            change_type: components["schemas"]["ChangeType"];
+            /** Summary */
+            summary: string;
+            /** Previous Text */
+            previous_text?: string | null;
+            /** New Text */
+            new_text?: string | null;
+            /** Source Reference */
+            source_reference?: string | null;
+            /** Confidence */
+            confidence?: number | null;
+            /** Prompt Version */
+            prompt_version?: string | null;
+            /** Ai Model */
+            ai_model?: string | null;
+            /** Created At */
+            created_at?: string | null;
+        };
+        /**
+         * RegulatoryObligationResponse
+         * @description One requirement arising from a change.
+         *
+         *     `source_page` and `source_section` are what let a reader go back to the document
+         *     and check the obligation against its origin.
+         */
+        RegulatoryObligationResponse: {
+            /** Id */
+            id: string;
+            /** Change Id */
+            change_id?: string | null;
+            /** Document Id */
+            document_id?: string | null;
+            /** Text */
+            text: string;
+            category: components["schemas"]["ObligationCategory"];
+            /** Applicability */
+            applicability?: string | null;
+            /** Jurisdiction */
+            jurisdiction?: string | null;
+            /** Effective Date */
+            effective_date?: string | null;
+            /** Source Page */
+            source_page?: string | null;
+            /** Source Section */
+            source_section?: string | null;
+            /** Confidence */
+            confidence?: number | null;
+            /** Prompt Version */
+            prompt_version?: string | null;
+            /** Ai Model */
+            ai_model?: string | null;
+            /** Created At */
+            created_at?: string | null;
         };
         /**
          * ReviewCreate
@@ -2448,6 +2855,168 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_regulatory_changes_api_v1_regulatory_changes__get: {
+        parameters: {
+            query?: {
+                document_id?: string | null;
+                change_type?: components["schemas"]["ChangeType"] | null;
+                skip?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulatoryChangeResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_regulatory_change_api_v1_regulatory_changes__change_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                change_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulatoryChangeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_obligations_for_change_api_v1_regulatory_changes__change_id__obligations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                change_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulatoryObligationResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_regulatory_obligations_api_v1_regulatory_obligations__get: {
+        parameters: {
+            query?: {
+                regulatory_change_id?: string | null;
+                document_id?: string | null;
+                category?: components["schemas"]["ObligationCategory"] | null;
+                skip?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulatoryObligationResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_regulatory_obligation_api_v1_regulatory_obligations__obligation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulatoryObligationResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3810,6 +4379,223 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_event_types_api_v1_audit_event_types_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventTypesResponse"];
+                };
+            };
+        };
+    };
+    list_audit_events_api_v1_audit__get: {
+        parameters: {
+            query?: {
+                entity_type?: string | null;
+                entity_id?: string | null;
+                actor_id?: string | null;
+                event_type?: string | null;
+                since?: string | null;
+                until?: string | null;
+                skip?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_audit_event_api_v1_audit__event_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_evidence_api_v1_evidence_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_evidence_api_v1_evidence_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_evidence_api_v1_evidence__get: {
+        parameters: {
+            query?: {
+                action_id?: string | null;
+                skip?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_evidence_api_v1_evidence__evidence_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_evidence_api_v1_evidence__evidence_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
