@@ -9,8 +9,9 @@ import {
   RecordDecisionDialog,
   REVIEWABLE_STATUSES,
 } from "@/components/screens/api/RecordDecisionDialog";
+import { RaiseActionDialog } from "@/components/screens/api/RaiseActionDialog";
 import { useApp } from "@/context/AppContext";
-import { useImpactAssessment, useImpactItems, useReviews } from "@/hooks/useApiQueries";
+import { useActions, useImpactAssessment, useImpactItems, useReviews } from "@/hooks/useApiQueries";
 import { usePortfolioNames } from "@/hooks/usePortfolioNames";
 import { parseEvidence } from "@/services/api/evidence";
 import type { ImpactItem, ImpactLevel } from "@/services/api";
@@ -53,6 +54,7 @@ export function ImpactAssessmentDetailScreen() {
   const itemsQuery = useImpactItems(tab === "items" ? selectedRecordId : null);
   const [openItem, setOpenItem] = useState<ImpactItem | null>(null);
   const [decisionOpen, setDecisionOpen] = useState(false);
+  const [raiseFor, setRaiseFor] = useState<ImpactItem | null>(null);
   // Decisions already filed against this assessment. Shown on the overview so
   // the drill-in answers "has anyone looked at this?" without leaving it.
   const reviewsQuery = useReviews(
@@ -363,6 +365,18 @@ export function ImpactAssessmentDetailScreen() {
         item={openItem}
         entityName={openItem ? names.resolve(openItem.entity_type, openItem.entity_id).name : null}
         onClose={() => setOpenItem(null)}
+        onRaiseAction={(item) => {
+          setOpenItem(null);
+          setRaiseFor(item);
+        }}
+      />
+
+      <RaiseActionDialog
+        open={raiseFor !== null}
+        item={raiseFor}
+        entityName={raiseFor ? names.resolve(raiseFor.entity_type, raiseFor.entity_id).name : null}
+        onClose={() => setRaiseFor(null)}
+        onRaised={() => navigateTo("api-actions")}
       />
     </>
   );
@@ -380,12 +394,17 @@ function MatchEvidenceDrawer({
   item,
   entityName,
   onClose,
+  onRaiseAction,
 }: {
   item: ImpactItem | null;
   entityName: string | null;
   onClose: () => void;
+  onRaiseAction: (item: ImpactItem) => void;
 }) {
   const evidence = item ? parseEvidence(item.evidence) : null;
+  // Actions already raised against this entity, so the same work is not
+  // raised twice from two sittings of the same queue.
+  const raised = useActions({ impact_item_id: item?.id ?? "" }, { enabled: Boolean(item) });
 
   return (
     <Drawer
@@ -394,6 +413,20 @@ function MatchEvidenceDrawer({
       width={620}
       title={entityName ?? evidence?.entity_label ?? item?.entity_id ?? "Matched entity"}
       subtitle={item ? `${item.entity_type} · match evidence` : undefined}
+      footer={
+        item && (
+          <div className="flex w-full flex-wrap items-center gap-2">
+            <span className="type-body-sm mr-auto text-fg-tertiary">
+              {raised.isError
+                ? "Existing actions could not be loaded."
+                : raised.data?.length
+                  ? `${raised.data.length} action${raised.data.length === 1 ? "" : "s"} already raised`
+                  : "No action raised yet"}
+            </span>
+            <Button onClick={() => onRaiseAction(item)}>Raise action</Button>
+          </div>
+        )
+      }
     >
       {item && (
         <>
