@@ -2,8 +2,12 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tansta
 import {
   actionsApi,
   ApiError,
+  auditApi,
+  changesApi,
+  evidenceApi,
   impactApi,
   isTransient,
+  obligationsApi,
   portfolioApi,
   regulatoryApi,
   reportsApi,
@@ -11,6 +15,9 @@ import {
   isDocumentSettled,
   isIngestionSettled,
   type ActionStatus,
+  type AuditFilters,
+  type ChangeType,
+  type ObligationCategory,
   type PageParams,
   type ProductStatus,
 } from "@/services/api";
@@ -317,6 +324,128 @@ export function useAction(id: string | null) {
   });
 }
 
+// --- regulatory intelligence -----------------------------------------------
+//
+// The "what changed / why does it matter" half of the chain. An assessment's
+// `regulatory_change_id` is resolvable through these, so a drill-in can link
+// to the change instead of dead-ending on an id.
+
+export function useRegulatoryChanges(
+  params: PageParams & { document_id?: string; change_type?: ChangeType } = {},
+) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.changes.list(params),
+    queryFn: () => changesApi.list(params),
+  });
+}
+
+export function useRegulatoryChange(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.changes.detail(id ?? ""),
+    queryFn: () => changesApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+/**
+ * The obligations a change creates.
+ *
+ * The backend answers 404 for an unknown or cross-tenant change rather than an
+ * empty array, so a caller can tell "requires nothing" from "cannot see it".
+ */
+export function useChangeObligations(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.changes.obligations(id ?? ""),
+    queryFn: () => changesApi.obligations(id!),
+    enabled: Boolean(id),
+  });
+}
+
+export function useObligations(
+  params: PageParams & {
+    regulatory_change_id?: string;
+    document_id?: string;
+    category?: ObligationCategory;
+  } = {},
+) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.obligations.list(params),
+    queryFn: () => obligationsApi.list(params),
+  });
+}
+
+export function useObligation(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.obligations.detail(id ?? ""),
+    queryFn: () => obligationsApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+// --- evidence ---------------------------------------------------------------
+
+export function useEvidence(
+  params: PageParams & { action_id?: string } = {},
+  options: CollectionOptions = {},
+) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.evidence.list(params),
+    queryFn: () => evidenceApi.list(params),
+    enabled: options.enabled ?? true,
+  });
+}
+
+export function useEvidenceItem(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.evidence.detail(id ?? ""),
+    queryFn: () => evidenceApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+// --- audit trail ------------------------------------------------------------
+
+export function useAuditEvents(filters: AuditFilters = {}, options: CollectionOptions = {}) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.audit.list(filters),
+    queryFn: () => auditApi.list(filters),
+    enabled: options.enabled ?? true,
+  });
+}
+
+export function useAuditEvent(id: string | null) {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.audit.detail(id ?? ""),
+    queryFn: () => auditApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+/**
+ * The event vocabulary the backend writes.
+ *
+ * Effectively static for the life of a backend build, so it is cached far
+ * longer than the 30s default — refetching a fixed list on every screen visit
+ * is a request that can never return anything new.
+ */
+export function useAuditEventTypes() {
+  return useQuery({
+    ...baseQuery,
+    queryKey: queryKeys.audit.eventTypes(),
+    queryFn: () => auditApi.eventTypes(),
+    staleTime: 60 * 60_000,
+  });
+}
+
 // --- mutations -------------------------------------------------------------
 //
 // Each invalidates the collection it changed. React Query's `isPending` is what
@@ -424,6 +553,33 @@ export function useSetActionStatus() {
     onSuccess: (_action, { actionId }) => {
       invalidate(client, queryKeys.actions.detail(actionId));
       invalidate(client, queryKeys.actions.all);
+    },
+  });
+}
+
+/**
+ * Attaches a file to an action.
+ *
+ * Invalidates the audit trail as well as the evidence collection, because the
+ * upload writes an audit event server-side: leaving the trail cached would show
+ * a history that is missing the thing the user just did.
+ */
+export function useUploadEvidence() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      file,
+      actionId,
+      description,
+    }: {
+      file: File;
+      actionId: string;
+      description?: string;
+    }) => evidenceApi.upload(file, { action_id: actionId, description }),
+    retry: false,
+    onSuccess: () => {
+      invalidate(client, queryKeys.evidence.all);
+      invalidate(client, queryKeys.audit.all);
     },
   });
 }

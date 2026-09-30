@@ -71,7 +71,16 @@ export const queryKeys = {
   },
   audit: {
     all: ["audit"] as const,
-    list: (filters?: Record<string, unknown>) => ["audit", "list", filters ?? {}] as const,
+    list: (
+      filters?: PageParams & {
+        entity_type?: string;
+        entity_id?: string;
+        actor_id?: string;
+        event_type?: string;
+        since?: string;
+        until?: string;
+      },
+    ) => ["audit", "list", filters ?? {}] as const,
     detail: (id: string) => ["audit", "detail", id] as const,
     // Not parameterised and effectively static for the life of a backend
     // build, so it is kept out of the `list` namespace that mutations
