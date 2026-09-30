@@ -48,7 +48,7 @@ function percent(value: number): string {
 }
 
 export function ImpactAssessmentDetailScreen() {
-  const { selectedRecordId, navigateTo } = useApp();
+  const { selectedRecordId, navigateTo, openRecord } = useApp();
   const [tab, setTab] = useState<TabId>("overview");
   const assessmentQuery = useImpactAssessment(selectedRecordId);
   const itemsQuery = useImpactItems(tab === "items" ? selectedRecordId : null);
@@ -164,6 +164,15 @@ export function ImpactAssessmentDetailScreen() {
         actions={
           <>
             <ApiRefresh query={assessmentQuery} />
+            {selectedRecordId && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => openRecord("audit", selectedRecordId)}
+              >
+                History
+              </Button>
+            )}
             {/* Only offered when the backend will accept it: an assessment
                 still analysing, or one that failed, has nothing to decide on. */}
             {reviewable && selectedRecordId && (
@@ -235,7 +244,21 @@ export function ImpactAssessmentDetailScreen() {
                       <Mono>{assessment.id}</Mono>
                     </Field>
                     <Field label="Regulatory change">
-                      <Mono>{assessment.regulatory_change_id}</Mono>
+                      {/* Resolvable now that the backend serves changes. This
+                          used to be a dead end: the id was all the UI had. */}
+                      {assessment.regulatory_change_id ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openRecord("api-change-detail", assessment.regulatory_change_id!)
+                          }
+                          className="font-mono text-brand underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {assessment.regulatory_change_id}
+                        </button>
+                      ) : (
+                        <Mono>—</Mono>
+                      )}
                     </Field>
                     <div className="sm:col-span-2">
                       <Field label="Summary">{assessment.summary ?? "—"}</Field>
