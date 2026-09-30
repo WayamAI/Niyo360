@@ -13,7 +13,7 @@ import { RaiseActionDialog } from "@/components/screens/api/RaiseActionDialog";
 import { useApp } from "@/context/AppContext";
 import { useActions, useImpactAssessment, useImpactItems, useReviews } from "@/hooks/useApiQueries";
 import { usePortfolioNames } from "@/hooks/usePortfolioNames";
-import { parseEvidence } from "@/services/api/evidence";
+import { parseEvidence } from "@/services/api/matchEvidence";
 import type { ImpactItem, ImpactLevel } from "@/services/api";
 
 /**
