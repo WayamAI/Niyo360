@@ -18,7 +18,6 @@ import { CMCChangeSimulator } from "@/components/screens/CMCChangeSimulator";
 import { NewChangeEntry } from "@/components/screens/NewChangeEntry";
 import { MarketHeatmap } from "@/components/screens/MarketHeatmap";
 import { RegulatoryCalendar } from "@/components/screens/RegulatoryCalendar";
-import { AuditTrail } from "@/components/screens/AuditTrail";
 import { Escalations } from "@/components/screens/Escalations";
 import { ProductsScreen } from "@/components/screens/api/ProductsScreen";
 import { MarketsScreen } from "@/components/screens/api/MarketsScreen";
@@ -39,6 +38,7 @@ import { DocumentUploadScreen } from "@/components/screens/api/DocumentUploadScr
 import { ImpactAnalysisScreen } from "@/components/screens/api/ImpactAnalysisScreen";
 import { ReviewListScreen } from "@/components/screens/api/ReviewListScreen";
 import { ActionListScreen } from "@/components/screens/api/ActionListScreen";
+import { AuditTrailScreen } from "@/components/screens/api/AuditTrailScreen";
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -54,7 +54,7 @@ const SCREENS = {
   "new-change": NewChangeEntry,
   heatmap: MarketHeatmap,
   calendar: RegulatoryCalendar,
-  audit: AuditTrail,
+  audit: AuditTrailScreen,
   escalations: Escalations,
   "api-products": ProductsScreen,
   "api-markets": MarketsScreen,

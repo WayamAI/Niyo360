@@ -100,14 +100,19 @@ const SECTIONS: Array<{
       { id: "api-registrations", label: "Registrations", icon: "audit" },
       { id: "api-reviews", label: "Human Review", icon: "validator" },
       { id: "api-actions", label: "Actions", icon: "escalation" },
+      { id: "audit", label: "Audit Trail", icon: "audit" },
     ],
   },
   {
+    // Calendar and Escalations still render the illustrative dataset. The group
+    // is tagged as such because the two screens in it are, now that Audit has
+    // moved to the live group -- an untagged group beside a tagged one reads as
+    // a claim that this one is live.
     label: "Governance",
+    source: "illustrative",
     short: "GV",
     items: [
       { id: "calendar", label: "Regulatory Calendar", icon: "calendar" },
-      { id: "audit", label: "Audit Trail", icon: "audit" },
       { id: "escalations", label: "Escalations", icon: "escalation", badge: "escalations" },
     ],
   },
