@@ -42,6 +42,8 @@ import { AuditTrailScreen } from "@/components/screens/api/AuditTrailScreen";
 import { RegulatoryChangeListScreen } from "@/components/screens/api/RegulatoryChangeListScreen";
 import { RegulatoryChangeDetailScreen } from "@/components/screens/api/RegulatoryChangeDetailScreen";
 import { ObligationListScreen } from "@/components/screens/api/ObligationListScreen";
+import { EvidenceListScreen } from "@/components/screens/api/EvidenceListScreen";
+import { EvidenceDetailScreen } from "@/components/screens/api/EvidenceDetailScreen";
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -81,6 +83,8 @@ const SCREENS = {
   "api-changes": RegulatoryChangeListScreen,
   "api-change-detail": RegulatoryChangeDetailScreen,
   "api-obligations": ObligationListScreen,
+  "api-evidence": EvidenceListScreen,
+  "api-evidence-detail": EvidenceDetailScreen,
 } as const;
 
 /**

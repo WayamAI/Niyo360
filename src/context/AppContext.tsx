@@ -61,6 +61,10 @@ export const SCREEN_IDS = [
   "api-changes",
   "api-change-detail",
   "api-obligations",
+  // Evidence. Note that "audit" is an existing id: it used to render a
+  // client-side log of this session and now renders the served trail.
+  "api-evidence",
+  "api-evidence-detail",
 ] as const;
 
 export type ScreenId = (typeof SCREEN_IDS)[number];
