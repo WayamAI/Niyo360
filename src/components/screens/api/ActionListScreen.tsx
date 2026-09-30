@@ -7,8 +7,9 @@ import { FilterBar, FilterSelect } from "@/components/shared/Filters";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Drawer } from "@/components/shared/Drawer";
 import { useApp } from "@/context/AppContext";
-import { asApiError, useActions, useSetActionStatus } from "@/hooks/useApiQueries";
-import type { Action, ActionPriority, ActionStatus } from "@/services/api";
+import { AttachEvidenceDialog } from "@/components/screens/api/AttachEvidenceDialog";
+import { asApiError, useActions, useEvidence, useSetActionStatus } from "@/hooks/useApiQueries";
+import type { Action, ActionPriority, ActionStatus, Evidence } from "@/services/api";
 
 /**
  * Actions, from GET /api/v1/actions/.
@@ -70,15 +71,19 @@ function day(value: string | null | undefined): string {
 }
 
 export function ActionListScreen() {
-  const { showToast } = useApp();
+  const { showToast, openRecord } = useApp();
   const [status, setStatus] = useState<StatusFilter>("All");
   const [open, setOpen] = useState<Action | null>(null);
+  const [attachTo, setAttachTo] = useState<Action | null>(null);
 
   // The filter is applied by the backend, not in the browser, so the count in
   // the header is the real number of matching records rather than the number
   // that happened to be on this page.
   const query = useActions(status === "All" ? {} : { status });
   const setActionStatus = useSetActionStatus();
+  // Evidence already filed against the open action, so the drawer answers
+  // "has this been substantiated?" without leaving it.
+  const evidence = useEvidence({ action_id: open?.id ?? "" }, { enabled: Boolean(open) });
 
   function transition(action: Action, next: ActionStatus) {
     setActionStatus.mutate(
@@ -201,28 +206,45 @@ export function ActionListScreen() {
         title={open?.title ?? "Action"}
         subtitle={open ? `${open.priority} priority · due ${day(open.due_date)}` : undefined}
         footer={
-          open &&
-          (ALLOWED_NEXT[open.status].length === 0 ? (
-            <p className="type-body-sm w-full text-fg-tertiary">
-              {open.status === "COMPLETED" ? "Completed" : "Cancelled"} actions are final and cannot
-              be moved again.
-            </p>
-          ) : (
-            <div className="flex w-full flex-wrap items-center gap-2">
-              <span className="type-label-sm mr-auto text-fg-quaternary">Move to</span>
-              {ALLOWED_NEXT[open.status].map((next) => (
-                <Button
-                  key={next}
-                  variant={next === "COMPLETED" ? "primary" : "secondary"}
-                  size="sm"
-                  disabled={setActionStatus.isPending}
-                  onClick={() => transition(open, next)}
-                >
-                  {next.replace("_", " ")}
+          open && (
+            <div className="flex w-full flex-col gap-2.5">
+              {ALLOWED_NEXT[open.status].length === 0 ? (
+                <p className="type-body-sm text-fg-tertiary">
+                  {open.status === "COMPLETED" ? "Completed" : "Cancelled"} actions are final and
+                  cannot be moved again.
+                </p>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="type-label-sm mr-auto text-fg-quaternary">Move to</span>
+                  {ALLOWED_NEXT[open.status].map((next) => (
+                    <Button
+                      key={next}
+                      variant={next === "COMPLETED" ? "primary" : "secondary"}
+                      size="sm"
+                      disabled={setActionStatus.isPending}
+                      onClick={() => transition(open, next)}
+                    >
+                      {next.replace("_", " ")}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              {/* Filing evidence stays available on a closed action: the work
+                  being finished is exactly when the proof of it arrives. */}
+              <div className="flex flex-wrap items-center gap-2 border-t border-stroke-muted pt-2.5">
+                <span className="type-body-sm mr-auto text-fg-tertiary">
+                  {evidence.isError
+                    ? "Filed evidence could not be loaded."
+                    : evidence.data?.length
+                      ? `${evidence.data.length} file${evidence.data.length === 1 ? "" : "s"} filed`
+                      : "No evidence filed yet"}
+                </span>
+                <Button variant="secondary" size="sm" onClick={() => setAttachTo(open)}>
+                  File evidence
                 </Button>
-              ))}
+              </div>
             </div>
-          ))
+          )
         }
       >
         {open && (
@@ -257,9 +279,26 @@ export function ActionListScreen() {
                 {open.owner_id ?? "Unassigned"}
               </p>
             </div>
+
+            <div>
+              <h3 className="type-label-sm text-fg-quaternary">Evidence</h3>
+              <EvidenceSummary rows={evidence.data} failed={evidence.isError} />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" size="sm" onClick={() => openRecord("audit", open.id)}>
+                View audit history
+              </Button>
+            </div>
           </>
         )}
       </Drawer>
+
+      <AttachEvidenceDialog
+        open={attachTo !== null}
+        action={attachTo}
+        onClose={() => setAttachTo(null)}
+      />
     </>
   );
 }
@@ -270,5 +309,48 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <dt className="type-label-sm text-fg-quaternary">{label}</dt>
       <dd className="type-body-md mt-1 text-fg-secondary">{children}</dd>
     </div>
+  );
+}
+
+/**
+ * The files filed against an action.
+ *
+ * Renders names rather than a count alone: "3 files filed" does not tell a
+ * reviewer whether the right thing was filed.
+ */
+function EvidenceSummary({ rows, failed }: { rows: Evidence[] | undefined; failed: boolean }) {
+  const { openRecord } = useApp();
+
+  if (failed) {
+    return (
+      <p className="type-body-md mt-1 text-fg-tertiary">
+        Filed evidence could not be loaded. The records may still exist.
+      </p>
+    );
+  }
+  if (!rows || rows.length === 0) {
+    return (
+      <p className="type-body-md mt-1 text-fg-quaternary">
+        Nothing filed yet. File the document that shows this work was done.
+      </p>
+    );
+  }
+  return (
+    <ul className="mt-1 flex flex-col gap-1.5">
+      {rows.map((row) => (
+        <li key={row.id}>
+          <button
+            type="button"
+            onClick={() => openRecord("api-evidence-detail", row.id)}
+            className="type-body-md flex w-full min-w-0 items-center gap-2 rounded-md border border-stroke-muted px-2.5 py-1.5 text-left text-fg-secondary transition-colors duration-150 hover:bg-raised focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <span className="min-w-0 flex-1 truncate">{row.filename ?? "Untitled"}</span>
+            <span className="type-caption shrink-0 font-mono text-fg-quaternary">
+              {row.sha256?.slice(0, 8) ?? ""}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
