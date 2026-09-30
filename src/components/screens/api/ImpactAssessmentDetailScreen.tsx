@@ -56,7 +56,8 @@ export function ImpactAssessmentDetailScreen() {
   // Decisions already filed against this assessment. Shown on the overview so
   // the drill-in answers "has anyone looked at this?" without leaving it.
   const reviewsQuery = useReviews(
-    selectedRecordId ? { impact_assessment_id: selectedRecordId } : {},
+    { impact_assessment_id: selectedRecordId ?? "" },
+    { enabled: Boolean(selectedRecordId) },
   );
   const assessment = assessmentQuery.data;
   const reviewable = assessment ? REVIEWABLE_STATUSES.includes(assessment.status) : false;

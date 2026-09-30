@@ -34,6 +34,20 @@ export function shouldRetry(failureCount: number, error: Error): boolean {
   return isTransient(error);
 }
 
+/**
+ * Opt-in gate for a collection query.
+ *
+ * A collection hook is enabled by default, because most call sites want the
+ * whole collection. A call site that only wants a *filtered* subset has a
+ * different need: until it has the id to filter by, the correct number of
+ * requests is zero. Passing `{}` instead would not express that — it asks for
+ * the entire collection, which is both a wasted round trip and a cache entry
+ * the filtered view can later be seeded from, showing counts that belong to
+ * other records. Such a call site passes `{ enabled: Boolean(id) }`, matching
+ * what the single-record hooks do with their own id.
+ */
+export type CollectionOptions = { enabled?: boolean };
+
 const baseQuery = { retry: shouldRetry, staleTime: 30_000 } as const;
 
 /** Polling cadence while a background job is still running. */
@@ -258,11 +272,13 @@ export function useReportVersions(id: string | null) {
 
 export function useReviews(
   params: PageParams & { impact_assessment_id?: string; reviewer_id?: string } = {},
+  options: CollectionOptions = {},
 ) {
   return useQuery({
     ...baseQuery,
     queryKey: queryKeys.reviews.list(params),
     queryFn: () => reviewsApi.list(params),
+    enabled: options.enabled ?? true,
   });
 }
 
@@ -282,11 +298,13 @@ export function useActions(
     status?: ActionStatus;
     due_within_days?: number;
   } = {},
+  options: CollectionOptions = {},
 ) {
   return useQuery({
     ...baseQuery,
     queryKey: queryKeys.actions.list(params),
     queryFn: () => actionsApi.list(params),
+    enabled: options.enabled ?? true,
   });
 }
 
