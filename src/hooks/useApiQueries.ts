@@ -223,11 +223,15 @@ export function useIngestionRun(runId: string | null, enabled = true) {
 
 // --- impact and reports ----------------------------------------------------
 
-export function useImpactAssessments(params: PageParams & { regulatory_change_id?: string } = {}) {
+export function useImpactAssessments(
+  params: PageParams & { regulatory_change_id?: string } = {},
+  options: CollectionOptions = {},
+) {
   return useQuery({
     ...baseQuery,
     queryKey: queryKeys.impact.list(params),
     queryFn: () => impactApi.list(params),
+    enabled: options.enabled ?? true,
   });
 }
 
