@@ -87,6 +87,27 @@ export type ImpactReport = S["ImpactReportResponse"];
 export type ImpactReportCreate = S["ImpactReportCreate"];
 export type ImpactReportStatus = S["ImpactReportStatus"];
 
+// --- evidence (Phase 8) ----------------------------------------------------
+//
+// The file kind, not the match-provenance kind. `ImpactItem.evidence` is a
+// JSON string of match signals parsed by matchEvidence.ts; these are records
+// of real uploaded files, and the two are unrelated.
+//
+// Note what is absent: there is no evidence type/category on the wire, because
+// the backend has no such column, and no `storage_key`, because it is an
+// internal path the server never serialises.
+export type Evidence = S["EvidenceResponse"];
+
+// --- audit trail (Phase 8) -------------------------------------------------
+export type AuditEvent = S["AuditEventResponse"];
+export type AuditEventTypes = S["AuditEventTypesResponse"];
+
+// --- regulatory intelligence -----------------------------------------------
+export type RegulatoryChange = S["RegulatoryChangeResponse"];
+export type RegulatoryObligation = S["RegulatoryObligationResponse"];
+export type ChangeType = S["ChangeType"];
+export type ObligationCategory = S["ObligationCategory"];
+
 /**
  * Terminal states, used to stop polling. Taken from the served enums, not
  * assumed: the document pipeline ends at ANALYZED or FAILED — there is no

@@ -86,6 +86,16 @@ export interface RequestOptions {
   /** Set false for endpoints that must not carry credentials. */
   authenticated?: boolean;
   signal?: AbortSignal;
+  /**
+   * How to read a successful body. Defaults to sniffing the content type:
+   * JSON is parsed, anything else is read as text.
+   *
+   * `"blob"` is required for a binary download. Reading bytes with `.text()`
+   * decodes them as UTF-8 and corrupts anything that is not text, which is
+   * silent — the request succeeds and the file is quietly wrong. An endpoint
+   * returning a stored file must therefore ask for a blob explicitly.
+   */
+  parse?: "auto" | "blob";
 }
 
 function buildUrl(path: string, query: RequestOptions["query"]): string {
@@ -117,6 +127,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     timeoutMs = DEFAULT_TIMEOUT_MS,
     authenticated = true,
     signal,
+    parse = "auto",
   } = options;
 
   if (!isApiConfigured) {
@@ -198,6 +209,11 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 
   if (response.status === 204) return undefined as T;
+
+  // Asked for explicitly, never sniffed: a server may describe a file as
+  // application/octet-stream, text/csv or anything else, and guessing wrong
+  // corrupts it silently.
+  if (parse === "blob") return (await response.blob()) as T;
 
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {

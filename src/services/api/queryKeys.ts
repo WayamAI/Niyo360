@@ -63,6 +63,39 @@ export const queryKeys = {
     ) => ["actions", "list", params ?? {}] as const,
     detail: (id: string) => ["actions", "detail", id] as const,
   },
+  evidence: {
+    all: ["evidence"] as const,
+    list: (params?: PageParams & { action_id?: string }) =>
+      ["evidence", "list", params ?? {}] as const,
+    detail: (id: string) => ["evidence", "detail", id] as const,
+  },
+  audit: {
+    all: ["audit"] as const,
+    list: (filters?: Record<string, unknown>) => ["audit", "list", filters ?? {}] as const,
+    detail: (id: string) => ["audit", "detail", id] as const,
+    // Not parameterised and effectively static for the life of a backend
+    // build, so it is kept out of the `list` namespace that mutations
+    // invalidate by prefix.
+    eventTypes: () => ["audit", "event-types"] as const,
+  },
+  changes: {
+    all: ["changes"] as const,
+    list: (params?: PageParams & { document_id?: string; change_type?: string }) =>
+      ["changes", "list", params ?? {}] as const,
+    detail: (id: string) => ["changes", "detail", id] as const,
+    obligations: (id: string) => ["changes", "detail", id, "obligations"] as const,
+  },
+  obligations: {
+    all: ["obligations"] as const,
+    list: (
+      params?: PageParams & {
+        regulatory_change_id?: string;
+        document_id?: string;
+        category?: string;
+      },
+    ) => ["obligations", "list", params ?? {}] as const,
+    detail: (id: string) => ["obligations", "detail", id] as const,
+  },
   reports: {
     all: ["reports"] as const,
     list: (params?: PageParams) => ["reports", "list", params ?? {}] as const,
