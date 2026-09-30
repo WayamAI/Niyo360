@@ -39,6 +39,9 @@ import { ImpactAnalysisScreen } from "@/components/screens/api/ImpactAnalysisScr
 import { ReviewListScreen } from "@/components/screens/api/ReviewListScreen";
 import { ActionListScreen } from "@/components/screens/api/ActionListScreen";
 import { AuditTrailScreen } from "@/components/screens/api/AuditTrailScreen";
+import { RegulatoryChangeListScreen } from "@/components/screens/api/RegulatoryChangeListScreen";
+import { RegulatoryChangeDetailScreen } from "@/components/screens/api/RegulatoryChangeDetailScreen";
+import { ObligationListScreen } from "@/components/screens/api/ObligationListScreen";
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -75,6 +78,9 @@ const SCREENS = {
   "api-impact-analyze": ImpactAnalysisScreen,
   "api-reviews": ReviewListScreen,
   "api-actions": ActionListScreen,
+  "api-changes": RegulatoryChangeListScreen,
+  "api-change-detail": RegulatoryChangeDetailScreen,
+  "api-obligations": ObligationListScreen,
 } as const;
 
 /**

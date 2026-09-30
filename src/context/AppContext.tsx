@@ -56,6 +56,11 @@ export const SCREEN_IDS = [
   // Phase 7 — human review and actions.
   "api-reviews",
   "api-actions",
+  // Phase 8 — the regulatory intelligence that makes "what changed?"
+  // answerable, now that the backend serves it.
+  "api-changes",
+  "api-change-detail",
+  "api-obligations",
 ] as const;
 
 export type ScreenId = (typeof SCREEN_IDS)[number];

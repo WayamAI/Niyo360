@@ -90,7 +90,11 @@ const SECTIONS: Array<{
     items: [
       { id: "api-authorities", label: "Authorities", icon: "organisation" },
       { id: "api-sources", label: "Sources", icon: "feed" },
+      // Ordered to follow the chain the product actually models, so the nav
+      // reads as the workflow rather than an alphabetical list of tables.
       { id: "api-documents", label: "Documents", icon: "document" },
+      { id: "api-changes", label: "Regulatory Changes", icon: "feed" },
+      { id: "api-obligations", label: "Obligations", icon: "flag" },
       { id: "api-impact", label: "Impact Assessments", icon: "layers" },
       { id: "api-reports", label: "Impact Reports", icon: "deltaReport" },
       { id: "api-products", label: "Products", icon: "document" },
@@ -128,6 +132,8 @@ const PARENT_OF: Partial<Record<ScreenId, ScreenId>> = {
   "api-report-generate": "api-reports",
   "api-document-upload": "api-documents",
   "api-impact-analyze": "api-impact",
+  "api-change-detail": "api-changes",
+  "api-obligations": "api-changes",
   "new-change": "simulator",
 };
 
