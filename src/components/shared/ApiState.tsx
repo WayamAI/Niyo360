@@ -25,6 +25,47 @@ import {
  *   5xx  the backend accepted the request and failed to answer it
  *   network/timeout  nothing reached the backend, or its error was blocked
  */
+/**
+ * True when a query is showing data it already had, but the most recent
+ * attempt to refresh it failed.
+ *
+ * React Query does not report this through `status`: a refetch that fails
+ * while data is cached leaves `status: "success"` and `isError: false`, and
+ * surfaces the failure only as `failureCount`/`failureReason`. Without this
+ * check, pressing Refresh against an unreachable backend leaves the previous
+ * rows on screen looking exactly as they did — which is the one thing this
+ * layer exists to prevent. The rows are real and stay; what is added is the
+ * fact that they may no longer be current.
+ */
+function refreshFailure(query: {
+  failureCount: number;
+  failureReason: unknown;
+  isFetching: boolean;
+}): ApiError | null {
+  if (query.isFetching || query.failureCount === 0) return null;
+  return query.failureReason instanceof ApiError
+    ? query.failureReason
+    : new ApiError({ kind: "network", message: "The last refresh did not complete." });
+}
+
+/** Inline notice above content that is still shown but may be out of date. */
+function StaleNotice({ error, onRetry }: { error: ApiError; onRetry: () => void }) {
+  return (
+    <div
+      role="status"
+      className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-md border border-warning-stroke bg-warning-bg px-3 py-2"
+    >
+      <AppIcon name="warning" size="sm" className="shrink-0 text-warning-icon" />
+      <span className="type-body-sm min-w-0 flex-1 text-warning">
+        Showing the last data that loaded — the most recent refresh failed. {error.message}
+      </span>
+      <Button variant="secondary" size="sm" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  );
+}
+
 export function ApiState<T>({
   query,
   emptyTitle,
@@ -75,12 +116,23 @@ export function ApiState<T>({
     );
   }
 
+  const stale = refreshFailure(query);
   const rows = query.data ?? [];
   if (rows.length === 0) {
-    return <EmptyState title={emptyTitle} detail={emptyDetail} action={emptyAction} />;
+    return (
+      <>
+        {stale && <StaleNotice error={stale} onRetry={() => void query.refetch()} />}
+        <EmptyState title={emptyTitle} detail={emptyDetail} action={emptyAction} />
+      </>
+    );
   }
 
-  return <>{children(rows)}</>;
+  return (
+    <>
+      {stale && <StaleNotice error={stale} onRetry={() => void query.refetch()} />}
+      {children(rows)}
+    </>
+  );
 }
 
 /**
@@ -141,7 +193,13 @@ export function ApiRecord<T>({
     return <EmptyState icon="warning" title={notFoundTitle} detail={notFoundDetail} />;
   }
 
-  return <>{children(query.data)}</>;
+  const stale = refreshFailure(query);
+  return (
+    <>
+      {stale && <StaleNotice error={stale} onRetry={() => void query.refetch()} />}
+      {children(query.data)}
+    </>
+  );
 }
 
 /**
