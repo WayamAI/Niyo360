@@ -12,10 +12,17 @@ import {
 /**
  * Authentication against the PARIVART backend.
  *
- * This replaces the demo session that accepted any email and password. There
- * is no local fallback: if the backend rejects the credentials or cannot be
- * reached, sign-in fails and says why. Faking a successful login would mean
- * the rest of the app renders as though it had data it does not have.
+ * There is no local fallback: if the backend cannot be reached, sign-in fails
+ * and says why. Faking a successful login would mean the rest of the app
+ * renders as though it had data it does not have.
+ *
+ * One deliberate exception, for demonstrations. With
+ * VITE_DEMO_OPEN_SIGNIN=true, an email the backend does not know is treated as
+ * a new tenant rather than a mistake: the same submission registers an
+ * organization and signs into it. The token is a real one from a real
+ * endpoint, so nothing downstream is faked — but that organization is empty,
+ * so every operational screen will honestly show no rows. Seeded accounts keep
+ * working and keep their data. Off by default.
  *
  * Three states, so nothing protected renders before the answer is known:
  *
@@ -24,6 +31,9 @@ import {
  *   unauthenticated no token, or the token was rejected
  */
 export type AuthStatus = "checking" | "authenticated" | "unauthenticated";
+
+/** Whether an unknown email registers itself instead of being rejected. */
+export const isOpenSignIn = import.meta.env.VITE_DEMO_OPEN_SIGNIN === "true";
 
 export interface LoginResult {
   ok: boolean;
@@ -42,6 +52,27 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+/**
+ * Turns a failed sign-in into something the screen can show.
+ *
+ * Two cases need more than the client's generic sentence. A 401 on this screen
+ * means "wrong credentials", not "session expired". And a 422 — which is how
+ * the backend's eight-character password minimum arrives — says only that
+ * values were rejected, so the field messages are spelled out rather than
+ * swallowed; the sign-in form has no per-field slots to show them in.
+ */
+function describeFailure(error: unknown): { error: string; fieldErrors?: Record<string, string> } {
+  if (!(error instanceof ApiError)) return { error: "Sign-in failed unexpectedly." };
+  if (error.kind === "unauthorized") return { error: "Incorrect email or password." };
+
+  const fieldErrors = error.fieldErrors;
+  const messages = Object.values(fieldErrors);
+  if (error.kind === "validation" && messages.length > 0) {
+    return { error: messages.join(" "), fieldErrors };
+  }
+  return { error: error.message, fieldErrors };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("checking");
@@ -97,15 +128,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus("authenticated");
         return { ok: true };
       } catch (error) {
-        clearSession();
-        if (error instanceof ApiError) {
-          // 401 here means "wrong credentials", not "session expired" — the
-          // generic message from the client would be misleading on this screen.
-          const message =
-            error.kind === "unauthorized" ? "Incorrect email or password." : error.message;
-          return { ok: false, error: message, fieldErrors: error.fieldErrors };
+        // An unknown email, when open sign-in is on: register it and continue.
+        // Only a 401 qualifies — a timeout or a 500 must not be answered by
+        // creating an account.
+        if (isOpenSignIn && error instanceof ApiError && error.kind === "unauthorized") {
+          try {
+            const token = await authApi.registerFromEmail(email, password);
+            setUser(token.user);
+            setStatus("authenticated");
+            return { ok: true };
+          } catch (registerError) {
+            clearSession();
+            return { ok: false, ...describeFailure(registerError) };
+          }
         }
-        return { ok: false, error: "Sign-in failed unexpectedly." };
+        clearSession();
+        return { ok: false, ...describeFailure(error) };
       }
     },
     [clearSession],

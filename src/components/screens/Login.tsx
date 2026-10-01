@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { isOpenSignIn, useAuth } from "@/context/AuthContext";
 import { AppIcon } from "@/components/icons";
 import { Button } from "@/components/shared/Button";
 import { BrandLockup } from "@/components/shared/Logo";
@@ -114,7 +114,9 @@ export function Login() {
         </form>
 
         <p className="type-caption mt-4 text-center text-fg-quaternary">
-          Credentials are verified by the PARIVART API.
+          {isOpenSignIn
+            ? "Credentials are verified by the PARIVART API. An email it does not know starts a new organization, which has no data in it yet."
+            : "Credentials are verified by the PARIVART API."}
         </p>
       </div>
     </main>
