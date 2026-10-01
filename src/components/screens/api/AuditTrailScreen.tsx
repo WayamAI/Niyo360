@@ -9,6 +9,7 @@ import { Drawer } from "@/components/shared/Drawer";
 import { useApp } from "@/context/AppContext";
 import { useAuditEvents, useAuditEventTypes } from "@/hooks/useApiQueries";
 import type { AuditEvent } from "@/services/api";
+import { entityLabel, eventLabel, humanise, knownEventTypes, stamp } from "./auditFormat";
 
 /**
  * The audit trail, from GET /api/v1/audit/.
@@ -24,52 +25,6 @@ import type { AuditEvent } from "@/services/api";
  */
 
 /**
- * Labels for the vocabulary the backend writes.
- *
- * Incomplete by design. `event_type` is a free string on the wire precisely so
- * an event written by another revision of the backend still reads back, and
- * `label()` falls through to a humanised form of the raw value rather than
- * hiding a row it does not recognise. A trail that silently omits what it
- * cannot label is worse than one showing an ugly string.
- */
-const EVENT_LABELS: Record<string, string> = {
-  USER_SIGNED_IN: "Signed in",
-  DOCUMENT_UPLOADED: "Document uploaded",
-  DOCUMENT_PROCESSED: "Document processed",
-  IMPACT_ASSESSMENT_CREATED: "Impact analysed",
-  IMPACT_ASSESSMENT_REANALYZED: "Impact re-analysed",
-  REPORT_GENERATED: "Report generated",
-  REVIEW_FILED: "Decision filed",
-  ACTION_CREATED: "Action raised",
-  ACTION_UPDATED: "Action edited",
-  ACTION_STATUS_CHANGED: "Action status changed",
-  EVIDENCE_ATTACHED: "Evidence attached",
-};
-
-const ENTITY_LABELS: Record<string, string> = {
-  USER: "User",
-  REGULATORY_DOCUMENT: "Document",
-  IMPACT_ASSESSMENT: "Assessment",
-  IMPACT_REPORT: "Report",
-  ACTION: "Action",
-};
-
-/** Humanises an unrecognised enum-shaped string: ACTION_CREATED -> Action created. */
-function humanise(value: string): string {
-  const words = value.replace(/_/g, " ").toLowerCase();
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-function eventLabel(value: string): string {
-  return EVENT_LABELS[value] ?? humanise(value);
-}
-
-function entityLabel(value: string | null | undefined): string {
-  if (!value) return "—";
-  return ENTITY_LABELS[value] ?? humanise(value);
-}
-
-/**
  * Events that record a decision or a state move get a visible badge; the rest
  * read as plain text. Colouring every row would make none of them stand out.
  */
@@ -79,15 +34,6 @@ const EVENT_VARIANT: Record<string, "complete" | "in-progress" | "open" | "agent
   ACTION_CREATED: "open",
   EVIDENCE_ATTACHED: "agent",
 };
-
-/** A full timestamp, not just a date: ordering within a day is the point here. */
-function stamp(value: string | null | undefined): string {
-  if (!value) return "—";
-  return value
-    .replace("T", " ")
-    .replace(/\.\d+/, "")
-    .replace(/(Z|\+00:00)$/, "");
-}
 
 /**
  * Before/after, when the payload carries one.
@@ -130,11 +76,11 @@ export function AuditTrailScreen() {
     ...(eventType === "All" ? {} : { event_type: eventType }),
   });
 
-  // The filter's options come from the backend rather than from EVENT_LABELS,
-  // so a newly emitted event type is filterable the day it ships.
+  // The filter's options come from the backend rather than from the labels this
+  // repo knows, so a newly emitted event type is filterable the day it ships.
   const vocabulary = useAuditEventTypes();
   const eventOptions = useMemo(
-    () => ["All", ...(vocabulary.data?.event_types ?? Object.keys(EVENT_LABELS))],
+    () => ["All", ...(vocabulary.data?.event_types ?? knownEventTypes)],
     [vocabulary.data],
   );
 
