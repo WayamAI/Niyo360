@@ -8,6 +8,9 @@ import { Button } from "@/components/shared/Button";
 import { Badge } from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/States";
 import { ValueSignal } from "@/components/shared/Atoms";
+import { ApiState } from "@/components/shared/ApiState";
+import { clockOf, entityLabel, eventLabel } from "@/components/screens/api/auditFormat";
+import { useAuditEvents } from "@/hooks/useApiQueries";
 import { useProducts } from "@/hooks/useApiQueries";
 import { useMarkets } from "@/hooks/useApiQueries";
 import { useProcesses } from "@/hooks/useApiQueries";
@@ -86,6 +89,9 @@ export function Dashboard() {
   const processesQuery = useProcesses();
   const authoritiesQuery = useAuthorities();
   const sourcesQuery = useSources();
+  // Newest first is the backend's own ordering, so the panel asks for a small
+  // page rather than sorting a full trail on the client.
+  const recentActivity = useAuditEvents({ limit: 6 });
 
   const stats = useMemo(() => {
     // Use real data for integrated features, mock data for others
@@ -417,7 +423,7 @@ export function Dashboard() {
 
           <Panel
             title="Recent activity"
-            source="illustrative"
+            source="live"
             className="xl:col-span-2"
             action={
               <Button variant="ghost" size="sm" onClick={() => navigateTo("audit")}>
@@ -425,35 +431,52 @@ export function Dashboard() {
               </Button>
             }
           >
-            <ul className="space-y-2.5">
-              {SEED_AUDIT_EVENTS.slice(0, 6).map((event, index) => (
-                <li key={index} className="flex items-start gap-2.5">
-                  <span
-                    aria-hidden="true"
-                    className="mt-1.5 size-1.5 shrink-0 rounded-full"
-                    style={{
-                      background:
-                        event.actorType === "agent"
-                          ? "var(--pillar-02)"
-                          : event.actorType === "user"
-                            ? "var(--feedback-success-icon)"
-                            : "var(--feedback-info-icon)",
-                    }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <span className="type-body-md truncate font-medium text-fg-primary">
-                        {event.actor}
-                      </span>
-                      <span className="type-caption tabular shrink-0 font-mono text-fg-quaternary">
-                        {event.timestamp.split(" ")[1] ?? ""}
-                      </span>
-                    </div>
-                    <p className="type-body-sm line-clamp-2 text-fg-tertiary">{event.action}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {/* The newest entries of the real trail, the same records the Audit
+                Trail screen lists. Six rows, because this is a glance at it and
+                not a substitute for it. */}
+            <ApiState
+              query={recentActivity}
+              emptyTitle="No recorded activity yet"
+              emptyDetail="The backend writes an entry as changes happen. Upload a document or file a decision and it will appear here."
+              skeletonCols={2}
+            >
+              {(events) => (
+                <ul className="space-y-2.5">
+                  {events.slice(0, 6).map((event) => {
+                    const actor = event.actor_name ?? event.actor_email;
+                    return (
+                      <li key={event.id} className="flex items-start gap-2.5">
+                        <span
+                          aria-hidden="true"
+                          className="mt-1.5 size-1.5 shrink-0 rounded-full"
+                          style={{
+                            background: actor
+                              ? "var(--feedback-success-icon)"
+                              : "var(--feedback-info-icon)",
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="type-body-md truncate font-medium text-fg-primary">
+                              {/* No attributable user is the normal case for a
+                                  background job, not missing data. */}
+                              {actor ?? "System"}
+                            </span>
+                            <span className="type-caption tabular shrink-0 font-mono text-fg-quaternary">
+                              {clockOf(event.created_at)}
+                            </span>
+                          </div>
+                          <p className="type-body-sm line-clamp-2 text-fg-tertiary">
+                            {eventLabel(event.event_type)}
+                            {event.entity_type ? ` · ${entityLabel(event.entity_type)}` : ""}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </ApiState>
           </Panel>
         </section>
 
