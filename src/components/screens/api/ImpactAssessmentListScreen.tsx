@@ -1,6 +1,6 @@
 import { PageBody, PageHeader } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { Badge } from "@/components/shared/Badge";
+import { StatusBadge, type StatusTone } from "@/components/shared/Badge";
 import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Button } from "@/components/shared/Button";
@@ -40,21 +40,15 @@ export function ImpactAssessmentListScreen() {
         if (!row.status) return <span className="text-fg-quaternary">—</span>;
 
         const status = row.status;
-        return (
-          <span
-            className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-              status === "COMPLETED"
-                ? "success-bg text-success-icon"
-                : status === "FAILED"
-                  ? "error-bg text-error-icon"
-                  : status === "PENDING" || status === "ANALYZING"
-                    ? "warning-bg text-warning-icon"
-                    : "text-fg-tertiary"
-            }`}
-          >
-            {status}
-          </span>
-        );
+        const tone: StatusTone =
+          status === "COMPLETED"
+            ? "success"
+            : status === "FAILED"
+              ? "error"
+              : status === "PENDING" || status === "ANALYZING"
+                ? "warning"
+                : "neutral";
+        return <StatusBadge tone={tone}>{status}</StatusBadge>;
       },
     },
     {
