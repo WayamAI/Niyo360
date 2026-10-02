@@ -21,8 +21,9 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
 /** How long a single request may take before the client aborts it. */
 const DEFAULT_TIMEOUT_MS = 20_000;
 
-/** True when no backend URL is configured, so the UI can say so plainly. */
-export const isApiConfigured = BASE_URL.length > 0;
+/** True when the API has an explicit URL or local dev can use the Vite proxy. */
+export const isApiConfigured =
+  BASE_URL.length > 0 || (Boolean(import.meta.env.DEV) && import.meta.env.MODE !== "test");
 
 export function apiBaseUrl(): string {
   return BASE_URL;
