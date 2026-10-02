@@ -2,6 +2,7 @@ import { Field, PageBody, PageHeader, SectionHeader, recordCrumb } from "@/compo
 import { ApiRecord, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
+import { Panel, SplitRow } from "@/components/shared/Panel";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { useApp } from "@/context/AppContext";
 import {
@@ -102,48 +103,45 @@ export function RegulatoryChangeDetailScreen() {
           notFoundDetail="This change does not exist, or its source document belongs to another organization."
         >
           {(change) => (
-            <>
-              <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-                <Field label="Type">
-                  <Badge variant="open">{label(change.change_type)}</Badge>
-                </Field>
-                <Field label="Extraction confidence">{confidence(change.confidence)}</Field>
-                <Field label="Section">{change.section ?? "—"}</Field>
-                <Field label="Source reference">{change.source_reference ?? "—"}</Field>
-              </dl>
+            <div className="flex flex-col gap-6">
+              <Panel title="Regulatory change" description="Properties and extracted summary.">
+                <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                  <Field label="Type">
+                    <Badge variant="open">{label(change.change_type)}</Badge>
+                  </Field>
+                  <Field label="Extraction confidence">{confidence(change.confidence)}</Field>
+                  <Field label="Section">{change.section ?? "—"}</Field>
+                  <Field label="Source reference">{change.source_reference ?? "—"}</Field>
+                </dl>
 
-              <div>
-                <h3 className="type-label-sm text-fg-quaternary">Summary</h3>
-                <p className="type-body-md mt-1 text-fg-secondary">{change.summary}</p>
-              </div>
+                <div className="mt-5">
+                  <h3 className="type-label-sm text-fg-quaternary">Summary</h3>
+                  <p className="type-body-md mt-1 text-fg-secondary">{change.summary}</p>
+                </div>
+              </Panel>
 
               {(change.previous_text || change.new_text) && (
-                <div>
-                  <SectionHeader
-                    title="Source text"
-                    description="As it appeared in the document, before and after."
-                  />
-                  <div className="mt-3 grid gap-4 md:grid-cols-2">
+                <Panel title="Source text" description="As it appeared in the document, before and after.">
+                  <div className="grid gap-4 md:grid-cols-2">
                     <TextPane label="Before" text={change.previous_text} muted />
                     <TextPane label="After" text={change.new_text} />
                   </div>
-                </div>
+                </Panel>
               )}
 
-              <div>
-                <SectionHeader
-                  title="Obligations"
-                  description="What this change requires. Each carries the section it was read from."
-                  action={
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => navigateTo("api-obligations")}
-                    >
-                      All obligations
-                    </Button>
-                  }
-                />
+              <Panel 
+                title="Obligations" 
+                description="What this change requires. Each carries the section it was read from."
+                action={
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigateTo("api-obligations")}
+                  >
+                    All obligations
+                  </Button>
+                }
+              >
                 <div className="mt-3">
                   <ApiState
                     query={obligations}
@@ -166,13 +164,9 @@ export function RegulatoryChangeDetailScreen() {
                     )}
                   </ApiState>
                 </div>
-              </div>
+              </Panel>
 
-              <div>
-                <SectionHeader
-                  title="Impact on our portfolio"
-                  description="Assessments the matching engine has run for this change."
-                />
+              <Panel title="Impact on our portfolio" description="Assessments the matching engine has run for this change.">
                 <div className="mt-3">
                   <ApiState
                     query={assessments}
@@ -214,31 +208,33 @@ export function RegulatoryChangeDetailScreen() {
                     )}
                   </ApiState>
                 </div>
-              </div>
+              </Panel>
 
-              <dl className="grid gap-x-8 gap-y-5 border-t border-stroke-muted pt-5 sm:grid-cols-2">
-                <Field label="Source document" mono>
-                  {change.document_id ? (
-                    <button
-                      type="button"
-                      onClick={() => openRecord("api-document-detail", change.document_id!)}
-                      className="text-brand underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                    >
-                      {recordCrumb(change.document_id)}
-                    </button>
-                  ) : (
-                    "—"
-                  )}
-                </Field>
-                <Field label="Extracted by">
-                  {/* Provenance of the reading, so a reviewer can weigh it
-                      rather than having to trust it. */}
-                  {change.ai_model
-                    ? `${change.ai_model}${change.prompt_version ? ` · ${change.prompt_version}` : ""}`
-                    : "Deterministic pipeline"}
-                </Field>
-              </dl>
-            </>
+              <Panel title="Metadata">
+                <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                  <Field label="Source document" mono>
+                    {change.document_id ? (
+                      <button
+                        type="button"
+                        onClick={() => openRecord("api-document-detail", change.document_id!)}
+                        className="text-brand underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {recordCrumb(change.document_id)}
+                      </button>
+                    ) : (
+                      "—"
+                    )}
+                  </Field>
+                  <Field label="Extracted by">
+                    {/* Provenance of the reading, so a reviewer can weigh it
+                        rather than having to trust it. */}
+                    {change.ai_model
+                      ? `${change.ai_model}${change.prompt_version ? ` · ${change.prompt_version}` : ""}`
+                      : "Deterministic pipeline"}
+                  </Field>
+                </dl>
+              </Panel>
+            </div>
           )}
         </ApiRecord>
       </PageBody>
