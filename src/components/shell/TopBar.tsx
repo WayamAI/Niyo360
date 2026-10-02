@@ -1,13 +1,13 @@
 import { AppIcon, IconButton } from "@/components/icons";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
-import { BrandMark } from "@/components/shared/Logo";
+import { SCREEN_NAV_META } from "@/components/shell/Sidebar";
 import { ESCALATIONS } from "@/data/mockData";
 
 /**
- * Global chrome: product identity, the assistant entry point, and account
- * controls. Everything about *where you are* lives in the page header instead,
- * so this bar stays one compact line at every width.
+ * Chronos-inspired application top bar:
+ * Shows active scope/hierarchy, global AI assistant trigger, real-time live indicator,
+ * notification alerts, and user authentication status.
  */
 export function TopBar({
   onOpenNav,
@@ -20,14 +20,16 @@ export function TopBar({
   onToggleCollapse: () => void;
   collapsed: boolean;
 }) {
-  const { toggleAssistant, theme, toggleTheme, navigateTo, resolvedEscalations } = useApp();
+  const { currentScreen, toggleAssistant, theme, toggleTheme, navigateTo, resolvedEscalations } =
+    useApp();
   const { user, logout } = useAuth();
 
-  // Open escalations are the app's only real "needs your attention" count, so
-  // the bell reports that rather than a hard-coded 3.
   const openEscalations = ESCALATIONS.filter((e) => !resolvedEscalations.has(e.id)).length;
+  const currentMeta = SCREEN_NAV_META[currentScreen] ?? {
+    group: "Overview",
+    label: "Command Centre",
+  };
 
-  // Prefer the user's name; fall back to the local part of their email.
   const initials =
     (user?.name || user?.email?.split("@")[0] || "?")
       .split(/[\s._-]+/)
@@ -37,91 +39,106 @@ export function TopBar({
       .join("") || "?";
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-stroke-muted bg-container px-3 sm:gap-3 sm:px-4">
-      <button
-        type="button"
-        onClick={onOpenNav}
-        aria-label="Open navigation"
-        className="grid size-8 shrink-0 place-items-center rounded-md text-icon-secondary transition-colors duration-150 hover:bg-action-tertiary-hover hover:text-icon-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:hidden"
-      >
-        <AppIcon name="menu" size="md" />
-      </button>
-      <button
-        type="button"
-        onClick={onToggleCollapse}
-        aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
-        aria-pressed={collapsed}
-        className="hidden size-8 shrink-0 place-items-center rounded-md text-icon-tertiary transition-colors duration-150 hover:bg-action-tertiary-hover hover:text-icon-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:grid"
-      >
-        <AppIcon name={collapsed ? "chevronRight" : "chevronLeft"} size="md" />
-      </button>
-
+    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-stroke-muted bg-page px-4 sm:gap-4 sm:px-5">
+      {/* Scope / Location hierarchy */}
       <div className="flex min-w-0 items-center gap-2.5">
-        {/* The square symbol rather than the full lockup: at this height the
-            lockup's wordmark would render around 5px per letter. The wordmark
-            is carried as Michroma text beside it instead. */}
-        <BrandMark size={26} />
-        <span aria-hidden="true" className="hidden h-5 w-px bg-stroke-default sm:block" />
-        {/* Michroma carries the product identity; the descriptor stays in Geist
-            so the header reads as one line. The descriptor is the first thing
-            to go when space is tight. */}
-        <span className="flex min-w-0 items-baseline gap-2">
-          <span className="type-display-section text-fg-primary">PARIVART</span>
-          <span className="type-body-sm hidden truncate text-fg-tertiary sm:inline">
-            Change Intelligence
-          </span>
+        <button
+          type="button"
+          onClick={onOpenNav}
+          aria-label="Open navigation"
+          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-action text-icon-tertiary transition-colors duration-[180ms] hover:bg-raised-2 hover:text-icon-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:hidden"
+        >
+          <AppIcon name="menu" size="sm" />
+        </button>
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+          aria-pressed={collapsed}
+          className="hidden size-8 shrink-0 items-center justify-center rounded-full bg-action text-icon-tertiary transition-colors duration-[180ms] hover:bg-raised-2 hover:text-icon-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:flex"
+        >
+          <AppIcon name={collapsed ? "chevronRight" : "chevronLeft"} size="sm" />
+        </button>
+
+        <span className="hidden text-caption font-medium tracking-[0.08em] text-quaternary uppercase sm:inline">
+          {currentMeta.group}
         </span>
+        <span aria-hidden="true" className="hidden text-caption text-quaternary sm:inline">
+          /
+        </span>
+        <h1 className="truncate font-display text-display-lg text-primary">{currentMeta.label}</h1>
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-2">
+      {/* Global Actions & Controls */}
+      <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+        {/* Search / Ask AI button */}
         <button
           type="button"
           onClick={toggleAssistant}
-          className="flex h-8 items-center gap-2 rounded-md border border-stroke-default bg-action px-2.5 text-fg-tertiary transition-colors duration-150 hover:border-stroke-active hover:bg-raised hover:text-fg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="flex h-8 items-center gap-2 rounded-full border border-stroke-muted bg-action px-3 text-label-sm text-tertiary outline-none transition-colors duration-[180ms] hover:border-stroke-default hover:bg-raised-2 hover:text-secondary focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <AppIcon name="agent" size="sm" className="text-pillar-02" />
-          <span className="type-body-md hidden sm:inline">Ask AI</span>
-          <kbd className="type-caption hidden rounded border border-stroke-muted px-1 font-mono text-fg-quaternary md:inline">
+          <AppIcon name="agent" size="xs" className="text-pillar-01" />
+          <span className="hidden sm:inline">Ask AI</span>
+          <kbd className="hidden rounded border border-stroke-muted px-1 font-mono text-caption text-quaternary sm:inline">
             ⌘K
           </kbd>
         </button>
 
+        {/* Real-time status pill */}
+        <div className="hidden h-8 items-center gap-1.5 rounded-full border border-stroke-muted bg-action px-3 text-label-sm text-tertiary sm:flex">
+          <span>Today</span>
+          <span className="text-quaternary">·</span>
+          <span className="inline-flex items-center gap-1 text-success font-medium">
+            <span className="size-1.5 rounded-full bg-success-icon animate-pulse" />
+            Live
+          </span>
+        </div>
+
+        {/* Escalation alert bell */}
         <div className="relative">
-          <IconButton
-            icon="notification"
-            size="sm"
+          <button
+            type="button"
             onClick={() => navigateTo("escalations")}
             aria-label={
               openEscalations ? `Escalations, ${openEscalations} open` : "Escalations, none open"
             }
-          />
+            className="flex size-8 items-center justify-center rounded-full bg-action text-icon-tertiary transition-colors duration-[180ms] hover:bg-raised-2 hover:text-icon-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <AppIcon name="notification" size="sm" />
+          </button>
           {openEscalations > 0 && (
             <span
               aria-hidden="true"
-              className="type-caption tabular pointer-events-none absolute top-0 right-0 grid size-3.5 place-items-center rounded-full bg-error-icon font-mono text-fg-on-color"
+              className="text-caption tabular pointer-events-none absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-error-icon font-mono text-[10px] font-semibold text-fg-on-color"
             >
               {openEscalations}
             </span>
           )}
         </div>
 
-        <IconButton
-          icon={theme === "light" ? "themeDark" : "themeLight"}
-          size="sm"
+        {/* Theme toggle */}
+        <button
+          type="button"
           onClick={toggleTheme}
           aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
-        />
+          className="flex size-8 items-center justify-center rounded-full bg-action text-icon-tertiary transition-colors duration-[180ms] hover:bg-raised-2 hover:text-icon-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          <AppIcon name={theme === "light" ? "themeDark" : "themeLight"} size="sm" />
+        </button>
 
+        {/* User avatar badge */}
         <div
-          className="grid size-8 shrink-0 place-items-center rounded-full border text-pillar-03"
+          className="grid size-8 shrink-0 place-items-center rounded-full border text-pillar-01"
           style={{
-            background: "color-mix(in oklab, var(--pillar-03) 12%, transparent)",
-            borderColor: "color-mix(in oklab, var(--pillar-03) 30%, transparent)",
+            background: "color-mix(in oklab, var(--pillar-01) 12%, transparent)",
+            borderColor: "color-mix(in oklab, var(--pillar-01) 30%, transparent)",
           }}
           title={user?.email}
         >
-          <span className="type-body-sm font-medium">{initials}</span>
+          <span className="text-caption font-medium">{initials}</span>
         </div>
+
+        {/* Sign out */}
         <IconButton icon="signOut" size="sm" onClick={logout} aria-label="Sign out" />
       </div>
     </header>
