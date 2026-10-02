@@ -121,7 +121,10 @@ export function RegulatoryChangeDetailScreen() {
               </Panel>
 
               {(change.previous_text || change.new_text) && (
-                <Panel title="Source text" description="As it appeared in the document, before and after.">
+                <Panel
+                  title="Source text"
+                  description="As it appeared in the document, before and after."
+                >
                   <div className="grid gap-4 md:grid-cols-2">
                     <TextPane label="Before" text={change.previous_text} muted />
                     <TextPane label="After" text={change.new_text} />
@@ -129,8 +132,8 @@ export function RegulatoryChangeDetailScreen() {
                 </Panel>
               )}
 
-              <Panel 
-                title="Obligations" 
+              <Panel
+                title="Obligations"
                 description="What this change requires. Each carries the section it was read from."
                 action={
                   <Button
@@ -166,7 +169,10 @@ export function RegulatoryChangeDetailScreen() {
                 </div>
               </Panel>
 
-              <Panel title="Impact on our portfolio" description="Assessments the matching engine has run for this change.">
+              <Panel
+                title="Impact on our portfolio"
+                description="Assessments the matching engine has run for this change."
+              >
                 <div className="mt-3">
                   <ApiState
                     query={assessments}

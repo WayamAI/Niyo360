@@ -84,7 +84,10 @@ export function EvidenceDetailScreen() {
                 </div>
               </Panel>
 
-              <Panel title="Integrity" description="Recorded when the file was filed. Re-hashing a copy and comparing it with this value is what shows the file has not changed since.">
+              <Panel
+                title="Integrity"
+                description="Recorded when the file was filed. Re-hashing a copy and comparing it with this value is what shows the file has not changed since."
+              >
                 <div className="flex flex-col gap-4">
                   <div>
                     <h3 className="type-label-sm text-fg-quaternary">SHA-256</h3>
@@ -188,7 +191,10 @@ function ProvenanceChain({ evidence }: { evidence: Evidence }) {
   const located = locator.locate(action?.impact_item_id);
 
   return (
-    <Panel title="Provenance" description="What this evidence substantiates, traced back to the regulatory change that caused the work.">
+    <Panel
+      title="Provenance"
+      description="What this evidence substantiates, traced back to the regulatory change that caused the work."
+    >
       <ol className="flex flex-col gap-2">
         <ChainStep label="Evidence" value={evidence.filename ?? recordCrumb(evidence.id)} current />
 
