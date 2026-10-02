@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
+import { Panel } from "@/components/shared/Panel";
 import { useApp } from "@/context/AppContext";
 import { useReport, useReportVersions } from "@/hooks/useApiQueries";
 import type { ImpactReportStatus } from "@/services/api";
@@ -84,45 +85,46 @@ export function ReportDetailScreen() {
               notFoundDetail="This report does not exist, or it belongs to another organization."
             >
               {(report) => (
-                <div className="space-y-8">
-                  <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <Field label="Title">
-                        <span className="type-body-md text-fg-primary">{report.title}</span>
+                <div className="flex flex-col gap-6">
+                  <Panel title="Report details">
+                    <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <Field label="Title">
+                          <span className="type-body-md text-fg-primary">{report.title}</span>
+                        </Field>
+                      </div>
+                      <Field label="Status">
+                        <Badge variant={STATUS_VARIANT[report.status]}>{report.status}</Badge>
                       </Field>
-                    </div>
-                    <Field label="Status">
-                      <Badge variant={STATUS_VARIANT[report.status]}>{report.status}</Badge>
-                    </Field>
-                    <Field label="Version">
-                      <Mono>v{report.version}</Mono>
-                    </Field>
-                    <Field label="Report ID">
-                      <Mono>{report.id}</Mono>
-                    </Field>
-                    <Field label="Created">
-                      <Mono>{report.created_at.slice(0, 10)}</Mono>
-                    </Field>
-                    <Field label="Impact assessment">
-                      <Mono>{report.impact_assessment_id}</Mono>
-                    </Field>
-                    <Field label="Regulatory change">
-                      <Mono>{report.regulatory_change_id}</Mono>
-                    </Field>
-                    <div className="sm:col-span-2">
-                      <Field label="Summary">{report.summary ?? "—"}</Field>
-                    </div>
-                  </dl>
+                      <Field label="Version">
+                        <Mono>v{report.version}</Mono>
+                      </Field>
+                      <Field label="Report ID">
+                        <Mono>{report.id}</Mono>
+                      </Field>
+                      <Field label="Created">
+                        <Mono>{report.created_at.slice(0, 10)}</Mono>
+                      </Field>
+                      <Field label="Impact assessment">
+                        <Mono>{report.impact_assessment_id}</Mono>
+                      </Field>
+                      <Field label="Regulatory change">
+                        <Mono>{report.regulatory_change_id}</Mono>
+                      </Field>
+                      <div className="sm:col-span-2">
+                        <Field label="Summary">{report.summary ?? "—"}</Field>
+                      </div>
+                    </dl>
+                  </Panel>
 
                   {/* report_data is typed unknown in the contract, so it is shown
                       as the API returned it rather than given an invented shape. */}
                   {report.report_data != null && (
-                    <section>
-                      <h2 className="type-label-sm text-fg-quaternary">Report data</h2>
-                      <pre className="type-body-sm mt-2 max-h-96 overflow-auto rounded-md border border-stroke-muted bg-raised-1 p-4 whitespace-pre-wrap text-fg-secondary">
+                    <Panel title="Report data" padded={false} className="bg-raised">
+                      <pre className="type-body-sm h-full overflow-auto whitespace-pre-wrap p-4 text-fg-secondary">
                         {JSON.stringify(report.report_data, null, 2)}
                       </pre>
-                    </section>
+                    </Panel>
                   )}
                 </div>
               )}
