@@ -3,6 +3,7 @@ import { Field, PageBody, PageHeader, SectionHeader, recordCrumb } from "@/compo
 import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
+import { Panel } from "@/components/shared/Panel";
 import { useApp } from "@/context/AppContext";
 import { asApiError, useAction, useEvidenceItem } from "@/hooks/useApiQueries";
 import { useImpactItemLocator } from "@/hooks/useImpactItemLocator";
@@ -64,52 +65,55 @@ export function EvidenceDetailScreen() {
           notFoundDetail="This record does not exist, or it belongs to another organization."
         >
           {(evidence) => (
-            <>
-              <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-                <Field label="File">{evidence.filename ?? "—"}</Field>
-                <Field label="Filed">{stamp(evidence.created_at)}</Field>
-                <Field label="Filed by">
-                  {evidence.uploaded_by_name ?? evidence.uploaded_by_email ?? "Unknown"}
-                </Field>
-                <Field label="Email">{evidence.uploaded_by_email ?? "—"}</Field>
-              </dl>
+            <div className="flex flex-col gap-6">
+              <Panel title="Evidence file" description="The filed file and who filed it.">
+                <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                  <Field label="File">{evidence.filename ?? "—"}</Field>
+                  <Field label="Filed">{stamp(evidence.created_at)}</Field>
+                  <Field label="Filed by">
+                    {evidence.uploaded_by_name ?? evidence.uploaded_by_email ?? "Unknown"}
+                  </Field>
+                  <Field label="Email">{evidence.uploaded_by_email ?? "—"}</Field>
+                </dl>
 
-              <div>
-                <h3 className="type-label-sm text-fg-quaternary">Description</h3>
-                <p className="type-body-md mt-1 text-fg-secondary">
-                  {evidence.description ?? "No description was given when this was filed."}
-                </p>
-              </div>
+                <div className="mt-5">
+                  <h3 className="type-label-sm text-fg-quaternary">Description</h3>
+                  <p className="type-body-md mt-1 text-fg-secondary">
+                    {evidence.description ?? "No description was given when this was filed."}
+                  </p>
+                </div>
+              </Panel>
 
-              <div>
-                <h3 className="type-label-sm text-fg-quaternary">SHA-256</h3>
-                <p className="type-body-md mt-1 font-mono break-all text-fg-tertiary">
-                  {evidence.sha256 ?? "—"}
-                </p>
-                <p className="type-body-sm mt-1 text-fg-quaternary">
-                  Recorded when the file was filed. Re-hashing a copy and comparing it with this
-                  value is what shows the file has not changed since.
-                </p>
-              </div>
-
-              <DownloadRow evidence={evidence} />
+              <Panel title="Integrity" description="Recorded when the file was filed. Re-hashing a copy and comparing it with this value is what shows the file has not changed since.">
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <h3 className="type-label-sm text-fg-quaternary">SHA-256</h3>
+                    <p className="type-body-md mt-1 font-mono break-all text-fg-tertiary">
+                      {evidence.sha256 ?? "—"}
+                    </p>
+                  </div>
+                  <DownloadRow evidence={evidence} />
+                </div>
+              </Panel>
 
               <ProvenanceChain evidence={evidence} />
 
-              <div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    evidence.action_id
-                      ? openRecord("audit", evidence.action_id)
-                      : navigateTo("audit")
-                  }
-                >
-                  View audit history
-                </Button>
-              </div>
-            </>
+              <Panel title="Audit trail">
+                <div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      evidence.action_id
+                        ? openRecord("audit", evidence.action_id)
+                        : navigateTo("audit")
+                    }
+                  >
+                    View audit history
+                  </Button>
+                </div>
+              </Panel>
+            </div>
           )}
         </ApiRecord>
       </PageBody>
@@ -184,12 +188,8 @@ function ProvenanceChain({ evidence }: { evidence: Evidence }) {
   const located = locator.locate(action?.impact_item_id);
 
   return (
-    <div>
-      <SectionHeader
-        title="Provenance"
-        description="What this evidence substantiates, traced back to the regulatory change that caused the work."
-      />
-      <ol className="mt-3 flex flex-col gap-2">
+    <Panel title="Provenance" description="What this evidence substantiates, traced back to the regulatory change that caused the work.">
+      <ol className="flex flex-col gap-2">
         <ChainStep label="Evidence" value={evidence.filename ?? recordCrumb(evidence.id)} current />
 
         <ChainStep
@@ -255,7 +255,7 @@ function ProvenanceChain({ evidence }: { evidence: Evidence }) {
           }
         />
       </ol>
-    </div>
+    </Panel>
   );
 }
 
