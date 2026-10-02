@@ -177,16 +177,12 @@ export function SourcesScreen() {
   );
 }
 
-function SourceRunsDrawer({
-  source,
-  onClose,
-}: {
-  source: Source | null;
-  onClose: () => void;
-}) {
+function SourceRunsDrawer({ source, onClose }: { source: Source | null; onClose: () => void }) {
   const runsQuery = useSourceRuns(source?.id ?? null);
 
-  const statusVariant = (status: IngestionStatus): "complete" | "critical" | "in-progress" | "neutral" => {
+  const statusVariant = (
+    status: IngestionStatus,
+  ): "complete" | "critical" | "in-progress" | "neutral" => {
     switch (status) {
       case "COMPLETED":
         return "complete";
@@ -211,9 +207,7 @@ function SourceRunsDrawer({
     >
       <div className="space-y-4 p-4">
         {runsQuery.isLoading ? (
-          <div className="py-8 text-center type-body-md text-fg-tertiary">
-            Loading run history…
-          </div>
+          <div className="py-8 text-center type-body-md text-fg-tertiary">Loading run history…</div>
         ) : runsQuery.isError ? (
           <div className="rounded-lg border border-stroke-muted bg-container p-4 text-center">
             <p className="type-body-md text-error">Failed to load run history.</p>
