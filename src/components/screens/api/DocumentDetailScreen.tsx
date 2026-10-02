@@ -3,6 +3,7 @@ import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
+import { Panel, SplitRow } from "@/components/shared/Panel";
 import { AppIcon } from "@/components/icons";
 import { useApp } from "@/context/AppContext";
 import { useDocument, useProcessDocument, useSources } from "@/hooks/useApiQueries";
@@ -102,75 +103,76 @@ export function DocumentDetailScreen() {
           notFoundDetail="This document does not exist, or it belongs to another organization."
         >
           {(doc) => (
-            <div className="space-y-8">
-              <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-                <Field label="Title">
-                  <span className="type-body-md text-fg-primary">{doc.title}</span>
-                </Field>
-                <Field label="Processing status">
-                  <Badge variant={statusVariant(doc.processing_status)}>
-                    {doc.processing_status}
-                  </Badge>
-                </Field>
-                <Field label="Type">{doc.document_type}</Field>
-                <Field label="Language">{doc.language}</Field>
-                <Field label="Jurisdiction">{doc.jurisdiction ?? "—"}</Field>
-                <Field label="Country">{doc.country ?? "—"}</Field>
-                <Field label="Published">
-                  <Mono>{formatDate(doc.publication_date)}</Mono>
-                </Field>
-                <Field label="Effective">
-                  <Mono>{formatDate(doc.effective_date)}</Mono>
-                </Field>
-                <Field label="Retrieved">
-                  <Mono>{formatDate(doc.retrieved_at)}</Mono>
-                </Field>
-                <Field label="Parsed">
-                  <Mono>{formatDate(doc.parsed_at)}</Mono>
-                </Field>
-                <Field label="File type">{doc.mime_type ?? "—"}</Field>
-                <Field label="File size">
-                  <Mono>{formatSize(doc.file_size)}</Mono>
-                </Field>
-                <Field label="Document ID">
-                  <Mono>{doc.id}</Mono>
-                </Field>
-                <Field label="Source">
-                  {/* Falls back to the id when the source is not in the
-                      current list — a document can outlive its source. */}
-                  {sourceName(doc.source_id) ?? <Mono>{doc.source_id ?? "—"}</Mono>}
-                </Field>
-                <div className="sm:col-span-2">
-                  <Field label="Source URL">
-                    {doc.source_url ? (
-                      <a
-                        href={doc.source_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-brand underline underline-offset-2"
-                      >
-                        {doc.source_url}
-                      </a>
-                    ) : (
-                      "—"
-                    )}
+            <SplitRow ratio="1/1">
+              <Panel title="Document metadata">
+                <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                  <Field label="Title">
+                    <span className="type-body-md text-fg-primary">{doc.title}</span>
                   </Field>
-                </div>
-                <div className="sm:col-span-2">
-                  <Field label="Description">{doc.description ?? "—"}</Field>
-                </div>
-              </dl>
+                  <Field label="Processing status">
+                    <Badge variant={statusVariant(doc.processing_status)}>
+                      {doc.processing_status}
+                    </Badge>
+                  </Field>
+                  <Field label="Type">{doc.document_type}</Field>
+                  <Field label="Language">{doc.language}</Field>
+                  <Field label="Jurisdiction">{doc.jurisdiction ?? "—"}</Field>
+                  <Field label="Country">{doc.country ?? "—"}</Field>
+                  <Field label="Published">
+                    <Mono>{formatDate(doc.publication_date)}</Mono>
+                  </Field>
+                  <Field label="Effective">
+                    <Mono>{formatDate(doc.effective_date)}</Mono>
+                  </Field>
+                  <Field label="Retrieved">
+                    <Mono>{formatDate(doc.retrieved_at)}</Mono>
+                  </Field>
+                  <Field label="Parsed">
+                    <Mono>{formatDate(doc.parsed_at)}</Mono>
+                  </Field>
+                  <Field label="File type">{doc.mime_type ?? "—"}</Field>
+                  <Field label="File size">
+                    <Mono>{formatSize(doc.file_size)}</Mono>
+                  </Field>
+                  <Field label="Document ID">
+                    <Mono>{doc.id}</Mono>
+                  </Field>
+                  <Field label="Source">
+                    {/* Falls back to the id when the source is not in the
+                        current list — a document can outlive its source. */}
+                    {sourceName(doc.source_id) ?? <Mono>{doc.source_id ?? "—"}</Mono>}
+                  </Field>
+                  <div className="sm:col-span-2">
+                    <Field label="Source URL">
+                      {doc.source_url ? (
+                        <a
+                          href={doc.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-brand underline underline-offset-2"
+                        >
+                          {doc.source_url}
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </Field>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Field label="Description">{doc.description ?? "—"}</Field>
+                  </div>
+                </dl>
+              </Panel>
 
               {/* Only rendered once extraction has actually produced text. */}
               {doc.extracted_text && (
-                <section>
-                  <h2 className="type-label-sm text-fg-quaternary">Extracted text</h2>
-                  <pre className="type-body-sm mt-2 max-h-96 overflow-auto rounded-md border border-stroke-muted bg-raised-1 p-4 whitespace-pre-wrap text-fg-secondary">
+                <Panel title="Extracted text" padded={false} className="bg-raised">
+                  <pre className="type-body-sm h-full overflow-auto whitespace-pre-wrap p-4 text-fg-secondary">
                     {doc.extracted_text}
                   </pre>
-                </section>
+                </Panel>
               )}
-            </div>
+            </SplitRow>
           )}
         </ApiRecord>
       </PageBody>
