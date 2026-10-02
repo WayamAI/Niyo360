@@ -183,13 +183,33 @@ describe("request", () => {
     await expect(api.get("/api/v1/impact/")).rejects.toMatchObject({ kind: "network" });
   });
 
-  it("fails fast with a clear message when no base URL is configured", async () => {
+  it("fails fast with a clear message when no base URL is configured in test mode", async () => {
     vi.stubEnv("VITE_API_BASE_URL", "");
     vi.resetModules();
     const { api, isApiConfigured } = await import("./client");
 
     expect(isApiConfigured).toBe(false);
     await expect(api.get("/api/v1/impact/")).rejects.toMatchObject({ kind: "network" });
+  });
+
+  it("treats empty base URL as configured in development mode using the dev proxy", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "");
+    vi.stubEnv("DEV", true);
+    vi.stubEnv("MODE", "development");
+    vi.resetModules();
+    const { isApiConfigured } = await import("./client");
+
+    expect(isApiConfigured).toBe(true);
+  });
+
+  it("treats empty base URL as unconfigured in production mode", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "");
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("MODE", "production");
+    vi.resetModules();
+    const { isApiConfigured } = await import("./client");
+
+    expect(isApiConfigured).toBe(false);
   });
 
   it("returns undefined for 204 rather than trying to parse a body", async () => {
