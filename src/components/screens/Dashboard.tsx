@@ -282,44 +282,44 @@ export function Dashboard() {
 
         <section>
           <SectionHeader title="Portfolio at a glance" source="live" />
-          <KpiRow>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {/* Use real data for integrated features */}
             <KpiTile
               label="Active products"
               value={stats.products}
-              note="Products in your portfolio"
+              note="In your portfolio"
               tone="neutral"
               onClick={() => navigateTo("api-products")}
             />
             <KpiTile
               label="Active markets"
               value={stats.markets}
-              note="Markets where you operate"
+              note="Operating regions"
               tone="neutral"
               onClick={() => navigateTo("api-markets")}
             />
             <KpiTile
               label="Active processes"
               value={stats.processes}
-              note="Processes defined in your portfolio"
+              note="CMC workflows"
               tone="neutral"
               onClick={() => navigateTo("api-processes")}
             />
             <KpiTile
-              label="Regulatory authorities"
+              label="Authorities"
               value={stats.authorities}
-              note="Authorities you monitor"
+              note="Monitored bodies"
               tone="neutral"
               onClick={() => navigateTo("api-authorities")}
             />
             <KpiTile
               label="Ingestion sources"
               value={stats.sources}
-              note="Active data sources"
+              note="Active feed endpoints"
               tone="neutral"
               onClick={() => navigateTo("api-sources")}
             />
-          </KpiRow>
+          </div>
         </section>
 
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
