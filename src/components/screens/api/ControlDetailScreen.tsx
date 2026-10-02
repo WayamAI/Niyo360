@@ -1,5 +1,6 @@
 import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
+import { Panel } from "@/components/shared/Panel";
 import { Badge } from "@/components/shared/Badge";
 import { useApp } from "@/context/AppContext";
 import { useControl } from "@/hooks/useApiQueries";
@@ -40,27 +41,31 @@ export function ControlDetailScreen() {
           notFoundDetail="This control does not exist, or it belongs to another organization."
         >
           {(control) => (
-            <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-              <Field label="Name">
-                <span className="type-body-md text-fg-primary">{control.name}</span>
-              </Field>
-              <Field label="Status">
-                <Badge variant={STATUS_VARIANT[control.status]}>{control.status}</Badge>
-              </Field>
-              <Field label="Category">{control.category}</Field>
-              <Field label="Owner">{control.owner ?? "—"}</Field>
-              <Field label="Control ID">
-                <span className="font-mono text-fg-tertiary">{control.id}</span>
-              </Field>
-              <Field label="Created">
-                <span className="tabular font-mono text-fg-tertiary">
-                  {control.created_at.slice(0, 10)}
-                </span>
-              </Field>
-              <div className="sm:col-span-2">
-                <Field label="Description">{control.description ?? "—"}</Field>
-              </div>
-            </dl>
+            <div className="flex flex-col gap-6">
+              <Panel title="Control details" description="Configuration and ownership.">
+                <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                  <Field label="Name">
+                    <span className="type-body-md text-fg-primary">{control.name}</span>
+                  </Field>
+                  <Field label="Status">
+                    <Badge variant={STATUS_VARIANT[control.status]}>{control.status}</Badge>
+                  </Field>
+                  <Field label="Category">{control.category}</Field>
+                  <Field label="Owner">{control.owner ?? "—"}</Field>
+                  <Field label="Control ID">
+                    <span className="font-mono text-fg-tertiary">{control.id}</span>
+                  </Field>
+                  <Field label="Created">
+                    <span className="tabular font-mono text-fg-tertiary">
+                      {control.created_at.slice(0, 10)}
+                    </span>
+                  </Field>
+                  <div className="sm:col-span-2">
+                    <Field label="Description">{control.description ?? "—"}</Field>
+                  </div>
+                </dl>
+              </Panel>
+            </div>
           )}
         </ApiRecord>
       </PageBody>
