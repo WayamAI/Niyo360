@@ -5,6 +5,7 @@ import { Badge } from "@/components/shared/Badge";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Drawer } from "@/components/shared/Drawer";
 import { Button } from "@/components/shared/Button";
+import { Panel } from "@/components/shared/Panel";
 import {
   RecordDecisionDialog,
   REVIEWABLE_STATUSES,
@@ -216,63 +217,64 @@ export function ImpactAssessmentDetailScreen() {
               notFoundDetail="This assessment does not exist, or it belongs to another organization."
             >
               {(assessment) => (
-                <div className="space-y-8">
-                  <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-                    <Field label="Status">
-                      <Badge variant={assessment.status === "COMPLETED" ? "complete" : "pending"}>
-                        {assessment.status}
-                      </Badge>
-                    </Field>
-                    <Field label="Overall impact">
-                      <Badge variant={LEVEL_VARIANT[assessment.overall_impact_level]}>
-                        {assessment.overall_impact_level}
-                      </Badge>
-                    </Field>
-                    <Field label="Confidence">
-                      <Mono>{percent(assessment.overall_confidence)}</Mono>
-                    </Field>
-                    <Field label="Analysis version">
-                      <Mono>v{assessment.analysis_version}</Mono>
-                    </Field>
-                    <Field label="Matched entities">
-                      <Mono>{assessment.items.length}</Mono>
-                    </Field>
-                    <Field label="Created">
-                      <Mono>{assessment.created_at.slice(0, 10)}</Mono>
-                    </Field>
-                    <Field label="Assessment ID">
-                      <Mono>{assessment.id}</Mono>
-                    </Field>
-                    <Field label="Regulatory change">
-                      {/* Resolvable now that the backend serves changes. This
-                          used to be a dead end: the id was all the UI had. */}
-                      {assessment.regulatory_change_id ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openRecord("api-change-detail", assessment.regulatory_change_id!)
-                          }
-                          className="font-mono text-brand underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                        >
-                          {assessment.regulatory_change_id}
-                        </button>
-                      ) : (
-                        <Mono>—</Mono>
-                      )}
-                    </Field>
-                    <div className="sm:col-span-2">
-                      <Field label="Summary">{assessment.summary ?? "—"}</Field>
-                    </div>
-                  </dl>
+                <div className="flex flex-col gap-6">
+                  <Panel title="Assessment details" description="Configuration and core metrics.">
+                    <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                      <Field label="Status">
+                        <Badge variant={assessment.status === "COMPLETED" ? "complete" : "pending"}>
+                          {assessment.status}
+                        </Badge>
+                      </Field>
+                      <Field label="Overall impact">
+                        <Badge variant={LEVEL_VARIANT[assessment.overall_impact_level]}>
+                          {assessment.overall_impact_level}
+                        </Badge>
+                      </Field>
+                      <Field label="Confidence">
+                        <Mono>{percent(assessment.overall_confidence)}</Mono>
+                      </Field>
+                      <Field label="Analysis version">
+                        <Mono>v{assessment.analysis_version}</Mono>
+                      </Field>
+                      <Field label="Matched entities">
+                        <Mono>{assessment.items.length}</Mono>
+                      </Field>
+                      <Field label="Created">
+                        <Mono>{assessment.created_at.slice(0, 10)}</Mono>
+                      </Field>
+                      <Field label="Assessment ID">
+                        <Mono>{assessment.id}</Mono>
+                      </Field>
+                      <Field label="Regulatory change">
+                        {/* Resolvable now that the backend serves changes. This
+                            used to be a dead end: the id was all the UI had. */}
+                        {assessment.regulatory_change_id ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openRecord("api-change-detail", assessment.regulatory_change_id!)
+                            }
+                            className="font-mono text-brand underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                          >
+                            {assessment.regulatory_change_id}
+                          </button>
+                        ) : (
+                          <Mono>—</Mono>
+                        )}
+                      </Field>
+                      <div className="sm:col-span-2">
+                        <Field label="Summary">{assessment.summary ?? "—"}</Field>
+                      </div>
+                    </dl>
+                  </Panel>
 
-                  <section>
-                    <h2 className="type-label-sm text-fg-quaternary">Human review</h2>
+                  <Panel title="Human review">
                     {reviewsQuery.data && reviewsQuery.data.length > 0 ? (
-                      <ul className="mt-2 space-y-2">
+                      <ul className="space-y-2">
                         {reviewsQuery.data.map((review) => (
                           <li
                             key={review.id}
-                            className="rounded-md border border-stroke-muted bg-raised p-3"
+                            className="rounded-md border border-stroke-muted bg-raised-2 p-3"
                           >
                             <div className="flex flex-wrap items-center gap-2">
                               <Badge
@@ -302,24 +304,19 @@ export function ImpactAssessmentDetailScreen() {
                         ))}
                       </ul>
                     ) : reviewsQuery.isError ? (
-                      // "No decisions" and "this backend has no review endpoint"
-                      // are different facts, and reporting the second as the
-                      // first would claim the assessment is unreviewed when we
-                      // simply cannot tell.
-                      <p className="type-body-md mt-1 text-fg-tertiary">
+                      <p className="type-body-md text-fg-tertiary">
                         The review history could not be loaded, so whether this assessment has been
                         reviewed is unknown.
                       </p>
                     ) : (
-                      <p className="type-body-md mt-1 text-fg-tertiary">
+                      <p className="type-body-md text-fg-tertiary">
                         No decision has been recorded against this assessment yet.
                       </p>
                     )}
-                  </section>
+                  </Panel>
 
-                  <section>
-                    <h2 className="type-label-sm text-fg-quaternary">AI enrichment</h2>
-                    <dl className="mt-2 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                  <Panel title="AI enrichment">
+                    <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
                       <Field label="Status">
                         <Badge
                           variant={
@@ -346,7 +343,7 @@ export function ImpactAssessmentDetailScreen() {
                         </div>
                       )}
                     </dl>
-                  </section>
+                  </Panel>
                 </div>
               )}
             </ApiRecord>
