@@ -95,6 +95,7 @@ export function VariationDrafts() {
     <>
       <PageHeader
         title="Variation Section Drafts"
+        source="illustrative"
         description="AI first drafts for CTD variation sections, grounded in approved dossier content. All output requires specialist review."
         breadcrumb={[{ label: "AI Writing" }, { label: "Variation Sections" }]}
         badges={<Badge variant="pillar-02">Pillar 02</Badge>}

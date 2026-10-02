@@ -135,6 +135,7 @@ export function CMCChangeSimulator() {
     <>
       <PageHeader
         title="CMC Change Impact Simulator"
+        source="illustrative"
         description="Simulate the regulatory cascade of a proposed CMC or label change across every registered market before authoring begins."
         breadcrumb={[{ label: "Change Simulator" }, { label: "CMC Simulator" }]}
         badges={<Badge variant="pillar-04">Pillar 04</Badge>}

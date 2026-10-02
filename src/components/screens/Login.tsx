@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { isOpenSignIn, useAuth } from "@/context/AuthContext";
 import { AppIcon } from "@/components/icons";
 import { Button } from "@/components/shared/Button";
-import niyo360Logo from "@/assets/niyo360-logo.svg";
+import { BrandLockup } from "@/components/shared/Logo";
 
 /**
  * Sign-in.
@@ -18,25 +18,30 @@ export function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (submitting) return; // guards a double submit creating two requests
     setSubmitting(true);
     setError(null);
-    // Demo auth: any well-formed email plus any non-empty password is accepted.
-    const result = login(email, password);
+    const result = await login(email, password);
     if (!result.ok) {
-      setError(result.error);
+      setError(result.error ?? "Sign-in failed.");
       setSubmitting(false);
     }
+    // On success the auth state flips and the route swaps to the app shell,
+    // so this component unmounts — no need to clear `submitting`.
   }
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-page px-4 py-10">
       <div className="w-full max-w-[360px]">
         <div className="mb-6 flex flex-col items-center text-center">
-          <img src={niyo360Logo} alt="" aria-hidden="true" className="mb-3 h-14 w-auto" />
-          <h1 className="type-display-page-sm text-fg-primary">Niyo360</h1>
-          <p className="type-body-md mt-0.5 text-fg-tertiary">Change Intelligence</p>
+          {/* The lockup carries the product name, so there is no separate
+              wordmark heading here — that would print PARIVART twice. */}
+          <h1>
+            <BrandLockup height={84} />
+          </h1>
+          <p className="type-body-md text-fg-tertiary">Change Intelligence</p>
         </div>
 
         <form
@@ -46,7 +51,7 @@ export function Login() {
           <div>
             <h2 className="type-heading-md text-fg-primary">Sign in</h2>
             <p className="type-body-sm mt-0.5 text-fg-tertiary">
-              Demo build — any email address and password will sign you in.
+              Sign in with your PARIVART account.
             </p>
           </div>
 
@@ -109,7 +114,9 @@ export function Login() {
         </form>
 
         <p className="type-caption mt-4 text-center text-fg-quaternary">
-          Demo environment. No real credentials are required or stored.
+          {isOpenSignIn
+            ? "Credentials are verified by the PARIVART API. An email it does not know starts a new organization, which has no data in it yet."
+            : "Credentials are verified by the PARIVART API."}
         </p>
       </div>
     </main>

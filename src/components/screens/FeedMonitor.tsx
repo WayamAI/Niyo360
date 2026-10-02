@@ -174,6 +174,7 @@ export function FeedMonitor() {
     <>
       <PageHeader
         title="Regulatory Feed Monitor"
+        source="illustrative"
         description="Every event ingested from the FDA, EMA, MHRA, CDSCO, TGA and ANVISA feeds, mapped against the active product–market portfolio."
         breadcrumb={[{ label: "Change Intelligence" }, { label: "Feed Monitor" }]}
         actions={

@@ -1,4 +1,4 @@
-# Niyo360 — Change Intelligence
+# PARIVART — Regulatory Change Intelligence
 
 Small setup guide to run this project locally.
 
@@ -19,7 +19,6 @@ npm -v
 From project root:
 
 ```bash
-cd niyo360
 npm install
 ```
 
@@ -29,7 +28,7 @@ npm install
 npm run dev
 ```
 
-Then open the local URL shown in terminal (usually http://localhost:5173).
+Then open the local URL shown in the terminal (http://localhost:8080).
 
 ## 3. Build for production
 

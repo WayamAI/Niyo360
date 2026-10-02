@@ -2,12 +2,21 @@ import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppIcon, type IconName } from "@/components/icons";
 import { useApp, type ScreenId } from "@/context/AppContext";
-import { PageBody, PageHeader, SectionHeader } from "@/components/shared/Page";
+import { DataSourceTag, PageBody, PageHeader, SectionHeader } from "@/components/shared/Page";
 import { KpiRow, KpiTile, Panel, type MetricTone } from "@/components/shared/Panel";
 import { Button } from "@/components/shared/Button";
 import { Badge } from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/States";
 import { ValueSignal } from "@/components/shared/Atoms";
+import { ApiState } from "@/components/shared/ApiState";
+import { clockOf, entityLabel, eventLabel } from "@/components/screens/api/auditFormat";
+import { useAuditEvents } from "@/hooks/useApiQueries";
+import { useProducts } from "@/hooks/useApiQueries";
+import { useMarkets } from "@/hooks/useApiQueries";
+import { useProcesses } from "@/hooks/useApiQueries";
+import { useAuthorities } from "@/hooks/useApiQueries";
+import { useSources } from "@/hooks/useApiQueries";
+import type { Product, Market, Process, Authority, Source } from "@/services/api";
 import {
   CHANGES,
   CHANGE_ACTIVITY_BY_MONTH,
@@ -74,7 +83,28 @@ const AGENTS: {
 export function Dashboard() {
   const { navigateTo, showToast, fixedIssues, resolvedEscalations } = useApp();
 
+  // API data for integrated features
+  const productsQuery = useProducts();
+  const marketsQuery = useMarkets();
+  const processesQuery = useProcesses();
+  const authoritiesQuery = useAuthorities();
+  const sourcesQuery = useSources();
+  // Newest first is the backend's own ordering, so the panel asks for a small
+  // page rather than sorting a full trail on the client.
+  const recentActivity = useAuditEvents({ limit: 6 });
+
   const stats = useMemo(() => {
+    // Use real data for integrated features, mock data for others
+    const productCount = productsQuery.data?.length ?? 0;
+    const marketCount = marketsQuery.data?.length ?? 0;
+    const processCount = processesQuery.data?.length ?? 0;
+    const authorityCount = authoritiesQuery.data?.length ?? 0;
+    const sourceCount = sourcesQuery.data?.length ?? 0;
+
+    // For now, keep mock data for non-integrated features to avoid breaking the UI
+    // These will be replaced as those features get integrated (imported statically at the
+    // top of this file -- useMemo's callback is synchronous and cannot await).
+
     const pendingSimulation = CHANGES.filter((c) => c.simulationStatus !== "complete").length;
     const overdueChanges = CHANGES.filter((c) => c.status === "Overdue").length;
 
@@ -90,6 +120,14 @@ export function Dashboard() {
     const openEscalations = ESCALATIONS.filter((e) => !resolvedEscalations.has(e.id));
 
     return {
+      // Use real counts for integrated features
+      products: productCount,
+      markets: marketCount,
+      processes: processCount,
+      authorities: authorityCount,
+      sources: sourceCount,
+
+      // Keep mock data for non-integrated features for now
       changes: CHANGES.length,
       pendingSimulation,
       overdueChanges,
@@ -102,7 +140,15 @@ export function Dashboard() {
       feedNeedingAction,
       openEscalations,
     };
-  }, [fixedIssues, resolvedEscalations]);
+  }, [
+    fixedIssues,
+    resolvedEscalations,
+    productsQuery.data,
+    marketsQuery.data,
+    processesQuery.data,
+    authoritiesQuery.data,
+    sourcesQuery.data,
+  ]);
 
   // The "needs attention" strip. Only conditions that are actually true are
   // pushed, so an all-clear portfolio shows an all-clear panel rather than a
@@ -197,6 +243,7 @@ export function Dashboard() {
         <section>
           <SectionHeader
             title="Needs attention"
+            source="illustrative"
             description="Conditions currently true across the portfolio, most severe first."
           />
           {attention.length === 0 ? (
@@ -234,44 +281,51 @@ export function Dashboard() {
         </section>
 
         <section>
-          <SectionHeader title="Portfolio at a glance" />
-          <KpiRow>
+          <SectionHeader title="Portfolio at a glance" source="live" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {/* Use real data for integrated features */}
             <KpiTile
-              label="Active changes"
-              value={stats.changes}
-              note={`${stats.pendingSimulation} pending simulation`}
-              tone={stats.overdueChanges > 0 ? "warning" : "neutral"}
-              trend={stats.overdueChanges > 0 ? `${stats.overdueChanges} overdue` : undefined}
-              trendIcon="trendUp"
-              onClick={() => navigateTo("simulator")}
+              label="Active products"
+              value={stats.products}
+              note="In your portfolio"
+              tone="neutral"
+              onClick={() => navigateTo("api-products")}
             />
             <KpiTile
-              label="Open HAQ responses"
-              value={stats.haq}
-              note={`${stats.haqAtRisk} inside 21 days`}
-              tone={stats.haqAtRisk > 0 ? "warning" : "neutral"}
-              onClick={() => navigateTo("haq-drafts")}
+              label="Active markets"
+              value={stats.markets}
+              note="Operating regions"
+              tone="neutral"
+              onClick={() => navigateTo("api-markets")}
             />
             <KpiTile
-              label="Open validation issues"
-              value={stats.openIssues}
-              note={`${stats.critical} critical · ${stats.major} major`}
-              tone={stats.critical > 0 ? "error" : "neutral"}
-              onClick={() => navigateTo("validation-reports")}
+              label="Active processes"
+              value={stats.processes}
+              note="CMC workflows"
+              tone="neutral"
+              onClick={() => navigateTo("api-processes")}
             />
             <KpiTile
-              label="Regulatory feed items"
-              value={stats.feed}
-              note={`${stats.feedNeedingAction} require a filing`}
-              tone="info"
-              onClick={() => navigateTo("feed-monitor")}
+              label="Authorities"
+              value={stats.authorities}
+              note="Monitored bodies"
+              tone="neutral"
+              onClick={() => navigateTo("api-authorities")}
             />
-          </KpiRow>
+            <KpiTile
+              label="Ingestion sources"
+              value={stats.sources}
+              note="Active feed endpoints"
+              tone="neutral"
+              onClick={() => navigateTo("api-sources")}
+            />
+          </div>
         </section>
 
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
           <Panel
             title="Change activity, last 6 months"
+            source="illustrative"
             className="xl:col-span-3"
             action={
               <div className="type-caption flex flex-wrap items-center gap-2.5 text-fg-tertiary">
@@ -369,6 +423,7 @@ export function Dashboard() {
 
           <Panel
             title="Recent activity"
+            source="live"
             className="xl:col-span-2"
             action={
               <Button variant="ghost" size="sm" onClick={() => navigateTo("audit")}>
@@ -376,41 +431,59 @@ export function Dashboard() {
               </Button>
             }
           >
-            <ul className="space-y-2.5">
-              {SEED_AUDIT_EVENTS.slice(0, 6).map((event, index) => (
-                <li key={index} className="flex items-start gap-2.5">
-                  <span
-                    aria-hidden="true"
-                    className="mt-1.5 size-1.5 shrink-0 rounded-full"
-                    style={{
-                      background:
-                        event.actorType === "agent"
-                          ? "var(--pillar-02)"
-                          : event.actorType === "user"
-                            ? "var(--feedback-success-icon)"
-                            : "var(--feedback-info-icon)",
-                    }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <span className="type-body-md truncate font-medium text-fg-primary">
-                        {event.actor}
-                      </span>
-                      <span className="type-caption tabular shrink-0 font-mono text-fg-quaternary">
-                        {event.timestamp.split(" ")[1] ?? ""}
-                      </span>
-                    </div>
-                    <p className="type-body-sm line-clamp-2 text-fg-tertiary">{event.action}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {/* The newest entries of the real trail, the same records the Audit
+                Trail screen lists. Six rows, because this is a glance at it and
+                not a substitute for it. */}
+            <ApiState
+              query={recentActivity}
+              emptyTitle="No recorded activity yet"
+              emptyDetail="The backend writes an entry as changes happen. Upload a document or file a decision and it will appear here."
+              skeletonCols={2}
+            >
+              {(events) => (
+                <ul className="space-y-2.5">
+                  {events.slice(0, 6).map((event) => {
+                    const actor = event.actor_name ?? event.actor_email;
+                    return (
+                      <li key={event.id} className="flex items-start gap-2.5">
+                        <span
+                          aria-hidden="true"
+                          className="mt-1.5 size-1.5 shrink-0 rounded-full"
+                          style={{
+                            background: actor
+                              ? "var(--feedback-success-icon)"
+                              : "var(--feedback-info-icon)",
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="type-body-md truncate font-medium text-fg-primary">
+                              {/* No attributable user is the normal case for a
+                                  background job, not missing data. */}
+                              {actor ?? "System"}
+                            </span>
+                            <span className="type-caption tabular shrink-0 font-mono text-fg-quaternary">
+                              {clockOf(event.created_at)}
+                            </span>
+                          </div>
+                          <p className="type-body-sm line-clamp-2 text-fg-tertiary">
+                            {eventLabel(event.event_type)}
+                            {event.entity_type ? ` · ${entityLabel(event.entity_type)}` : ""}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </ApiState>
           </Panel>
         </section>
 
         <section>
           <SectionHeader
             title="Agent activity"
+            source="illustrative"
             description="Most recent action taken by each agent."
           />
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -476,9 +549,11 @@ export function Dashboard() {
         <p className="type-body-sm flex items-start gap-2 rounded-lg border border-stroke-muted bg-container px-3.5 py-3 text-fg-tertiary">
           <AppIcon name="info" size="sm" className="mt-0.5 shrink-0 text-icon-quaternary" />
           <span>
-            Built by Wayam AI. Niyo360 is a pre-sales proof of concept demonstrating four AI
-            accelerators working alongside Veeva Vault RIM.{" "}
-            <Badge variant="neutral">Illustrative data</Badge>
+            Built by Wayam AI. PARIVART is a pre-sales proof of concept demonstrating four AI
+            accelerators working alongside Veeva Vault RIM. Sections marked{" "}
+            <DataSourceTag source="live" /> are read from the PARIVART API; sections marked{" "}
+            <DataSourceTag source="illustrative" /> are a worked example for capabilities the
+            backend does not serve yet.
           </span>
         </p>
       </PageBody>

@@ -72,16 +72,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Niyo360 Change Intelligence — Regulatory Feed & Impact Delta Reports" },
+      { title: "PARIVART — Regulatory Change Intelligence" },
       {
         name: "description",
         content:
-          "Niyo360 Change Intelligence by Wayam AI: monitors global regulatory authority feeds, maps new guidelines to the active product-market portfolio, and generates structured Impact Delta Reports for RA specialist review.",
+          "PARIVART by Wayam AI: monitors global regulatory authority feeds, maps new guidelines to the active product-market portfolio, and generates structured Impact Delta Reports for RA specialist review.",
       },
       { name: "author", content: "Wayam AI" },
       {
         property: "og:title",
-        content: "Niyo360 Change Intelligence — Regulatory Feed & Impact Delta Reports",
+        content: "PARIVART — Regulatory Change Intelligence",
       },
       {
         property: "og:description",

@@ -95,6 +95,7 @@ export function NewChangeEntry() {
     <>
       <PageHeader
         title="New Change Entry"
+        source="illustrative"
         description="Enter a proposed change to simulate its regulatory cascade across every registered market before authoring begins."
         breadcrumb={[
           { label: "Change Simulator", onClick: () => navigateTo("simulator") },

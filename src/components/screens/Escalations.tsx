@@ -148,6 +148,7 @@ export function Escalations() {
     <>
       <PageHeader
         title="Escalations"
+        source="illustrative"
         description="Open items requiring regulatory affairs attention across all four capability pillars."
         breadcrumb={[{ label: "Governance" }, { label: "Escalations" }]}
         badges={

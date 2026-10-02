@@ -1,23 +1,78 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { SEED_AUDIT_EVENTS } from "@/data/mockData";
+import { useTheme, type Theme } from "@/context/ThemeContext";
 import { demoTimestamp } from "@/lib/demo-clock";
 
-export type ScreenId =
-  | "dashboard"
-  | "feed-monitor"
-  | "delta-reports"
-  | "report-detail"
-  | "agent-console"
-  | "haq-drafts"
-  | "variation-drafts"
-  | "validator"
-  | "validation-reports"
-  | "simulator"
-  | "new-change"
-  | "heatmap"
-  | "calendar"
-  | "audit"
-  | "escalations";
+/**
+ * Every screen the shell can show.
+ *
+ * A runtime array rather than a bare type union, because the screen id is now
+ * part of the URL and an incoming `?screen=` has to be validated against the
+ * real set before it is trusted.
+ */
+export const SCREEN_IDS = [
+  "dashboard",
+  "feed-monitor",
+  "delta-reports",
+  "report-detail",
+  "agent-console",
+  "haq-drafts",
+  "variation-drafts",
+  "validator",
+  "validation-reports",
+  "simulator",
+  "new-change",
+  "heatmap",
+  "calendar",
+  "audit",
+  "escalations",
+  // Screens backed by the real PARIVART API (see src/components/screens/api).
+  "api-products",
+  "api-markets",
+  "api-processes",
+  "api-authorities",
+  "api-sources",
+  "api-documents",
+  "api-impact",
+  "api-reports",
+  "api-controls",
+  "api-registrations",
+  "api-control-detail",
+  "api-document-detail",
+  "api-report-detail",
+  "api-impact-detail",
+  "api-report-generate",
+  "api-document-upload",
+  "api-impact-analyze",
+  // Phase 7 — human review and actions.
+  "api-reviews",
+  "api-actions",
+  // Phase 8 — the regulatory intelligence that makes "what changed?"
+  // answerable, now that the backend serves it.
+  "api-changes",
+  "api-change-detail",
+  "api-obligations",
+  // Evidence. Note that "audit" is an existing id: it used to render a
+  // client-side log of this session and now renders the served trail.
+  "api-evidence",
+  "api-evidence-detail",
+] as const;
+
+export type ScreenId = (typeof SCREEN_IDS)[number];
+
+/** Narrows an untrusted value — a URL parameter — to a real screen id. */
+export function isScreenId(value: unknown): value is ScreenId {
+  return typeof value === "string" && (SCREEN_IDS as readonly string[]).includes(value);
+}
 
 export interface AuditEvent {
   id: string;
@@ -35,11 +90,6 @@ export interface Toast {
   variant: "default" | "success" | "warning" | "error";
 }
 
-type Theme = "light" | "dark";
-
-/** Namespaced to the current product name; "regiq-theme" predates the rebrand. */
-const THEME_KEY = "niyo360.theme";
-
 interface AppContextType {
   currentScreen: ScreenId;
   navigateTo: (s: ScreenId) => void;
@@ -56,6 +106,15 @@ interface AppContextType {
   setSelectedChangeId: (id: string | null) => void;
   selectedReportId: string | null;
   setSelectedReportId: (id: string | null) => void;
+  /**
+   * Id of the record an API drill-in screen should load.
+   *
+   * Screens are switched by state rather than by URL, so a detail screen has
+   * no route parameter to read. openRecord sets the id and navigates in one
+   * step, which keeps the id and the screen from disagreeing.
+   */
+  selectedRecordId: string | null;
+  openRecord: (screen: ScreenId, id: string) => void;
   fixedIssues: Set<string>;
   markIssueFixed: (id: string) => void;
   resolvedEscalations: Set<string>;
@@ -69,7 +128,12 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>("dashboard");
+  // The URL is the source of truth for which screen and record are open, so
+  // Back, Forward, Reload and a pasted link all land where they should.
+  const search = useSearch({ from: "/" });
+  const navigate = useNavigate({ from: "/" });
+  const currentScreen: ScreenId = search.screen ?? "dashboard";
+  const selectedRecordId = search.id ?? null;
   const [auditLog, setAuditLog] = useState<AuditEvent[]>(
     SEED_AUDIT_EVENTS.map((e, i) => ({ ...e, id: `seed-${i}` })),
   );
@@ -86,19 +150,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [resolvedEscalations, setResolved] = useState<Set<string>>(new Set());
   const [reviewedFeed, setReviewed] = useState<Set<string>>(new Set());
 
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "light";
-    const saved = (localStorage.getItem(THEME_KEY) ??
-      localStorage.getItem("regiq-theme")) as Theme | null;
-    if (saved) return saved;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  });
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem(THEME_KEY, theme);
-  }, [theme]);
+  // Theme lives in ThemeProvider, which wraps the whole tree including the
+  // sign-in screen. Re-exposed here so every existing useApp().theme call site
+  // keeps working and there is still one theme system.
+  const { theme, toggleTheme } = useTheme();
 
   // Open the rail once there is room, and fold it away again on the way down,
   // so resizing never leaves a 320px panel sitting on top of the content.
@@ -118,23 +173,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ]);
   }, []);
 
+  // Auto-dismiss timers are tracked so signing out (which unmounts this
+  // provider) does not leave up to a dozen timeouts writing into dead state.
+  const toastTimers = useRef<number[]>([]);
+  useEffect(() => {
+    const pending = toastTimers.current;
+    return () => pending.forEach((id) => window.clearTimeout(id));
+  }, []);
+
   const showToast = useCallback((message: string, variant: Toast["variant"] = "default") => {
     const id = `toast-${Date.now()}-${Math.random()}`;
     setToasts((prev) => [...prev, { id, message, variant }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
+    toastTimers.current.push(
+      window.setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500),
+    );
   }, []);
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const navigateTo = useCallback(
-    (s: ScreenId) => {
-      setCurrentScreen(s);
-      logAudit({ actor: "Regulatory Operations", actorType: "user", action: `Navigated to ${s}` });
+  // One writer for both halves of the address. A list screen drops the record
+  // id so going back to a list does not leave a stale `?id=` behind it.
+  const go = useCallback(
+    (screen: ScreenId, id: string | null) => {
+      navigate({
+        search: {
+          screen: screen === "dashboard" ? undefined : screen,
+          id: id ?? undefined,
+        },
+      });
+      logAudit({
+        actor: "Regulatory Operations",
+        actorType: "user",
+        action: `Navigated to ${screen}`,
+      });
     },
-    [logAudit],
+    [navigate, logAudit],
   );
+
+  const navigateTo = useCallback((s: ScreenId) => go(s, null), [go]);
+
+  const openRecord = useCallback((screen: ScreenId, id: string) => go(screen, id), [go]);
 
   const value: AppContextType = {
     currentScreen,
@@ -152,6 +232,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSelectedChangeId,
     selectedReportId,
     setSelectedReportId,
+    selectedRecordId,
+    openRecord,
     fixedIssues,
     markIssueFixed: (id) => setFixed((prev) => new Set(prev).add(id)),
     resolvedEscalations,
@@ -159,7 +241,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     reviewedFeed,
     markFeedReviewed: (id) => setReviewed((prev) => new Set(prev).add(id)),
     theme,
-    toggleTheme: () => setTheme((t) => (t === "light" ? "dark" : "light")),
+    toggleTheme,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

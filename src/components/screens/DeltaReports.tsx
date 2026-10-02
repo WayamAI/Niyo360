@@ -169,6 +169,7 @@ export function DeltaReports() {
     <>
       <PageHeader
         title="Impact Delta Reports"
+        source="illustrative"
         description="The RA specialist working queue. Each report maps an incoming guideline to the active product–market portfolio across eleven structured impact fields."
         breadcrumb={[{ label: "Change Intelligence" }, { label: "Impact Delta Reports" }]}
         actions={

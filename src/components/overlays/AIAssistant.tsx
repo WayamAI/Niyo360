@@ -1,5 +1,5 @@
 import { AppIcon } from "@/components/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { ThinkingDots } from "@/components/shared/Atoms";
 import { AI_SUGGESTIONS } from "@/data/mockData";
@@ -22,42 +22,62 @@ export function AIAssistant() {
     return () => window.removeEventListener("keydown", handler);
   }, [toggleAssistant]);
 
+  // Every timer this component starts is tracked here and cleared on unmount.
+  // Without it the reply timeout and its typewriter interval kept running
+  // after the panel closed or the user signed out, writing into state that no
+  // longer existed.
+  const timers = useRef<number[]>([]);
+  useEffect(() => {
+    const pending = timers.current;
+    return () => {
+      pending.forEach((id) => window.clearTimeout(id));
+      pending.forEach((id) => window.clearInterval(id));
+    };
+  }, []);
+
   const ask = (q: string) => {
     const found = AI_SUGGESTIONS.find((s) => s.q === q);
-    const a =
+    const answer =
       found?.a ||
       "I can answer questions about active regulatory changes, HAQ response drafts, dossier validation results, regulatory feed items, market impact simulations, and filing deadlines across the client portfolio. Try one of the suggested prompts above.";
-    const entry = { q, a, loading: true, shown: "" };
-    setConversation((prev) => [...prev, entry]);
+
+    // The entry is addressed by index, not as "the last one". Asking a second
+    // question mid-reply used to leave the first answer's typewriter writing
+    // into the new entry, so two replies raced over the same bubble.
+    let index = -1;
+    setConversation((prev) => {
+      index = prev.length;
+      return [...prev, { q, a: answer, loading: true, shown: "" }];
+    });
+
     logAudit({
       actor: "Regulatory Operations",
       actorType: "user",
       action: `Asked AI Assistant: "${q}"`,
     });
 
-    setTimeout(() => {
-      setConversation((prev) => {
-        const next = [...prev];
-        const last = next[next.length - 1];
-        last.loading = false;
-        return next;
-      });
-      // typewriter
-      let i = 0;
-      const interval = setInterval(() => {
-        i += 4;
-        setConversation((prev) => {
-          const next = [...prev];
-          const last = next[next.length - 1];
-          last.shown = a.slice(0, i);
-          if (i >= a.length) {
-            clearInterval(interval);
-            last.shown = a;
-          }
-          return next;
-        });
-      }, 25);
-    }, 1400);
+    timers.current.push(
+      window.setTimeout(() => {
+        // Replace the entry rather than mutating it in place — the previous
+        // version reassigned fields on the object still held by state.
+        setConversation((prev) =>
+          prev.map((entry, i) => (i === index ? { ...entry, loading: false } : entry)),
+        );
+
+        let revealed = 0;
+        const interval = window.setInterval(() => {
+          revealed += 4;
+          const done = revealed >= answer.length;
+          setConversation((prev) =>
+            prev.map((entry, i) =>
+              i === index ? { ...entry, shown: done ? answer : answer.slice(0, revealed) } : entry,
+            ),
+          );
+          if (done) window.clearInterval(interval);
+        }, 25);
+        timers.current.push(interval);
+      }, 1400),
+    );
   };
 
   if (!isAssistantOpen) return null;
@@ -75,6 +95,7 @@ export function AIAssistant() {
           </p>
         </div>
         <button
+          type="button"
           onClick={toggleAssistant}
           aria-label="Close AI assistant"
           className="p-1 rounded hover:bg-action-tertiary-hover text-icon-tertiary hover:text-icon-primary transition-colors duration-200"
@@ -88,6 +109,7 @@ export function AIAssistant() {
           {AI_SUGGESTIONS.map((s) => (
             <button
               key={s.q}
+              type="button"
               onClick={() => ask(s.q)}
               className="shrink-0 text-2xs rounded-full border border-stroke-default bg-action px-3 py-1.5 hover:bg-action-tertiary-hover hover:border-brand/50 text-fg-primary transition"
             >

@@ -18,8 +18,32 @@ import { CMCChangeSimulator } from "@/components/screens/CMCChangeSimulator";
 import { NewChangeEntry } from "@/components/screens/NewChangeEntry";
 import { MarketHeatmap } from "@/components/screens/MarketHeatmap";
 import { RegulatoryCalendar } from "@/components/screens/RegulatoryCalendar";
-import { AuditTrail } from "@/components/screens/AuditTrail";
 import { Escalations } from "@/components/screens/Escalations";
+import { ProductsScreen } from "@/components/screens/api/ProductsScreen";
+import { MarketsScreen } from "@/components/screens/api/MarketsScreen";
+import { ProcessesScreen } from "@/components/screens/api/ProcessesScreen";
+import { AuthoritiesScreen } from "@/components/screens/api/AuthoritiesScreen";
+import { SourcesScreen } from "@/components/screens/api/SourcesScreen";
+import { DocumentsScreen } from "@/components/screens/api/DocumentsScreen";
+import { ImpactAssessmentListScreen } from "@/components/screens/api/ImpactAssessmentListScreen";
+import { ReportListScreen } from "@/components/screens/ReportListScreen";
+import { ControlsScreen } from "@/components/screens/api/ControlsScreen";
+import { RegistrationsScreen } from "@/components/screens/api/RegistrationsScreen";
+import { ControlDetailScreen } from "@/components/screens/api/ControlDetailScreen";
+import { DocumentDetailScreen } from "@/components/screens/api/DocumentDetailScreen";
+import { ReportDetailScreen } from "@/components/screens/ReportDetailScreen";
+import { ImpactAssessmentDetailScreen } from "@/components/screens/api/ImpactAssessmentDetailScreen";
+import { ReportGenerateScreen } from "@/components/screens/ReportGenerateScreen";
+import { DocumentUploadScreen } from "@/components/screens/api/DocumentUploadScreen";
+import { ImpactAnalysisScreen } from "@/components/screens/api/ImpactAnalysisScreen";
+import { ReviewListScreen } from "@/components/screens/api/ReviewListScreen";
+import { ActionListScreen } from "@/components/screens/api/ActionListScreen";
+import { AuditTrailScreen } from "@/components/screens/api/AuditTrailScreen";
+import { RegulatoryChangeListScreen } from "@/components/screens/api/RegulatoryChangeListScreen";
+import { RegulatoryChangeDetailScreen } from "@/components/screens/api/RegulatoryChangeDetailScreen";
+import { ObligationListScreen } from "@/components/screens/api/ObligationListScreen";
+import { EvidenceListScreen } from "@/components/screens/api/EvidenceListScreen";
+import { EvidenceDetailScreen } from "@/components/screens/api/EvidenceDetailScreen";
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -35,8 +59,32 @@ const SCREENS = {
   "new-change": NewChangeEntry,
   heatmap: MarketHeatmap,
   calendar: RegulatoryCalendar,
-  audit: AuditTrail,
+  audit: AuditTrailScreen,
   escalations: Escalations,
+  "api-products": ProductsScreen,
+  "api-markets": MarketsScreen,
+  "api-processes": ProcessesScreen,
+  "api-authorities": AuthoritiesScreen,
+  "api-sources": SourcesScreen,
+  "api-documents": DocumentsScreen,
+  "api-impact": ImpactAssessmentListScreen,
+  "api-reports": ReportListScreen,
+  "api-controls": ControlsScreen,
+  "api-registrations": RegistrationsScreen,
+  "api-control-detail": ControlDetailScreen,
+  "api-document-detail": DocumentDetailScreen,
+  "api-report-detail": ReportDetailScreen,
+  "api-impact-detail": ImpactAssessmentDetailScreen,
+  "api-report-generate": ReportGenerateScreen,
+  "api-document-upload": DocumentUploadScreen,
+  "api-impact-analyze": ImpactAnalysisScreen,
+  "api-reviews": ReviewListScreen,
+  "api-actions": ActionListScreen,
+  "api-changes": RegulatoryChangeListScreen,
+  "api-change-detail": RegulatoryChangeDetailScreen,
+  "api-obligations": ObligationListScreen,
+  "api-evidence": EvidenceListScreen,
+  "api-evidence-detail": EvidenceDetailScreen,
 } as const;
 
 /**

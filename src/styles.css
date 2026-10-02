@@ -190,7 +190,8 @@
   --feedback-error-stroke:  var(--ref-red-200);
   --feedback-error-bg:      var(--ref-red-50);
 
-  /* brand — orange is the established Niyo360 accent (kept per spec S9) */
+  /* brand — orange is the established PARIVART accent, and matches the
+     gradient in the supplied logo artwork (#DC440C to #FFA12B) */
   --brand: var(--ref-orange-600);
   --brand-hover: var(--ref-orange-700);
   --on-brand: var(--ref-white);
@@ -452,6 +453,27 @@
   --color-data-06: var(--data-06);
   --color-data-accent: var(--data-accent);
 
+  /* Chronos semantic text & icon hierarchy */
+  --color-primary: var(--fg-primary);
+  --color-secondary: var(--fg-secondary);
+  --color-tertiary: var(--fg-tertiary);
+  --color-quaternary: var(--fg-quaternary);
+  --color-on-color: var(--fg-on-color);
+
+  /* Chronos semantic stroke hierarchy */
+  --color-default: var(--stroke-default);
+  --color-active: var(--stroke-active);
+  --color-muted: var(--stroke-muted);
+  --color-disabled: var(--stroke-disabled);
+
+  /* Chronos feedback badges */
+  --color-badge: var(--ref-white);
+  --color-success-badge: var(--feedback-success-content);
+  --color-info-badge: var(--feedback-info-content);
+  --color-neutral-badge: var(--feedback-neutral-content);
+  --color-warning-badge: var(--feedback-warning-content);
+  --color-error-badge: var(--feedback-error-content);
+
   /* legacy shadcn aliases — kept so existing markup and components/ui/* work */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -459,11 +481,9 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
+  --color-secondary-legacy: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
+  --color-muted-legacy: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -555,6 +575,27 @@
 @utility type-label-sm  { font-family: var(--font-sans); font-size: 10px; font-weight: 500; line-height: 1.4; letter-spacing: 0.1em; text-transform: uppercase; }
 @utility type-caption   { font-family: var(--font-sans); font-size: 11px; font-weight: 400; line-height: 1.45; }
 @utility tabular        { font-variant-numeric: tabular-nums; }
+
+/* Chronos icon utilities */
+@utility icon-primary { color: var(--icon-primary); }
+@utility icon-secondary { color: var(--icon-secondary); }
+@utility icon-tertiary { color: var(--icon-tertiary); }
+@utility icon-quaternary { color: var(--icon-quaternary); }
+@utility icon-on-color { color: var(--icon-on-color); }
+
+/* Chronos typography utilities */
+@utility text-display-2xl { font-family: var(--font-display); font-size: 28px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 400; }
+@utility text-display-xl { font-family: var(--font-display); font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; font-weight: 400; }
+@utility text-display-lg { font-family: var(--font-display); font-size: 18px; line-height: 1.25; letter-spacing: -0.01em; font-weight: 400; }
+@utility text-heading-lg { font-family: var(--font-sans); font-size: 24px; line-height: 30px; letter-spacing: -0.01em; font-weight: 600; }
+@utility text-heading-md { font-family: var(--font-sans); font-size: 18px; line-height: 24px; letter-spacing: -0.01em; font-weight: 600; }
+@utility text-heading-sm { font-family: var(--font-sans); font-size: 16px; line-height: 22px; letter-spacing: -0.01em; font-weight: 600; }
+@utility text-body-lg { font-family: var(--font-sans); font-size: 16px; line-height: 24px; letter-spacing: -0.01em; font-weight: 400; }
+@utility text-body-md { font-family: var(--font-sans); font-size: 14px; line-height: 20px; letter-spacing: -0.01em; font-weight: 400; }
+@utility text-body-sm { font-family: var(--font-sans); font-size: 12px; line-height: 16px; letter-spacing: -0.01em; font-weight: 400; }
+@utility text-label-md { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; }
+@utility text-label-sm { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; }
+@utility text-caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; }
 
 @layer base {
   * { border-color: var(--color-border); }
