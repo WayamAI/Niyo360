@@ -1,54 +1,114 @@
 import { PageBody, PageHeader } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { Badge } from "@/components/shared/Badge";
-import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { useRegistrations } from "@/hooks/useApiQueries";
+import { usePortfolioNames } from "@/hooks/usePortfolioNames";
 import type { Registration } from "@/services/api";
 
 /** Portfolio registrations, from GET /api/v1/portfolio/registrations/. */
 export function RegistrationsScreen() {
   const query = useRegistrations();
+  const names = usePortfolioNames();
 
   const columns: Column<Registration>[] = [
     {
-      key: "id",
-      header: "ID",
-      value: (row) => row.id,
-      render: (row) => <span className="font-mono text-fg-primary">{row.id}</span>,
+      key: "registration_number",
+      header: "Registration",
+      card: "title",
+      value: (row) => row.registration_number ?? row.id,
+      render: (row) => (
+        <div className="min-w-0">
+          <span className="block truncate font-mono font-medium text-fg-primary">
+            {row.registration_number ?? "—"}
+          </span>
+          <span
+            className="type-caption block truncate font-mono text-fg-quaternary"
+            title={row.id}
+          >
+            {row.id}
+          </span>
+        </div>
+      ),
     },
     {
       key: "product_id",
       header: "Product",
-      value: (row) => row.product_id ?? null,
-      render: (row) =>
-        row.product_id ? (
-          <span className="font-mono text-fg-primary">{row.product_id}</span>
-        ) : (
-          <span className="text-fg-quaternary">—</span>
-        ),
+      value: (row) =>
+        row.product_id ? names.resolve("PRODUCT", row.product_id).name ?? row.product_id : null,
+      render: (row) => {
+        if (!row.product_id) return <span className="text-fg-quaternary">—</span>;
+        const resolved = names.resolve("PRODUCT", row.product_id);
+        return (
+          <div className="min-w-0">
+            <span className="block truncate font-medium text-fg-primary">
+              {resolved.name ?? (
+                <span className="font-mono text-fg-tertiary" title={row.product_id}>
+                  {names.isLoading ? "Resolving…" : `${row.product_id.slice(0, 8)}…`}
+                </span>
+              )}
+            </span>
+            {resolved.detail && (
+              <span className="type-caption block truncate text-fg-quaternary">
+                {resolved.detail}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "market_id",
       header: "Market",
-      value: (row) => row.market_id ?? null,
-      render: (row) =>
-        row.market_id ? (
-          <span className="font-mono text-fg-primary">{row.market_id}</span>
-        ) : (
-          <span className="text-fg-quaternary">—</span>
-        ),
+      value: (row) =>
+        row.market_id ? names.resolve("MARKET", row.market_id).name ?? row.market_id : null,
+      render: (row) => {
+        if (!row.market_id) return <span className="text-fg-quaternary">—</span>;
+        const resolved = names.resolve("MARKET", row.market_id);
+        return (
+          <div className="min-w-0">
+            <span className="block truncate font-medium text-fg-primary">
+              {resolved.name ?? (
+                <span className="font-mono text-fg-tertiary" title={row.market_id}>
+                  {names.isLoading ? "Resolving…" : `${row.market_id.slice(0, 8)}…`}
+                </span>
+              )}
+            </span>
+            {resolved.detail && (
+              <span className="type-caption block truncate text-fg-quaternary">
+                {resolved.detail}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "authority_id",
       header: "Authority",
-      value: (row) => row.authority_id ?? null,
-      render: (row) =>
-        row.authority_id ? (
-          <span className="font-mono text-fg-primary">{row.authority_id}</span>
-        ) : (
-          <span className="text-fg-quaternary">—</span>
-        ),
+      value: (row) =>
+        row.authority_id
+          ? names.resolve("AUTHORITY", row.authority_id).name ?? row.authority_id
+          : null,
+      render: (row) => {
+        if (!row.authority_id) return <span className="text-fg-quaternary">—</span>;
+        const resolved = names.resolve("AUTHORITY", row.authority_id);
+        return (
+          <div className="min-w-0">
+            <span className="block truncate font-medium text-fg-primary">
+              {resolved.name ?? (
+                <span className="font-mono text-fg-tertiary" title={row.authority_id}>
+                  {names.isLoading ? "Resolving…" : `${row.authority_id.slice(0, 8)}…`}
+                </span>
+              )}
+            </span>
+            {resolved.detail && (
+              <span className="type-caption block truncate text-fg-quaternary">
+                {resolved.detail}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "status",
@@ -112,10 +172,19 @@ export function RegistrationsScreen() {
               rows={rows}
               columns={columns}
               rowKey={(row) => row.id}
-              searchPlaceholder="Search registrations by ID or product"
-              getSearchText={(row) =>
-                `${row.id} ${row.product_id ?? ""} ${row.market_id ?? ""} ${row.authority_id ?? ""}`
-              }
+              searchPlaceholder="Search registrations by number, product, market, or authority"
+              getSearchText={(row) => {
+                const prod = row.product_id
+                  ? (names.resolve("PRODUCT", row.product_id).name ?? "")
+                  : "";
+                const mkt = row.market_id
+                  ? (names.resolve("MARKET", row.market_id).name ?? "")
+                  : "";
+                const auth = row.authority_id
+                  ? (names.resolve("AUTHORITY", row.authority_id).name ?? "")
+                  : "";
+                return `${row.id} ${row.registration_number ?? ""} ${prod} ${mkt} ${auth} ${row.status ?? ""}`;
+              }}
               exportName="parivart-registrations"
               emptyTitle="No registrations match this search"
             />
