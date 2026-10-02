@@ -21,10 +21,7 @@ export function RegistrationsScreen() {
           <span className="block truncate font-mono font-medium text-fg-primary">
             {row.registration_number ?? "—"}
           </span>
-          <span
-            className="type-caption block truncate font-mono text-fg-quaternary"
-            title={row.id}
-          >
+          <span className="type-caption block truncate font-mono text-fg-quaternary" title={row.id}>
             {row.id}
           </span>
         </div>
@@ -34,7 +31,7 @@ export function RegistrationsScreen() {
       key: "product_id",
       header: "Product",
       value: (row) =>
-        row.product_id ? names.resolve("PRODUCT", row.product_id).name ?? row.product_id : null,
+        row.product_id ? (names.resolve("PRODUCT", row.product_id).name ?? row.product_id) : null,
       render: (row) => {
         if (!row.product_id) return <span className="text-fg-quaternary">—</span>;
         const resolved = names.resolve("PRODUCT", row.product_id);
@@ -60,7 +57,7 @@ export function RegistrationsScreen() {
       key: "market_id",
       header: "Market",
       value: (row) =>
-        row.market_id ? names.resolve("MARKET", row.market_id).name ?? row.market_id : null,
+        row.market_id ? (names.resolve("MARKET", row.market_id).name ?? row.market_id) : null,
       render: (row) => {
         if (!row.market_id) return <span className="text-fg-quaternary">—</span>;
         const resolved = names.resolve("MARKET", row.market_id);
@@ -87,7 +84,7 @@ export function RegistrationsScreen() {
       header: "Authority",
       value: (row) =>
         row.authority_id
-          ? names.resolve("AUTHORITY", row.authority_id).name ?? row.authority_id
+          ? (names.resolve("AUTHORITY", row.authority_id).name ?? row.authority_id)
           : null,
       render: (row) => {
         if (!row.authority_id) return <span className="text-fg-quaternary">—</span>;

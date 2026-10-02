@@ -3,24 +3,16 @@ import { useForm } from "react-hook-form";
 import { PageBody, PageHeader } from "@/components/shared/Page";
 import { Button } from "@/components/shared/Button";
 import { ApiState } from "@/components/shared/ApiState";
-import { useAnalyzeImpact, useImpactAssessments, useReanalyzeImpact } from "@/hooks/useApiQueries";
+import {
+  useAnalyzeImpact,
+  useImpactAssessments,
+  useReanalyzeImpact,
+  useRegulatoryChanges,
+} from "@/hooks/useApiQueries";
 import { useApp } from "@/context/AppContext";
 
-/**
- * Run impact analysis: POST /api/v1/impact/analyze, or
- * POST /api/v1/impact/{assessment_id}/reanalyze.
- *
- * Analysis is idempotent by regulatory change: asking again for a change that
- * already has an assessment returns the existing one unless force_reanalyze is
- * set, which is why that is an explicit checkbox rather than a hidden default.
- *
- * The change id is typed rather than picked because this backend exposes no
- * endpoint that lists regulatory changes -- inventing one here would mean
- * inventing a contract. Re-analysis picks from the assessments that do exist.
- */
-
 const FIELD =
-  "type-body-lg h-9 w-full rounded-md border border-stroke-default bg-action px-2.5 text-fg-primary placeholder:text-fg-quaternary transition-colors duration-150 hover:border-stroke-active focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+  "h-9 w-full rounded-md border border-stroke-muted bg-action px-3 text-body-md text-primary placeholder:text-quaternary outline-none transition-colors duration-150 hover:border-stroke-default focus-visible:ring-2 focus-visible:ring-ring";
 
 const TABS = [
   { id: "analyze", label: "Analyze a change" },
@@ -33,6 +25,7 @@ export function ImpactAnalysisScreen() {
   const { showToast, navigateTo, openRecord } = useApp();
   const [tab, setTab] = useState<TabId>("analyze");
   const assessmentsQuery = useImpactAssessments();
+  const changesQuery = useRegulatoryChanges({ limit: 100 });
   const analyzeImpact = useAnalyzeImpact();
   const reanalyzeImpact = useReanalyzeImpact();
 
@@ -70,7 +63,7 @@ export function ImpactAnalysisScreen() {
     <>
       <PageHeader
         title="Impact Analysis"
-        description="Match a regulatory change against your portfolio."
+        description="Match a regulatory change against your portfolio using deterministic rules."
         breadcrumb={[
           { label: "Impact" },
           { label: "Assessments", onClick: () => navigateTo("api-impact") },
@@ -79,11 +72,7 @@ export function ImpactAnalysisScreen() {
         onBack={() => navigateTo("api-impact")}
       />
       <PageBody>
-        <div
-          role="tablist"
-          aria-label="Analysis modes"
-          className="mb-6 flex h-11 shrink-0 border-b border-stroke-muted"
-        >
+        <div role="tablist" aria-label="Analysis modes" className="mb-6 flex items-center gap-2">
           {TABS.map((item) => {
             const selected = tab === item.id;
             return (
@@ -93,11 +82,12 @@ export function ImpactAnalysisScreen() {
                 role="tab"
                 aria-selected={selected}
                 onClick={() => setTab(item.id)}
-                className={`type-label-md border-b-2 px-4 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none ${
+                className={[
+                  "inline-flex h-8 items-center rounded-full px-4 text-label-sm outline-none transition-colors duration-[180ms]",
                   selected
-                    ? "border-brand text-fg-primary"
-                    : "border-transparent text-fg-tertiary hover:text-fg-secondary"
-                }`}
+                    ? "bg-action-primary text-on-action-primary font-medium"
+                    : "border border-stroke-muted bg-action text-tertiary hover:border-stroke-default hover:text-secondary",
+                ].join(" ")}
               >
                 {item.label}
               </button>
@@ -109,23 +99,82 @@ export function ImpactAnalysisScreen() {
           {tab === "analyze" ? (
             <form
               onSubmit={onAnalyze}
-              className="max-w-xl space-y-5 rounded-lg border border-stroke-default bg-container p-5"
+              className="max-w-xl space-y-5 rounded-lg border border-stroke-muted bg-container p-6 shadow-sm"
             >
               <div className="space-y-1.5">
-                <label className="type-label-sm text-fg-quaternary" htmlFor="regulatory_change_id">
-                  Regulatory change ID
+                <label
+                  className="text-caption font-medium tracking-[0.06em] text-quaternary uppercase"
+                  htmlFor="regulatory_change_id"
+                >
+                  Regulatory Change
                 </label>
-                <input
-                  id="regulatory_change_id"
-                  className={FIELD}
-                  placeholder="UUID of the regulatory change"
-                  aria-invalid={Boolean(analyzeForm.formState.errors.regulatory_change_id)}
-                  {...analyzeForm.register("regulatory_change_id", {
-                    required: "A regulatory change ID is required.",
-                  })}
-                />
+                {changesQuery.isLoading ? (
+                  <div className="py-1 text-body-sm text-quaternary">
+                    Loading regulatory changes…
+                  </div>
+                ) : changesQuery.isError ? (
+                  <div className="space-y-1">
+                    <p className="text-body-sm text-error">
+                      Could not load regulatory changes from API.
+                    </p>
+                    <input
+                      id="regulatory_change_id"
+                      className={FIELD}
+                      placeholder="Enter regulatory change UUID…"
+                      aria-invalid={Boolean(analyzeForm.formState.errors.regulatory_change_id)}
+                      {...analyzeForm.register("regulatory_change_id", {
+                        required: "A regulatory change ID is required.",
+                      })}
+                    />
+                  </div>
+                ) : changesQuery.data && changesQuery.data.length > 0 ? (
+                  <select
+                    id="regulatory_change_id"
+                    className={FIELD}
+                    aria-invalid={Boolean(analyzeForm.formState.errors.regulatory_change_id)}
+                    {...analyzeForm.register("regulatory_change_id", {
+                      required: "Please choose a regulatory change to analyze.",
+                    })}
+                  >
+                    <option value="">Select a regulatory change…</option>
+                    {changesQuery.data.map((c) => {
+                      const label = [
+                        c.section ? `§${c.section}` : null,
+                        c.change_type,
+                        c.summary
+                          ? c.summary.length > 45
+                            ? `${c.summary.slice(0, 45)}…`
+                            : c.summary
+                          : null,
+                        `(${c.id.slice(0, 8)})`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ");
+                      return (
+                        <option key={c.id} value={c.id}>
+                          {label}
+                        </option>
+                      );
+                    })}
+                  </select>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-body-sm text-quaternary">
+                      No regulatory changes found in the system. Enter a change UUID manually:
+                    </p>
+                    <input
+                      id="regulatory_change_id"
+                      className={FIELD}
+                      placeholder="Enter regulatory change UUID…"
+                      aria-invalid={Boolean(analyzeForm.formState.errors.regulatory_change_id)}
+                      {...analyzeForm.register("regulatory_change_id", {
+                        required: "A regulatory change ID is required.",
+                      })}
+                    />
+                  </div>
+                )}
                 {analyzeForm.formState.errors.regulatory_change_id && (
-                  <p className="type-body-md text-error">
+                  <p className="text-body-sm text-error">
                     {analyzeForm.formState.errors.regulatory_change_id.message}
                   </p>
                 )}
@@ -138,8 +187,8 @@ export function ImpactAnalysisScreen() {
                   {...analyzeForm.register("force_reanalyze")}
                 />
                 <span>
-                  <span className="type-body-md text-fg-secondary">Force re-analysis</span>
-                  <span className="type-body-md block text-fg-quaternary">
+                  <span className="text-body-md font-medium text-secondary">Force re-analysis</span>
+                  <span className="block text-body-sm text-quaternary">
                     Analysis is idempotent: without this, a change that already has an assessment
                     returns the existing one instead of producing a new version.
                   </span>
@@ -160,10 +209,13 @@ export function ImpactAnalysisScreen() {
               {(assessments) => (
                 <form
                   onSubmit={onReanalyze}
-                  className="max-w-xl space-y-5 rounded-lg border border-stroke-default bg-container p-5"
+                  className="max-w-xl space-y-5 rounded-lg border border-stroke-muted bg-container p-6 shadow-sm"
                 >
                   <div className="space-y-1.5">
-                    <label className="type-label-sm text-fg-quaternary" htmlFor="assessment_id">
+                    <label
+                      className="text-caption font-medium tracking-[0.06em] text-quaternary uppercase"
+                      htmlFor="assessment_id"
+                    >
                       Assessment
                     </label>
                     <select
@@ -183,13 +235,13 @@ export function ImpactAnalysisScreen() {
                       ))}
                     </select>
                     {reanalyzeForm.formState.errors.assessment_id && (
-                      <p className="type-body-md text-error">
+                      <p className="text-body-sm text-error">
                         {reanalyzeForm.formState.errors.assessment_id.message}
                       </p>
                     )}
                   </div>
 
-                  <p className="type-body-md text-fg-quaternary">
+                  <p className="text-body-sm text-quaternary">
                     Re-analysis produces a new analysis version of this assessment.
                   </p>
 

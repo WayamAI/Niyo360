@@ -3,8 +3,9 @@ import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
+import { AppIcon } from "@/components/icons";
 import { useApp } from "@/context/AppContext";
-import { useDocument, useSources } from "@/hooks/useApiQueries";
+import { useDocument, useProcessDocument, useSources } from "@/hooks/useApiQueries";
 import type { DocumentProcessingStatus } from "@/services/api";
 
 /** Document detail, from GET /api/v1/regulatory/documents/{document_id}. */
@@ -31,8 +32,9 @@ function formatSize(bytes: number | null | undefined): string {
 }
 
 export function DocumentDetailScreen() {
-  const { selectedRecordId, navigateTo, openRecord } = useApp();
+  const { selectedRecordId, navigateTo, openRecord, showToast } = useApp();
   const query = useDocument(selectedRecordId);
+  const processMutation = useProcessDocument();
   // The document carries the id of the source it was ingested from. The name
   // is one list away and is what anyone reading this page is looking for.
   const sourcesQuery = useSources();
@@ -54,13 +56,41 @@ export function DocumentDetailScreen() {
           <>
             <ApiRefresh query={query} />
             {selectedRecordId && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => openRecord("audit", selectedRecordId)}
-              >
-                History
-              </Button>
+              <>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={
+                    processMutation.isPending ||
+                    query.data?.processing_status === "ANALYZING" ||
+                    query.data?.processing_status === "PARSING" ||
+                    query.data?.processing_status === "DOWNLOADING"
+                  }
+                  onClick={() => {
+                    processMutation.mutate(selectedRecordId, {
+                      onSuccess: () => {
+                        showToast("Document processing triggered.", "success");
+                      },
+                      onError: (err) => {
+                        showToast(
+                          err instanceof Error ? err.message : "Failed to process document",
+                          "error",
+                        );
+                      },
+                    });
+                  }}
+                >
+                  <AppIcon name="play" size="xs" />
+                  {processMutation.isPending ? "Processing…" : "Process Document"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => openRecord("audit", selectedRecordId)}
+                >
+                  History
+                </Button>
+              </>
             )}
           </>
         }
