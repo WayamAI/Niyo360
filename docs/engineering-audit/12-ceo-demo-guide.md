@@ -1,6 +1,8 @@
 # CEO Demonstration Walkthrough
 
-**Status: IMPLEMENTED, UNVERIFIED.** Every route/screen named below is confirmed present in the code (`src/context/AppContext.tsx`'s `SCREEN_IDS`, `src/components/shell/Sidebar.tsx`). The step-by-step flow itself was **not** run in a browser this session — the backend at `VITE_API_BASE_URL`/`http://localhost:8010` was unreachable (`curl` to `/api/v1/auth/me` returned connection refused), so login and every data-dependent step below are **BLOCKED**, not demonstrated. Run this guide once against a reachable backend and update this status line.
+**Status: IMPLEMENTED, UNVERIFIED (connectivity blocker resolved; credential blocker remains).** Every route/screen named below is confirmed present in the code (`src/context/AppContext.tsx`'s `SCREEN_IDS`, `src/components/shell/Sidebar.tsx`).
+
+**Session 2 update:** the backend is now reachable — the earlier "unreachable" state was a stale Postgres lock file (fixed) plus one pending migration (applied). Backend runs cleanly on `localhost:8010`; the Asterion Medical Systems org and its demo users (`ra.lead@asterion-medical.com`, `admin@asterion.com`, `analyst@asterion.com`) already exist in the database, untouched. The frontend dev server → Vite proxy → backend path was verified end-to-end (matching 401 responses through both routes). **What's still blocking the actual walkthrough: no valid password for any Asterion demo user was available this session, and none was guessed or brute-forced.** Get the password through a secure channel (not pasted into a prompt), sign in, and run this guide for real — everything else needed to attempt it is in place.
 
 ## Before the demo
 
