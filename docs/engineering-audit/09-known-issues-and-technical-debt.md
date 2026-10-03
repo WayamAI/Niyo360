@@ -12,14 +12,12 @@ Non-scored register; each item verified against actual code/output in this sessi
 - **Recommended next action:** either wire these to real endpoints (if the backend has them — unverified, see [06](./06-api-integration-and-data-flow.md)) or add a visible "preview/concept" badge to prevent user confusion.
 - **Verification status:** VERIFIED (mock-data imports confirmed directly).
 
-## 2. Dashboard mixes live and mock data with no visible distinction
+## 2. Dashboard mixes live and mock data — UPDATE: per-tile trace now done, UI already labels most of it
 
 - **Affected:** `Dashboard.tsx`.
-- **Evidence:** imports both `useApiQueries` hooks (`useAuditEvents`, `useProducts`, `useMarkets`, `useProcesses`, `useAuthorities`, `useSources`) and `@/data/mockData`.
-- **Impact:** a user cannot tell which KPI tiles are live and which are illustrative.
-- **Reproduction:** read `Dashboard.tsx` imports directly.
-- **Recommended next action:** identify and label (or replace) the specific mock-backed tiles; this requires a closer per-tile read than this audit performed.
-- **Verification status:** VERIFIED (import list), PARTIAL (which exact tiles are mock not individually traced).
+- **Correction (this session):** a per-tile trace (not performed in the prior pass) found the 5 KPI tiles (Products/Markets/Processes/Authorities/Sources) are live-API counts, "Recent activity" is live audit data, and the change-activity chart, agent cards, and pillar cards are mock-backed but already carry `source="illustrative"` tags in the rendered UI (`DataSourceTag`) — the "no visible distinction" claim from the prior audit pass does not hold up under direct inspection and is retracted.
+- **Remaining real defect found and fixed:** the header date was a separate hardcoded literal (`"22 May 2025"`) not wired to `src/lib/demo-clock.ts`'s `DEMO_NOW`, so it could silently drift from the anchor date the mock dataset is authored against. Fixed in commit `2d78b25` to derive from `demoNow()`.
+- **Verification status:** VERIFIED (read every tile's data source directly, this session).
 
 ## 3. No test coverage for any UI/screen component
 
@@ -69,3 +67,20 @@ Non-scored register; each item verified against actual code/output in this sessi
 - **Impact:** possible undetected drift between the committed schema and either the live backend or the frontend's actual usage.
 - **Recommended next action:** run `npm run api:types` against the current backend and diff the result against the committed `schema.d.ts`; script a path-coverage comparison.
 - **Verification status:** PARTIAL — explicitly incomplete, flagged rather than silently assumed complete.
+
+## 9. Obligation rows have no visible source-change label — backend contract gap, not a frontend bug
+
+- **Affected:** `ObligationListScreen.tsx`.
+- **Evidence:** `RegulatoryObligationResponse` (`schema.d.ts:1980-2003`, confirmed in `api/openapi.json`) has `change_id` but no denormalized change title/summary field. The screen already routes each row's click-through to the originating change (`openRecord("api-change-detail", row.change_id)`), but a user scanning the table without clicking cannot see which change produced a given obligation.
+- **Minimum backend change needed:** add a denormalized `change_summary` (or similar) field to `RegulatoryObligationResponse`, or support an `include=change` expand param on the obligations list endpoint.
+- **Why not frontend-fixed:** adding this client-side would require one extra API call per row (N+1) to resolve each `change_id` to a label — explicitly out of scope per this session's instructions.
+- **Verification status:** VERIFIED (schema field absence confirmed directly), reported rather than worked around.
+
+## 10. Document upload: no real progress percentage, no backend-declared file-size limit
+
+- **Affected:** `DocumentUploadScreen.tsx`.
+- **Evidence:** `POST /api/v1/regulatory/documents/upload`'s OpenAPI schema declares no `maxLength`/size constraint on the file part, and the response (`DocumentUploadResponse`) carries no progress field; the request client has no XHR progress-event wiring.
+- **Impact:** the upload button shows a static "Uploading…" label with no percentage, and there is no client-enforced size cap matching a real backend limit (the `accept=".pdf,.doc,.docx,.txt,.html"` attribute is a cosmetic hint only).
+- **Why not frontend-fixed:** fabricating a progress bar or a size limit not backed by the API would misrepresent backend behavior, which this session's instructions explicitly prohibit.
+- **Recommended next action:** backend should document/enforce a real max upload size and, if progress reporting matters for large files, expose chunked upload or a server-side progress channel.
+- **Verification status:** VERIFIED (schema and client code read directly).

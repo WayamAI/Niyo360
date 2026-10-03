@@ -49,6 +49,11 @@ This repo is the browser client: a React 19 + TanStack Start SSR application tha
 9. [09-known-issues-and-technical-debt.md](./09-known-issues-and-technical-debt.md)
 10. [10-git-history-and-change-register.md](./10-git-history-and-change-register.md)
 11. [11-current-state-and-next-steps.md](./11-current-state-and-next-steps.md)
+12. [12-ceo-demo-guide.md](./12-ceo-demo-guide.md) — added in the follow-up session that implemented §5–§9 fixes below.
+
+## Follow-up session (2026-10-03, after initial audit)
+
+Shared table sort logic was extracted and tested (`src/lib/tableSort.ts`), two document-processing/upload bugs were fixed (dead status-polling, swallowed upload errors), one dashboard date literal was fixed, and §6/§7 (regulatory changes/obligations, portfolio/impact/review/action/evidence) were inspected and found to have **no fixable frontend defects** — see updated entries in [09](./09-known-issues-and-technical-debt.md). Tests: 57/57 passing (up from 42). Commits `23ca492`..`2d78b25`, all pushed to `origin/main`. Browser/live-backend verification remains **BLOCKED** — the configured backend was unreachable this session.
 
 ## Evidence-quality legend (used throughout)
 
