@@ -44,4 +44,23 @@ All 19 are fixed-palette renders (baked orange/gray, no `currentColor` capabilit
 
 ## What happens next
 
-Once transparent re-exports land at the destination paths above (and the 4 unclear assets are either dropped or assigned a concept), Phase 3 can resume exactly as specified: one icon integrated and verified per commit, starting with Batch 1 from `google-flow-icon-design-brief.md` §H.
+Once transparent re-exports land at the destination paths above (and the 4 unclear assets are either dropped or assigned a concept), icon-by-icon integration can resume exactly as specified: one icon integrated and verified per commit, starting with Batch 1 from `google-flow-icon-design-brief.md` §H.
+
+## Next up: `regulatory-authority` — the first icon ready to integrate, pending one asset
+
+Infrastructure landed in commit `c630317` (`CustomIcon` component). The first Batch 1 icon with both a confirmed destination and a confident source match is `regulatory-authority` — no code integration has happened yet; this is the exact spec for the one file needed to unblock it.
+
+**Important gap found while selecting this:** Batch 1 in the design brief lists four icons (`regulatory-authority`, `regulatory-document`, `regulatory-change`, `impact-assessment`). Of the 19 supplied JPEGs, **none matches `impact-assessment`'s brief** (two overlapping shapes with a filled intersection — PARIVART's flagship icon, per the design brief's own emphasis). `regulatory-authority`, `regulatory-document`, and `regulatory-change` all have a candidate source render; `impact-assessment` has none at all among the 19 assets and needs a new generation pass, not a re-export.
+
+- **Source render (reference only, not to be integrated directly):** `Icons/Sculptural_3D_regulatory_icon_2K_20261003142854.jpg`
+- **Destination:** `src/assets/icons/custom/icon-regulatory-authority.png`
+- **Integration points once the asset exists:** `src/components/icons/registry.ts` (new entry, or extend the icon resolution path to check a custom-icon map before falling back to lucide — exact mechanism TBD at integration time since `IconName` is currently a closed union over lucide glyphs only); `src/components/shell/Sidebar.tsx:119` (`{ id: "api-authorities", label: "Authorities", icon: "organisation" }` → new icon name).
+- **Export requirements for this specific file:**
+  - PNG format with a **genuine alpha channel** — not JPEG, not a flattened checkerboard, not a solid matte color.
+  - No solid background color of any kind behind the building silhouette.
+  - No checkerboard pattern baked into the pixels (the current render has this).
+  - No white/gray fringe or matte ring around the silhouette edge — clean alpha falloff at the edge.
+  - Resolution: 256×256px per the sizing rationale above (headroom over the 28px max render size).
+  - Preserve the original 3D geometry, lighting, orange/gray material, bevels, and shadow exactly as rendered — this is a re-export of existing artwork, not a redesign.
+
+No other asset in the 19 is closer to "ready" than this one — it's the recommended first target once a real export exists.
