@@ -122,12 +122,17 @@ export function DocumentUploadScreen() {
               className={FIELD}
               placeholder="Document title"
               aria-invalid={Boolean(errors.title)}
+              aria-describedby={errors.title ? "title-error" : undefined}
               {...register("title", {
                 required: "A title is required.",
                 maxLength: { value: 200, message: "Maximum 200 characters." },
               })}
             />
-            {errors.title && <p className="type-body-md text-error">{errors.title.message}</p>}
+            {errors.title && (
+              <p id="title-error" className="type-body-md text-error">
+                {errors.title.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -138,6 +143,7 @@ export function DocumentUploadScreen() {
               id="authority_id"
               className={FIELD}
               aria-invalid={Boolean(errors.authority_id)}
+              aria-describedby={errors.authority_id ? "authority_id-error" : undefined}
               {...register("authority_id", { required: "Choose the issuing authority." })}
             >
               <option value="">Select an authority…</option>
@@ -148,7 +154,9 @@ export function DocumentUploadScreen() {
               ))}
             </select>
             {errors.authority_id && (
-              <p className="type-body-md text-error">{errors.authority_id.message}</p>
+              <p id="authority_id-error" className="type-body-md text-error">
+                {errors.authority_id.message}
+              </p>
             )}
           </div>
 
@@ -160,6 +168,7 @@ export function DocumentUploadScreen() {
               id="source_id"
               className={FIELD}
               aria-invalid={Boolean(errors.source_id)}
+              aria-describedby={errors.source_id ? "source_id-error" : undefined}
               {...register("source_id", { required: "Choose the source to file this under." })}
             >
               <option value="">Select a source…</option>
@@ -170,7 +179,9 @@ export function DocumentUploadScreen() {
               ))}
             </select>
             {errors.source_id && (
-              <p className="type-body-md text-error">{errors.source_id.message}</p>
+              <p id="source_id-error" className="type-body-md text-error">
+                {errors.source_id.message}
+              </p>
             )}
           </div>
 
