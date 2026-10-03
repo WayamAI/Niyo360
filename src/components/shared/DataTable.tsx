@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
 import { AppIcon } from "@/components/icons";
 import { EmptyState, ErrorState, NoResultsState, TableSkeleton } from "@/components/shared/States";
+import { sortRows, toggleSortState, type SortDir, type SortState } from "@/lib/tableSort";
 
 /**
  * Operational high-density table from Chronos:
@@ -10,12 +11,7 @@ import { EmptyState, ErrorState, NoResultsState, TableSkeleton } from "@/compone
  * card list below 720px.
  */
 
-export type SortDir = "asc" | "desc";
-
-export interface SortState {
-  key: string;
-  dir: SortDir;
-}
+export type { SortDir, SortState };
 
 export interface Column<T> {
   key: string;
@@ -42,17 +38,6 @@ const ALIGN_CLASS = {
   right: "text-right",
   center: "text-center",
 } as const;
-
-function compare(a: unknown, b: unknown, dir: SortDir): number {
-  const mul = dir === "asc" ? 1 : -1;
-  if (a == null && b == null) return 0;
-  if (a == null) return 1;
-  if (b == null) return -1;
-  if (typeof a === "number" && typeof b === "number") return (a - b) * mul;
-  return (
-    String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" }) * mul
-  );
-}
 
 function csvCell(value: string): string {
   return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
@@ -200,7 +185,7 @@ export function DataTable<T>({
     if (sort) {
       const col = columns.find((c) => c.key === sort.key && c.value);
       if (col?.value) {
-        result = [...result].sort((a, b) => compare(col.value!(a), col.value!(b), sort.dir));
+        result = sortRows(result, sort, (row) => col.value!(row));
       }
     }
     return result;
@@ -226,11 +211,7 @@ export function DataTable<T>({
   const showToolbar = Boolean(searchable || exportName || toolbar);
 
   function toggleSort(key: string) {
-    setSort((current) => {
-      if (current?.key !== key) return { key, dir: "asc" };
-      if (current.dir === "asc") return { key, dir: "desc" };
-      return undefined;
-    });
+    setSort((current) => toggleSortState(current, key));
   }
 
   function setKey(key: string, next: boolean) {
