@@ -186,3 +186,50 @@ Conventional interface actions, inventoried separately from domain icons, with a
 **Overall policy:** every icon in this table stays on the conventional lucide/outline language. The custom family (§C) is reserved entirely for PARIVART's own domain vocabulary, where there is no pre-existing user expectation to preserve and real brand value in a distinctive mark.
 
 ---
+
+## E. Inconsistency and duplication report
+
+Every item below is a **verified defect** (confirmed by reading the cited source), not a subjective design opinion. Subjective opportunities are labeled as such separately.
+
+### Verified: same exact glyph used for two unrelated registry entries
+
+1. **`AlertTriangle` → both `escalation` and `warning`** (`registry.ts:88,142`). Impact: an "Escalations" nav icon and every generic warning toast/badge in the app render the identical symbol — a user cannot visually distinguish "this is the dedicated Escalations workflow" from "this is a generic caution state" by icon alone. **Resolution proposed in §C:** give `escalation` its own glyph.
+2. **`FileText` → both `variationDraft` and `document`** (`registry.ts:81,133`). Impact: "Variation Sections" in the sidebar and "Documents"/"Products"/"Evidence" all render the same page glyph. **Resolution proposed in §C.**
+
+### Verified: same registry icon applied to multiple, unrelated domain concepts (semantic reuse, not a glyph collision, but still a real defect)
+
+Found directly in `src/components/shell/Sidebar.tsx`'s nav-item data (lines 71–143):
+
+3. **`document`** → Documents, Products, Evidence (3 distinct domain concepts, one icon).
+4. **`validator`** → Pre-Submission Validator, Controls, Human Review (3 distinct concepts).
+5. **`feed`** → Sources, Regulatory Changes (plus reused again for the Agent Console's "Feed Monitor" tab button) — 2–3 distinct concepts.
+6. **`layers`** → Impact Assessments, Processes (2 distinct concepts — PARIVART's *core analytical object*, Impact Assessment, currently has no icon of its own).
+7. **`audit`** → Audit Trail, Registrations (2 distinct concepts).
+8. **`escalation`** → Escalations, Actions (2 distinct concepts, in addition to the glyph collision with `warning` above).
+
+Impact of 3–8: a user scanning the sidebar cannot rely on icon shape to distinguish these nav destinations at all — only the text label does the work, which defeats part of the purpose of having icons in a dense nav list. This is the primary justification for the 17-icon custom taxonomy in §C.
+
+### Verified: unused registry declarations (dead code, not a design defect, but worth cleaning up alongside the redesign)
+
+9. `filter` (`registry.ts:92`), `share` (`:97`), `more` (`:107`), `arrowRight` (`:115`), `chart` (`:134`), `gauge` (`:136`) — confirmed via exhaustive grep, zero usages anywhere in `src/` outside the registry file itself. Not harmful, but should either be wired up or removed when this redesign lands, so the registry doesn't silently carry assets nobody renders.
+
+### Verified: duplicated hand-coded SVG (not an icon, but a related construction inconsistency)
+
+10. **Two nearly-identical circular progress rings**, hand-coded as inline `<svg>` rather than sharing one component: `src/components/regulatory/atoms.tsx:102` (`ConfidenceRing`) and `src/components/screens/ValidationReports.tsx:81` (inline, for a "Readiness score" gauge). Both draw two `<circle>` strokes with a dash-offset animation for a percentage ring. Impact: any future visual tweak to this pattern (stroke width, animation easing) has to be made twice, and already risks drifting apart. Not part of the icon registry, but relevant to "one coherent system" — recommend consolidating into one shared component when the icon family lands.
+
+### Verified: icon-registry bypasses (vendor pattern, not an app-authored defect)
+
+11. **17 files under `src/components/ui/`** (the shadcn/ui primitive layer — `pagination.tsx`, `dialog.tsx`, `sheet.tsx`, `select.tsx`, `dropdown-menu.tsx`, `context-menu.tsx`, `menubar.tsx`, `command.tsx`, `calendar.tsx`, `accordion.tsx`, `breadcrumb.tsx`, `checkbox.tsx`, `radio-group.tsx`, `navigation-menu.tsx`, `carousel.tsx`, `resizable.tsx`, `input-otp.tsx`) import `lucide-react` glyphs directly and render them inline, never through `<AppIcon>`. This is the unmodified upstream shadcn pattern, not an app-authored inconsistency, and touching it means editing vendored component internals — **out of scope for this icon-replacement effort** unless the brand owner explicitly wants these primitives' chevrons/checks restyled too (they're mostly the same `Check`/`ChevronDown`/`X` glyphs already in the main registry, so visually they already look consistent with it by coincidence).
+
+### Verified: literal characters used as de facto icons instead of `AppIcon`
+
+12. **`src/components/shared/DataTable.tsx:93`** — a literal `✓` character rendered as a "selected" indicator inside the custom `CheckBox` component, bypassing the `success` icon entirely.
+13. **Six files use a literal `→` character as a "from → to" text separator**, arguably a navigational-arrow concept that could use `AppIcon name="arrowRight"` (which is currently unused — see item 9): `RegulatoryCalendar.tsx:215`, `ImpactAssessmentDetailScreen.tsx:292`, `AuditTrailScreen.tsx:152,160,331`, `ReviewListScreen.tsx:79,82`. Low-priority cosmetic inconsistency, not a functional defect — these render correctly, they just don't go through the icon system.
+
+### Subjective design opportunities (not defects — flagged separately per the brief's own instruction)
+
+- The two event-type icon lookup dictionaries (`AgentConsole.tsx`'s `ACTIVITY_ICONS`, `ReportDetail.tsx`'s `ICONS`, both mapping `ingestion/agent/system/notification[/user]` to the same glyphs) are near-identical and could be consolidated into one shared export from the icons module — a maintainability improvement, not a visible inconsistency to a user.
+- `StatusDot` (`Badge.tsx:63-72`) is a plain colored CSS dot with no text, used only inline alongside other labeled content in this codebase — not a confirmed accessibility defect today, but worth keeping in mind if it's ever reused standalone (flagged in the prior engineering audit's accessibility section too).
+- Icon stroke width is uniformly `1.75` via `AppIcon`'s default — no inconsistency found; this is listed here only to confirm it was checked, not assumed.
+
+---
