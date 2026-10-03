@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { IconSize } from "./AppIcon";
+import { customIcons, type CustomIconName } from "./customRegistry";
 
 /**
  * Raster counterpart to AppIcon, for the custom 3D icon family.
@@ -9,12 +10,8 @@ import type { IconSize } from "./AppIcon";
  * separate component rather than a second branch inside AppIcon — the two
  * share the same size tokens and labelling contract so call sites read the
  * same way, but nothing about AppIcon's existing SVG path changes.
- *
- * `src` is a locally-imported image module (e.g. `import icon from
- * "@/assets/icons/custom/icon-x.png"`), resolved to a URL by Vite like every
- * other local asset in this app (see Logo.tsx) — never a remote URL.
  */
-export interface CustomIconProps {
+interface CustomIconImageProps {
   src: string;
   size?: IconSize;
   className?: string;
@@ -25,14 +22,21 @@ export interface CustomIconProps {
   "aria-hidden"?: boolean;
 }
 
-export function CustomIcon({
+/**
+ * The rendering primitive, given an already-resolved image URL. Exported
+ * because it's a genuinely reusable, independently testable piece — most
+ * call sites should reach it through `<CustomIcon name="...">` below rather
+ * than pass a `src` directly, the same way nothing calls a lucide component
+ * straight from `registry.ts` instead of going through `<AppIcon name="...">`.
+ */
+export function CustomIconImage({
   src,
   size = "md",
   className = "",
   style,
   "aria-label": ariaLabel,
   "aria-hidden": ariaHidden,
-}: CustomIconProps) {
+}: CustomIconImageProps) {
   // Same default as AppIcon: decorative unless a label is explicitly given.
   const decorative = ariaHidden ?? !ariaLabel;
   return (
@@ -57,4 +61,21 @@ export function CustomIcon({
       }}
     />
   );
+}
+
+export interface CustomIconProps extends Omit<CustomIconImageProps, "src"> {
+  /**
+   * A name from the typed custom-icon registry (customRegistry.ts), not a
+   * raw path — this is the type-safe entry point: a typo or an unregistered
+   * name is a compile error, the same guarantee `<AppIcon name="...">` gives
+   * for lucide glyphs. The registry is empty until a real asset passes the
+   * alpha-transparency bar, so this prop has no valid value yet — that's
+   * accurate, not a bug, since no usable custom icon currently exists.
+   */
+  name: CustomIconName;
+}
+
+/** The public entry point. Resolves `name` through the registry and renders it. */
+export function CustomIcon({ name, ...rest }: CustomIconProps) {
+  return <CustomIconImage src={customIcons[name]} {...rest} />;
 }

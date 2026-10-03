@@ -1,4 +1,5 @@
 export { AppIcon, type AppIconProps, type IconSize } from "./AppIcon";
-export { CustomIcon, type CustomIconProps } from "./CustomIcon";
+export { CustomIcon, CustomIconImage, type CustomIconProps } from "./CustomIcon";
+export { customIcons, type CustomIconName } from "./customRegistry";
 export { IconButton, type IconButtonProps } from "./IconButton";
 export { icons, type IconName } from "./registry";
