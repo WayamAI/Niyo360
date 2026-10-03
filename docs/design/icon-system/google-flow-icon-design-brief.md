@@ -96,3 +96,93 @@ Verified by reading `src/components/icons/registry.ts` (the single icon registry
 **Dynamic icon selection (verified, not assumed):** `Sidebar.tsx` (`name={item.icon}` from nav data), `States.tsx` (`StateBlock`'s `icon` prop), `TopBar.tsx` (collapse chevron + theme toggle ternaries), `RightRail.tsx` (collapse chevron), `Panel.tsx` (`trendIcon` prop), `Dashboard.tsx` (`attention` array), `FeedMonitor.tsx` (`RowAction`'s `icon` prop), and two near-identical event-type lookup dictionaries in `AgentConsole.tsx` and `ReportDetail.tsx` (both map `ingestion/agent/system/notification[/user]` → `inbox/bot/settings/notification[/user]`) — a duplication opportunity noted in §E.
 
 ---
+
+## C. Domain icon taxonomy
+
+Proposed custom-icon set, derived from the collisions found in §B — splitting each overloaded registry entry into one icon per real domain concept rather than preserving the current reuse. 17 custom domain icons, grouped by the workflow stage they represent.
+
+### Regulatory intake
+
+**`regulatory-authority`** — the issuing body (FDA, EMA, etc.). *Metaphor:* an institutional/column or shield-with-mark motif distinct from the generic `compliance-validator` shield. *Silhouette:* must read as "institution," not "security." *At small size must communicate:* "official body." *Must not resemble:* a generic shield (confusable with `control`/`human-review` if those also use shield language) or a building/office icon generic enough to mean "company." *Confusable with:* `control` if both use shield forms — give authority a columned/pedimented motif instead. *Appears in:* sidebar nav, authority detail screens, document metadata.
+
+**`regulatory-source`** — an ingestion feed/channel (RSS, scrape target, API feed) that documents arrive from. *Metaphor:* a funnel/antenna/intake motif — "things flow in from here." *Silhouette:* directional, something entering a container. *Must not resemble:* `regulatory-change` (see next) despite both currently sharing the `feed`/Radio glyph. *Appears in:* sidebar nav ("Sources"), source list/detail, document provenance.
+
+**`regulatory-document`** — a single ingested regulatory document (the object being processed). *Metaphor:* a page/sheet, but must be visually distinct from `portfolio-product` and `evidence`, which currently share this exact glyph. *Distinctive silhouette:* a page with a folded corner or a recognizable "official text" marking (e.g., a short rule/line pattern suggesting dense legal text), not a blank page. *Must not resemble:* a generic blank-page "file" icon users would read as "any document" — it needs a cue that this is specifically a *regulatory source text*. *Appears in:* sidebar nav, documents list/detail, upload screen, HAQ/Variation draft row icons.
+
+**`document-processing`** — the pipeline state itself (new concept; currently represented only by colored text badges, no icon exists). *Metaphor:* a document mid-transformation — e.g., a page with a small gear or pulse motif overlaid, signaling "being worked on by the system," distinct from a generic settings gear. *Must communicate at small size:* "in motion," not "static record." *Appears in:* document detail status badge (optional icon pairing with the existing `PARSED`/`ANALYZED`/`FAILED` text badge), list status chip.
+
+### Regulatory intelligence
+
+**`regulatory-change`** — an extracted change from a document (the atomic unit of regulatory intelligence). *Metaphor:* a document with a delta/diff mark (e.g., a small arrow or asterisk breaking out of a page shape), signaling "something changed here." *Must not resemble:* `regulatory-document` (the source) or `impact-delta-report` (the downstream output) — this is the *middle* concept and needs its own clearly transitional visual language (e.g., a split/branch motif). *Appears in:* sidebar nav ("Regulatory Changes"), change list/detail, obligation's "originating change" link-through.
+
+**`obligation`** — a specific compliance requirement derived from a change. *Metaphor:* currently borrows the generic `flag` interface icon for its nav entry — propose a checklist-item or pennant-with-mark motif that reads as "a requirement to satisfy," distinct from the plain interface `flag` (which should remain available separately for "flag for follow-up" row actions). *Must not resemble:* `audit-trail`'s checklist motif — keep obligation's mark singular/pointed vs. audit's multi-line list. *Appears in:* sidebar nav, obligation list, change-detail "Obligations" panel.
+
+### Portfolio
+
+**`portfolio-product`** — a company product/device in the portfolio. *Metaphor:* a tagged/labeled box or device outline — must NOT reuse the plain page glyph (`document`) that currently represents it. *Must communicate:* "a thing the company makes," not "paperwork about a thing." *Appears in:* sidebar nav, products list/detail, impact-assessment "potentially affected" references.
+
+**`portfolio-market`** — a geographic market. Current `map` glyph is conceptually correct and reused consistently (Markets + Market Heatmap) — not a collision, but still a candidate for a custom treatment matching the family's visual language. *Metaphor:* simplified region/pin motif, avoid real-world geographic detail that would date or misrepresent actual geography. *Appears in:* sidebar nav (×2), portfolio screens, heatmap.
+
+**`portfolio-process`** — an internal business process. *Metaphor:* currently shares `layers` with `impact-assessment` — needs its own flow/sequence motif (e.g., connected nodes or a simple flowchart glyph) distinct from "stacked layers." *Must not resemble:* `impact-assessment`'s stack motif or `regulatory-change`'s branch motif. *Appears in:* sidebar nav, processes list/detail.
+
+**`control`** — a compliance control record. *Metaphor:* currently shares the `compliance-validator` shield with Pre-Submission Validator and Human Review. Needs a distinct checkmark-in-frame or gate motif — "a check that must pass," more static/structural than the validator's "run a check" action feel. *Must not resemble:* `human-review` (a person/decision concept) or `pre-submission-validator` (an action/run concept). *Appears in:* sidebar nav, controls list/detail.
+
+**`registration`** — a product's regulatory registration/filing record. *Metaphor:* currently shares `audit-trail`'s `ListChecks` glyph — needs a stamped-document or certificate motif, distinct from audit's chronological-list motif. *Appears in:* sidebar nav, registrations list.
+
+### Impact and reporting
+
+**`impact-assessment`** — the core analytical record linking a change to portfolio entities. *Metaphor:* currently shares `layers` with `portfolio-process` — propose a crosshair/intersection motif (two things meeting) to visually encode "assessing where a change intersects the portfolio," which is the actual product concept. *Must be the most distinctive icon in the family* — this is PARIVART's core analytical primitive. *Appears in:* sidebar nav, impact list/detail, impact-analysis screen.
+
+**`impact-delta-report`** — the exported deliverable. Current `FileSearch` concept (document + inspection) is reused consistently (not a collision) and is conceptually sound — propose a custom icon keeping the "document + magnifying/delta" idea but in the family's unified construction style. *Appears in:* sidebar nav (×2), report list/detail/generate.
+
+**`risk-indicator`** — a risk-level callout. Current `ShieldAlert` is reasonable; propose a custom shield-with-signal motif distinct from `control`'s shield (if control also uses shield language, risk's must carry an alert/signal mark control's does not). *Appears in:* risk callouts, impact rationale.
+
+### Governance
+
+**`human-review`** — a review decision record. *Metaphor:* currently shares the `compliance-validator` shield — needs a distinct person/decision motif (e.g., a simple figure with a checkmark or a decision-fork glyph), explicitly about a *human* act, not an automated check. *Must not resemble:* `control` (structural/automated) or the generic `user` interface icon (too generic/unrelated to "decision"). *Appears in:* sidebar nav, reviews list, record-decision dialog.
+
+**`action`** — a remediation action/task. *Metaphor:* currently shares `AlertTriangle` with `escalation` — needs a distinct motif, e.g., a checkbox-with-arrow or task-pointer glyph signaling "something to do," not "something urgent." *Must not resemble:* `escalation` (urgency) or `warning`/`escalation`'s shared triangle at all — this collision is the most important one to resolve since actions are a routine, frequent workflow object, not an alarm state. *Appears in:* sidebar nav, actions list/detail, raise-action dialog.
+
+**`evidence`** — supporting evidence attached to an action/review. *Metaphor:* currently shares the plain `document` glyph — needs a document-with-attachment or document-with-seal motif signaling "proof," distinct from `regulatory-document` (an external source) and `portfolio-product` (an internal asset). *Appears in:* sidebar nav, evidence list/detail, attach-evidence dialog.
+
+**`audit-trail`** — the chronological event log. Current `ListChecks` concept is reasonable for "audit" alone; propose a custom clock-and-list or timeline motif that visually distinguishes it from `registration`'s certificate motif (both currently share `ListChecks`). *Appears in:* sidebar nav, audit trail screen.
+
+### Alerting (kept visually separate from the feedback-color system)
+
+**`escalation`** — an SLA/urgency alert specific to the escalations workflow. *Must be visually distinct from the generic `warning` feedback icon*, which currently shares the exact same `AlertTriangle` glyph — this is the collision most likely to cause real user confusion, since one appears in toasts/forms (transient, low-stakes) and the other in a dedicated governance workflow (a tracked, named escalation record). Propose a distinct motif, e.g., a triangle-with-clock or flare glyph rather than the plain triangle every "warning" in the app already uses. *Appears in:* sidebar nav, dashboard alert row, escalations screen.
+
+---
+
+## D. Interface-action icon inventory
+
+Conventional interface actions, inventoried separately from domain icons, with a reasoned retain/replace policy per icon (not a blanket rule).
+
+| Action | Current icon | Policy | Reasoning |
+|---|---|---|---|
+| Search | `Search` | **Retain conventional** | Universally recognized magnifying glass; a custom alternative would cost recognition for no brand gain |
+| Add/create | *(no dedicated registry entry found — screens use text buttons like "Upload document," "Raise action")* | n/a | No icon exists to replace; `TO CONFIRM` whether one should be introduced |
+| Edit | `Edit3` | **Retain conventional** | Pencil silhouette is a settled convention |
+| Delete | *(no dedicated registry entry found — no destructive delete action exists in the inspected screens)* | n/a | `TO CONFIRM` — not found in this audit |
+| Close | `X` | **Retain conventional** | Universal dismiss symbol |
+| Back/forward | `ArrowLeft` / `ArrowRight` (forward unused) | **Retain conventional** | Directional arrows are a settled convention; `arrowRight` currently has zero usages — see §E |
+| Expand/collapse | `ChevronUp/Down/Left/Right` | **Retain conventional** | Chevrons are the settled disclosure convention; heavily reused across sort/pagination/collapse, replacing would touch the most call sites in the app for the least brand benefit |
+| Filter | `Filter` | **Retain conventional, but currently unused** | Funnel glyph is a settled convention; flagged dead code in §E, not a design issue |
+| Sort | reuses `chevronUp`/`chevronDown` dynamically | **Retain conventional** | Consistent with the chevron family above |
+| Refresh | `RefreshCw` | **Retain conventional** | Circular-arrow refresh symbol is universal |
+| Download/export | `Download` | **Retain conventional** | Settled convention, consistent usage |
+| Upload/import | *(no dedicated icon — `DocumentUploadScreen` uses a plain `<input type="file">`, no icon)* | n/a | `TO CONFIRM` whether an upload icon should be added for visual balance with `download` |
+| Notifications | `Bell` | **Retain conventional** | Settled convention |
+| Settings | `Cog` | **Retain conventional** | Settled convention; also doubles as the "system event" icon in activity timelines — a secondary, defensible reuse (both mean "the system, not a person, did this") |
+| Calendar/clock | `CalendarDays`, `Clock`, `Timer` | **Retain conventional** for the interface sense; `regulatory-calendar`'s *nav* icon is listed as a custom candidate in §C only because it's also a top-level domain destination, not because the pictogram itself needs to change | Calendar/clock pictograms are near-universal |
+| Check/success | `CheckCircle2` | **Retain conventional** | Settled convention |
+| Error/warning | `AlertCircle` / `AlertTriangle` | **Retain conventional**, but see the `escalation` collision in §C — the fix is giving `escalation` its own glyph, not changing `warning` | — |
+| More actions | `MoreHorizontal` | **Retain conventional, but currently unused** | Settled convention; flagged dead code in §E |
+| External link | `ExternalLink` | **Retain conventional** | Settled convention |
+| Visibility controls | `Eye` (view only — no "hide/eye-off" found) | **Retain conventional** | Settled convention |
+| Pagination | `ChevronLeft` / `ChevronRight` | **Retain conventional** | Same as expand/collapse above |
+| Loading/progress | *(no dedicated icon — loading states use `TableSkeleton`/shimmer components, not an icon; `refresh`'s spin animation, if any, is `TO CONFIRM`)* | n/a | `TO CONFIRM` |
+| Navigation arrows | `ArrowLeft`/`ArrowRight`, `ChevronLeft`/`ChevronRight` | **Retain conventional** | — |
+
+**Overall policy:** every icon in this table stays on the conventional lucide/outline language. The custom family (§C) is reserved entirely for PARIVART's own domain vocabulary, where there is no pre-existing user expectation to preserve and real brand value in a distinctive mark.
+
+---
