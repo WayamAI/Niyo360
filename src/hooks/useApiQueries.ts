@@ -169,12 +169,25 @@ export function useDocuments(params: PageParams = {}) {
   });
 }
 
+/**
+ * Polls while the document's own pipeline is still moving, so the detail
+ * screen reflects a triggered "Process Document" without a manual refresh.
+ * Mirrors `useDocumentStatus`'s stop conditions on this same query instead of
+ * a separate one, since the detail screen renders from this query already.
+ */
 export function useDocument(id: string | null) {
   return useQuery({
     ...baseQuery,
     queryKey: queryKeys.regulatory.document(id ?? ""),
     queryFn: () => regulatoryApi.documents.get(id!),
     enabled: Boolean(id),
+    refetchInterval: (query) => {
+      const status = query.state.data?.processing_status;
+      if (!status || isDocumentSettled(status)) return false;
+      if (query.state.dataUpdateCount > MAX_POLLS) return false;
+      return POLL_INTERVAL_MS;
+    },
+    refetchIntervalInBackground: false,
   });
 }
 
