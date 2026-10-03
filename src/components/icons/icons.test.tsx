@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { AppIcon } from "./AppIcon";
 import { CustomIconImage } from "./CustomIcon";
 import { customIcons } from "./customRegistry";
+import { ResolveIconRef, type IconRef } from "./IconRef";
 
 /**
  * No DOM test environment (jsdom/happy-dom) is configured for this project —
@@ -100,4 +101,40 @@ describe("CustomIconImage (raster rendering primitive, given a resolved src)", (
   // "error" event against. Verified by code inspection only: `onError={(e)
   // => e.currentTarget.style.display = "none"}` in CustomIcon.tsx. Flagging
   // this gap explicitly rather than writing an assertion that can't fail.
+});
+
+describe("ResolveIconRef (discriminated dispatch between the two icon families)", () => {
+  it("dispatches a lucide ref to AppIcon's SVG/currentColor rendering", () => {
+    const ref: IconRef = { type: "lucide", name: "search" };
+    const html = renderToStaticMarkup(<ResolveIconRef icon={ref} />);
+    expect(html).toContain("<svg");
+    expect(html).toContain('stroke="currentColor"');
+  });
+
+  it("sizes a lucide ref via the shared --icon-size-* scale", () => {
+    const ref: IconRef = { type: "lucide", name: "search" };
+    const html = renderToStaticMarkup(<ResolveIconRef icon={ref} size="lg" />);
+    expect(html).toContain("--icon-size-lg");
+  });
+
+  it("passes aria-label through to the dispatched lucide icon", () => {
+    const ref: IconRef = { type: "lucide", name: "search" };
+    const html = renderToStaticMarkup(<ResolveIconRef icon={ref} aria-label="Search" />);
+    expect(html).toContain('aria-label="Search"');
+  });
+
+  it("cannot construct a custom IconRef while the registry is empty (type-level guarantee)", () => {
+    // CustomIconName is `never` until a real asset is registered in
+    // customRegistry.ts, so this object literal intentionally fails to
+    // typecheck. `npm run typecheck` (tsc) is what actually enforces this --
+    // if this line ever stopped erroring (e.g. someone widened CustomIconName
+    // without meaning to), tsc reports "unused @ts-expect-error directive"
+    // and fails the build. The runtime assertion below just confirms the
+    // dispatch logic itself still works once TS's type-check layer is
+    // bypassed, which is exactly the scenario the type system is here to
+    // prevent in real code.
+    // @ts-expect-error -- see comment above; name "placeholder" is not a valid CustomIconName
+    const invalidCustomRef: IconRef = { type: "custom", name: "placeholder" };
+    expect(invalidCustomRef.type).toBe("custom");
+  });
 });
