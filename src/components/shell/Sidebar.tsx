@@ -141,7 +141,7 @@ const SECTIONS: Array<{
       {
         id: "api-authorities",
         label: "Authorities",
-        icon: { type: "lucide", name: "organisation" },
+        icon: { type: "custom", name: "regulatory-authority" },
       },
       { id: "api-sources", label: "Sources", icon: { type: "lucide", name: "feed" } },
       { id: "api-documents", label: "Documents", icon: { type: "lucide", name: "document" } },
