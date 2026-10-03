@@ -88,3 +88,13 @@ Re-inspected each against every one of the 19 briefs again, plus one new signal 
 **Net effect of this pass:** 3 of the 4 previously-"unclear" assets now have a specific, evidence-based recommendation (discard) rather than an open question. 1 — the `impact-assessment` candidate — still genuinely needs a human call, and is left marked as such rather than guessed.
 
 **Reinforcing the one confirmed-unusable asset:** `Sculptural_3D_document_product_icon_2K_20261003142914.jpg` (the `regulatory-document` candidate) has a solid gray background baked into the pixels, not even the checkerboard the other 18 use — this is strictly worse than the rest, not just "also blocked." It is marked **unusable** until a clean transparent export or a faithful recreation exists; the original file itself remains untouched in `Icons/`.
+
+## Follow-up session: Sidebar wiring complete, asset gate still the only blocker
+
+The rendering architecture is now fully assembled end-to-end, verified, and committed:
+
+- `src/components/icons/IconRef.tsx` — a discriminated `IconRef` type (`{ type: "lucide" | "custom", name: ... }`) and a `ResolveIconRef` component dispatching to `AppIcon` or `CustomIcon` accordingly.
+- `src/components/shell/Sidebar.tsx` — all 28 nav items now declare `icon: { type: "lucide", name: "X" }` and render through `<ResolveIconRef>`. Every single one is still `type: "lucide"` — no nav item references a custom icon, because none exists.
+- The empty-registry guarantee (`CustomIconName` is `never` until `customIcons` gains an entry) is enforced by the compiler, not just documented: `icons.test.tsx` has a `@ts-expect-error` test that fails the build (`npm run typecheck`) if that guarantee is ever accidentally weakened. This was verified to actually catch a mistake during this session — the directive was initially misplaced and `tsc` correctly flagged it as unused, confirming the check is live, not decorative.
+
+**What this means for the next real integration:** adding the first custom icon to the sidebar is now a two-line change (one `customIcons` entry, one nav item's `icon` field switching from `{ type: "lucide", ... }` to `{ type: "custom", ... }`) plus the asset itself — no further architecture work is needed. The only remaining blocker, unchanged from every prior session, is that no asset has passed `scripts/verify-png-alpha.mjs`.
