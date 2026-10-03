@@ -109,11 +109,19 @@ export type ChangeType = S["ChangeType"];
 export type ObligationCategory = S["ObligationCategory"];
 
 /**
- * Terminal states, used to stop polling. Taken from the served enums, not
- * assumed: the document pipeline ends at ANALYZED or FAILED — there is no
- * "COMPLETED" state, despite that being the obvious guess.
+ * Terminal states, used to stop polling.
+ *
+ * PARSED is also terminal, not just an in-flight step: when no AI provider is
+ * registered/reachable, the backend deliberately leaves a document at PARSED
+ * rather than relabelling it ANALYZED (which would claim an AI pass that never
+ * happened) — see app/services/document_processing.py in the backend repo.
+ * Verified live this session: a document processed with no AI provider
+ * configured sat at PARSED and never moved, so treating only ANALYZED/FAILED
+ * as terminal left the UI polling for the full MAX_POLLS window on every
+ * deterministic-only document.
  */
 export const TERMINAL_DOCUMENT_STATES: readonly DocumentProcessingStatus[] = [
+  "PARSED",
   "ANALYZED",
   "FAILED",
 ] as const;
