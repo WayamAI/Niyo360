@@ -1,6 +1,6 @@
 import { useApp, type ScreenId } from "@/context/AppContext";
 import { DataSourceTag, type DataSource } from "@/components/shared/Page";
-import { AppIcon, type IconName } from "@/components/icons";
+import { AppIcon, ResolveIconRef, type IconRef } from "@/components/icons";
 import { BrandMark } from "@/components/shared/Logo";
 import { AUTHORITY_SYNC } from "@/data/regulatoryData";
 import { ESCALATIONS } from "@/data/mockData";
@@ -61,14 +61,16 @@ const SECTIONS: Array<{
   items: Array<{
     id: ScreenId;
     label: string;
-    icon: IconName;
+    icon: IconRef;
     badge?: "escalations";
   }>;
 }> = [
   {
     label: "Overview",
     short: "OV",
-    items: [{ id: "dashboard", label: "Command Centre", icon: "dashboard" }],
+    items: [
+      { id: "dashboard", label: "Command Centre", icon: { type: "lucide", name: "dashboard" } },
+    ],
   },
   {
     label: "01 · Change Intelligence",
@@ -76,9 +78,17 @@ const SECTIONS: Array<{
     short: "01",
     pillar: "01",
     items: [
-      { id: "feed-monitor", label: "Feed Monitor", icon: "feed" },
-      { id: "delta-reports", label: "Impact Delta Reports", icon: "deltaReport" },
-      { id: "agent-console", label: "Intelligence Agent", icon: "agent" },
+      { id: "feed-monitor", label: "Feed Monitor", icon: { type: "lucide", name: "feed" } },
+      {
+        id: "delta-reports",
+        label: "Impact Delta Reports",
+        icon: { type: "lucide", name: "deltaReport" },
+      },
+      {
+        id: "agent-console",
+        label: "Intelligence Agent",
+        icon: { type: "lucide", name: "agent" },
+      },
     ],
   },
   {
@@ -87,8 +97,12 @@ const SECTIONS: Array<{
     short: "02",
     pillar: "02",
     items: [
-      { id: "haq-drafts", label: "HAQ Responses", icon: "haqDraft" },
-      { id: "variation-drafts", label: "Variation Sections", icon: "variationDraft" },
+      { id: "haq-drafts", label: "HAQ Responses", icon: { type: "lucide", name: "haqDraft" } },
+      {
+        id: "variation-drafts",
+        label: "Variation Sections",
+        icon: { type: "lucide", name: "variationDraft" },
+      },
     ],
   },
   {
@@ -97,8 +111,16 @@ const SECTIONS: Array<{
     short: "03",
     pillar: "03",
     items: [
-      { id: "validator", label: "Pre-Submission Validator", icon: "validator" },
-      { id: "validation-reports", label: "Validation Reports", icon: "validationReport" },
+      {
+        id: "validator",
+        label: "Pre-Submission Validator",
+        icon: { type: "lucide", name: "validator" },
+      },
+      {
+        id: "validation-reports",
+        label: "Validation Reports",
+        icon: { type: "lucide", name: "validationReport" },
+      },
     ],
   },
   {
@@ -107,8 +129,8 @@ const SECTIONS: Array<{
     short: "04",
     pillar: "04",
     items: [
-      { id: "simulator", label: "CMC Simulator", icon: "simulator" },
-      { id: "heatmap", label: "Market Heatmap", icon: "map" },
+      { id: "simulator", label: "CMC Simulator", icon: { type: "lucide", name: "simulator" } },
+      { id: "heatmap", label: "Market Heatmap", icon: { type: "lucide", name: "map" } },
     ],
   },
   {
@@ -116,22 +138,42 @@ const SECTIONS: Array<{
     source: "live",
     short: "API",
     items: [
-      { id: "api-authorities", label: "Authorities", icon: "organisation" },
-      { id: "api-sources", label: "Sources", icon: "feed" },
-      { id: "api-documents", label: "Documents", icon: "document" },
-      { id: "api-changes", label: "Regulatory Changes", icon: "feed" },
-      { id: "api-obligations", label: "Obligations", icon: "flag" },
-      { id: "api-impact", label: "Impact Assessments", icon: "layers" },
-      { id: "api-reports", label: "Impact Reports", icon: "deltaReport" },
-      { id: "api-products", label: "Products", icon: "document" },
-      { id: "api-markets", label: "Markets", icon: "map" },
-      { id: "api-processes", label: "Processes", icon: "layers" },
-      { id: "api-controls", label: "Controls", icon: "validator" },
-      { id: "api-registrations", label: "Registrations", icon: "audit" },
-      { id: "api-reviews", label: "Human Review", icon: "validator" },
-      { id: "api-actions", label: "Actions", icon: "escalation" },
-      { id: "api-evidence", label: "Evidence", icon: "document" },
-      { id: "audit", label: "Audit Trail", icon: "audit" },
+      {
+        id: "api-authorities",
+        label: "Authorities",
+        icon: { type: "lucide", name: "organisation" },
+      },
+      { id: "api-sources", label: "Sources", icon: { type: "lucide", name: "feed" } },
+      { id: "api-documents", label: "Documents", icon: { type: "lucide", name: "document" } },
+      {
+        id: "api-changes",
+        label: "Regulatory Changes",
+        icon: { type: "lucide", name: "feed" },
+      },
+      { id: "api-obligations", label: "Obligations", icon: { type: "lucide", name: "flag" } },
+      {
+        id: "api-impact",
+        label: "Impact Assessments",
+        icon: { type: "lucide", name: "layers" },
+      },
+      {
+        id: "api-reports",
+        label: "Impact Reports",
+        icon: { type: "lucide", name: "deltaReport" },
+      },
+      { id: "api-products", label: "Products", icon: { type: "lucide", name: "document" } },
+      { id: "api-markets", label: "Markets", icon: { type: "lucide", name: "map" } },
+      { id: "api-processes", label: "Processes", icon: { type: "lucide", name: "layers" } },
+      { id: "api-controls", label: "Controls", icon: { type: "lucide", name: "validator" } },
+      {
+        id: "api-registrations",
+        label: "Registrations",
+        icon: { type: "lucide", name: "audit" },
+      },
+      { id: "api-reviews", label: "Human Review", icon: { type: "lucide", name: "validator" } },
+      { id: "api-actions", label: "Actions", icon: { type: "lucide", name: "escalation" } },
+      { id: "api-evidence", label: "Evidence", icon: { type: "lucide", name: "document" } },
+      { id: "audit", label: "Audit Trail", icon: { type: "lucide", name: "audit" } },
     ],
   },
   {
@@ -139,8 +181,17 @@ const SECTIONS: Array<{
     source: "illustrative",
     short: "GV",
     items: [
-      { id: "calendar", label: "Regulatory Calendar", icon: "calendar" },
-      { id: "escalations", label: "Escalations", icon: "escalation", badge: "escalations" },
+      {
+        id: "calendar",
+        label: "Regulatory Calendar",
+        icon: { type: "lucide", name: "calendar" },
+      },
+      {
+        id: "escalations",
+        label: "Escalations",
+        icon: { type: "lucide", name: "escalation" },
+        badge: "escalations",
+      },
     ],
   },
 ];
@@ -256,8 +307,8 @@ export function Sidebar({
                               : "bg-action text-icon-tertiary group-hover:bg-raised-2 group-hover:text-icon-secondary",
                           ].join(" ")}
                         >
-                          <AppIcon
-                            name={item.icon}
+                          <ResolveIconRef
+                            icon={item.icon}
                             size="sm"
                             className={
                               active
