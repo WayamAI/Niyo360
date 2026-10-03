@@ -53,8 +53,11 @@ export function DocumentsScreen() {
         return (
           <span
             className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
-              status === "ANALYZED"
-                ? "success-bg text-success-icon"
+              status === "ANALYZED" || status === "PARSED"
+                ? // PARSED is also a terminal success: the backend's honest
+                  // "deterministic extraction done, no AI pass available"
+                  // state, never auto-upgraded to ANALYZED.
+                  "success-bg text-success-icon"
                 : status === "FAILED"
                   ? "error-bg text-error-icon"
                   : // Every remaining state is mid-pipeline.

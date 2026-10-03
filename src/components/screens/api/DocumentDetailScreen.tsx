@@ -12,11 +12,14 @@ import type { DocumentProcessingStatus } from "@/services/api";
 /** Document detail, from GET /api/v1/regulatory/documents/{document_id}. */
 
 /**
- * ANALYZED is the only terminal success in DocumentProcessingStatus and FAILED
- * the only terminal failure; everything else is the pipeline still running.
+ * ANALYZED and PARSED are both terminal successes — PARSED is what the
+ * backend leaves a document at when no AI provider was available, which it
+ * never upgrades to ANALYZED since that would claim an AI pass that didn't
+ * happen (see TERMINAL_DOCUMENT_STATES). FAILED is the only terminal failure;
+ * everything else is the pipeline still running.
  */
 function statusVariant(status: DocumentProcessingStatus): "complete" | "critical" | "in-progress" {
-  if (status === "ANALYZED") return "complete";
+  if (status === "ANALYZED" || status === "PARSED") return "complete";
   if (status === "FAILED") return "critical";
   return "in-progress";
 }
