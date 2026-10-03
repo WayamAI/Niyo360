@@ -480,3 +480,125 @@ Each brief below gives only what's unique to that icon — stroke/fill/size/form
 - *Output:* SVG, `icon-escalation.svg`.
 
 ---
+
+## H. Batch generation plan
+
+Organized so each batch is generated and reviewed as a visually coherent set before moving to the next — later batches can reference earlier ones' finished style once real output exists.
+
+### Batch 1 — Primary domain concepts (generate first; these set the family's visual tone)
+- [ ] `regulatory-authority` — generated / reviewed / exported / integrated
+- [ ] `regulatory-document` — generated / reviewed / exported / integrated
+- [ ] `regulatory-change` — generated / reviewed / exported / integrated
+- [ ] `impact-assessment` — generated / reviewed / exported / integrated *(the flagship icon — review this one most carefully before proceeding)*
+
+### Batch 2 — Regulatory intelligence and document lifecycle
+- [ ] `regulatory-source` — generated / reviewed / exported / integrated
+- [ ] `document-processing` — generated / reviewed / exported / integrated
+- [ ] `obligation` — generated / reviewed / exported / integrated
+
+### Batch 3 — Portfolio and impact assessment
+- [ ] `portfolio-product` — generated / reviewed / exported / integrated
+- [ ] `portfolio-market` — generated / reviewed / exported / integrated
+- [ ] `portfolio-process` — generated / reviewed / exported / integrated
+- [ ] `impact-delta-report` — generated / reviewed / exported / integrated
+- [ ] `risk-indicator` — generated / reviewed / exported / integrated
+
+### Batch 4 — Governance, review, evidence, audit
+- [ ] `control` — generated / reviewed / exported / integrated
+- [ ] `registration` — generated / reviewed / exported / integrated
+- [ ] `human-review` — generated / reviewed / exported / integrated
+- [ ] `action` — generated / reviewed / exported / integrated
+- [ ] `evidence` — generated / reviewed / exported / integrated
+- [ ] `audit-trail` — generated / reviewed / exported / integrated
+
+### Batch 5 — Alerting (the two collision-resolution icons; generate last so they can be directly compared against the finished `warning`/action-adjacent icons already in the app)
+- [ ] `escalation` — generated / reviewed / exported / integrated
+
+**Note:** `action` is listed in Batch 4 rather than Batch 5 since it is a governance workflow object; it is cross-referenced here because its "must not resemble `escalation`" constraint (§G, brief 16/19) should be checked against Batch 5's output once both exist.
+
+---
+
+## I. Asset naming and integration mapping
+
+The integration point is the existing registry — no second icon framework is proposed. `src/components/icons/registry.ts` currently maps a semantic `IconName` to a lucide component; the same pattern extends naturally to custom SVGs by importing them as React components (via the project's existing SVG-as-component tooling, `TO CONFIRM` exact Vite SVG plugin/loader in use — not verified in this audit) and adding them to the same `icons` object, so every existing `<AppIcon name="...">` / `<IconButton icon="...">` call site needs **zero changes** — only the registry's import list and the nav-data/lookup-table string values change.
+
+| Icon ID | Output filename | Current source/component | Planned integration location | Status |
+|---|---|---|---|---|
+| `regulatory-authority` | `icon-regulatory-authority.svg` | `registry.ts:123` (`organisation` → `Building2`) | `registry.ts` entry; `Sidebar.tsx:119` nav data | Not generated |
+| `regulatory-source` | `icon-regulatory-source.svg` | `registry.ts:77` (`feed` → `Radio`, partial) | New `registry.ts` entry; `Sidebar.tsx:120` nav data | Not generated |
+| `regulatory-document` | `icon-regulatory-document.svg` | `registry.ts:133` (`document` → `FileText`, partial) | `registry.ts` entry; `Sidebar.tsx:121` nav data; `HAQDrafts.tsx:274`, `VariationDrafts.tsx:184` | Not generated |
+| `document-processing` | `icon-document-processing.svg` | *(no current icon — status is text-only badge)* | New `registry.ts` entry; optional addition to `DocumentDetailScreen.tsx`/`DocumentsScreen.tsx` status badges | Not generated |
+| `regulatory-change` | `icon-regulatory-change.svg` | `registry.ts:77` (`feed` → `Radio`, partial) | New `registry.ts` entry; `Sidebar.tsx:122` nav data | Not generated |
+| `obligation` | `icon-obligation.svg` | `registry.ts:102` (`flag` → `Flag`, partial — interface `flag` stays separate) | New `registry.ts` entry; `Sidebar.tsx:123` nav data | Not generated |
+| `portfolio-product` | `icon-portfolio-product.svg` | `registry.ts:133` (`document` → `FileText`, partial) | New `registry.ts` entry; `Sidebar.tsx:126` nav data | Not generated |
+| `portfolio-market` | `icon-portfolio-market.svg` | `registry.ts:85` (`map` → `Map`) | `registry.ts` entry; `Sidebar.tsx:111,127` nav data | Not generated |
+| `portfolio-process` | `icon-portfolio-process.svg` | `registry.ts:137` (`layers` → `Layers`, partial) | New `registry.ts` entry; `Sidebar.tsx:128` nav data | Not generated |
+| `control` | `icon-control.svg` | `registry.ts:82` (`validator` → `ShieldCheck`, partial) | New `registry.ts` entry; `Sidebar.tsx:129` nav data | Not generated |
+| `registration` | `icon-registration.svg` | `registry.ts:87` (`audit` → `ListChecks`, partial) | New `registry.ts` entry; `Sidebar.tsx:130` nav data | Not generated |
+| `impact-assessment` | `icon-impact-assessment.svg` | `registry.ts:137` (`layers` → `Layers`, partial) | New `registry.ts` entry; `Sidebar.tsx:124` nav data | Not generated |
+| `impact-delta-report` | `icon-impact-delta-report.svg` | `registry.ts:78` (`deltaReport` → `FileSearch`) | `registry.ts` entry; `Sidebar.tsx:80,125` nav data; `AgentConsole.tsx:160` | Not generated |
+| `risk-indicator` | `icon-risk-indicator.svg` | `registry.ts:138` (`risk` → `ShieldAlert`) | `registry.ts` entry; `Atoms.tsx:12`; `States.tsx` (`risk` variant) | Not generated |
+| `human-review` | `icon-human-review.svg` | `registry.ts:82` (`validator` → `ShieldCheck`, partial) | New `registry.ts` entry; `Sidebar.tsx:131` nav data | Not generated |
+| `action` | `icon-action.svg` | `registry.ts:88` (`escalation` → `AlertTriangle`, partial) | New `registry.ts` entry; `Sidebar.tsx:132` nav data | Not generated |
+| `evidence` | `icon-evidence.svg` | `registry.ts:133` (`document` → `FileText`, partial) | New `registry.ts` entry; `Sidebar.tsx:133` nav data | Not generated |
+| `audit-trail` | `icon-audit-trail.svg` | `registry.ts:87` (`audit` → `ListChecks`, partial) | `registry.ts` entry (rename/replace `audit`); `Sidebar.tsx:134` nav data; `SourcesScreen.tsx:120` | Not generated |
+| `escalation` | `icon-escalation.svg` | `registry.ts:88` (`escalation` → `AlertTriangle`) | `registry.ts` entry; `Sidebar.tsx:143` nav data; `Dashboard.tsx` attention-array | Not generated |
+
+**SVG requirements for integration** (restating §F for this table's "Status" column to be actionable): clean paths, no embedded raster imagery, `viewBox="0 0 24 24"`, stroke using `currentColor` so the existing `className`/`style` colour-inheritance in `AppIcon.tsx` continues to work unmodified.
+
+---
+
+## J. Acceptance checklist
+
+### Per-icon checklist (apply to each of the 19 custom icons before marking "integrated" in §H/§I)
+
+- [ ] Semantically accurate to the concept described in its §G brief
+- [ ] Distinct silhouette from every other icon in the family (cross-check against the "relationship to other icons" note in its own brief)
+- [ ] Consistent visual weight (stroke width, path count) with the rest of the family
+- [ ] Legible at 12px (`--icon-size-xs`) — test by rendering at that exact size, not just eyeballing a larger preview
+- [ ] Renders correctly in both light (`:root`) and dark (`.dark`) themes via `currentColor` inheritance — no hardcoded color baked into the SVG
+- [ ] Meets the app's existing contrast expectations by inheriting text/icon color tokens (no icon-specific contrast testing needed if inheritance is correct)
+- [ ] Correct stroke/fill treatment per §F (outline-only, with the one explicitly-permitted fill accent only on `impact-assessment`'s overlap region and `portfolio-market`'s center dot)
+- [ ] Not an accidental duplicate of another icon in the family or of a retained-conventional interface icon
+- [ ] Not confusingly similar to another custom icon at 12–16px (the sizes actually used in sidebar/table contexts)
+- [ ] Filename matches the convention in §F/§I exactly (`icon-{kebab-id}.svg`)
+- [ ] Renders correctly inside the actual app component once integrated (`AppIcon` at each of its real call sites — sidebar nav, badge, panel, etc., per §I's "Planned integration location" column)
+
+### Whole-family checklist (apply once all 19 are generated, before any integration)
+
+- [ ] All 19 icons reviewed together on one sheet (not integrated one at a time) — see "icon-sheet review process" below
+- [ ] No two icons are confusable at the smallest rendered size used anywhere in the app (12px)
+- [ ] Visual weight is consistent across the full set (no icon looks noticeably "heavier" or "lighter" than its neighbors)
+- [ ] The two collision-resolution pairs (`action` vs. `escalation`; `control` vs. `risk-indicator` vs. `human-review`) are each genuinely distinguishable side by side at small size — this is the whole point of the redesign and must be explicitly re-verified, not assumed from the brief text alone
+- [ ] The family reads as one coherent design system, not 19 unrelated illustrations
+
+### Icon-sheet review process
+
+Before integrating any icon into the app, export all 19 as a single contact sheet (a grid, each icon labeled with its Icon ID, rendered at both 24px and 12px side by side) and review the whole set together. This catches cross-icon inconsistencies (stroke weight drift, silhouette collisions) that reviewing icons one at a time, as they're generated, will miss. Only after the full-sheet review passes should individual SVGs be handed to the integration pass described in §I.
+
+---
+
+## K. Final verified inventory summary
+
+| Count | Value | Verification status |
+|---|---|---|
+| Unique icon names declared in the registry | 45 | VERIFIED — `src/components/icons/registry.ts` read in full |
+| Unique icon names confirmed rendered somewhere in `src/` | 39 | VERIFIED — grepped every literal `name="X"`/`icon="X"` plus every dynamic lookup table |
+| Declared but unused registry entries | 6 (`filter`, `share`, `more`, `arrowRight`, `chart`, `gauge`) | VERIFIED |
+| Distinct lucide-react glyphs backing the registry | 43 *(45 names minus the 2 exact-glyph collisions: `AlertTriangle` and `FileText` each back 2 names)* | VERIFIED |
+| Custom SVGs currently in the app (brand marks, not icons) | 3 (`parivart-logo-light.svg`, `parivart-logo-dark.svg`, `public/favicon.svg`) | VERIFIED |
+| Inline hand-coded SVGs outside the icon system | 2 (`atoms.tsx`'s `ConfidenceRing`, `ValidationReports.tsx`'s readiness-score ring — duplicated, should be unified) | VERIFIED |
+| Emoji or non-standard character substitutes rendered as icons | 7 (1 literal `✓` in `DataTable.tsx`; 6 files using a literal `→` as a separator) | VERIFIED |
+| Repeated concepts rendered with inconsistent/reused glyphs | 8 distinct findings (2 exact glyph collisions + 6 semantic-reuse cases across unrelated domain concepts) | VERIFIED — see §E |
+| Proposed custom replacement icons | 19 | PROPOSED (design decision, not yet generated) |
+| Conventional interface icons proposed to remain unchanged | 26 of the 45 registry entries (everything in §D's table marked "Retain conventional," including the 6 unused ones) | PROPOSED |
+| Google Flow-generated assets actually produced so far | **0** | VERIFIED — none exist in this repository; nothing in this document should be read as claiming otherwise |
+
+**Not conclusively verified / `TO CONFIRM`:**
+- Whether the repository's Vite config already has an SVG-as-React-component loader (needed for §I's integration approach) — not checked in this audit.
+- Any formal brand-guideline document beyond the CSS tokens cited in §A.
+- Exact round-trip visual fidelity of Google Flow output against this brief's construction rules — cannot be verified until real generated assets exist.
+
+---
+
+*End of brief. No icon replacement has been implemented in this session — this document is the specification for work that begins once Google Flow output exists. See the session's final report for commands run and commits created.*
