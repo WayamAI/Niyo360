@@ -88,8 +88,11 @@ export function DocumentUploadScreen() {
       );
       setFile(null);
       openRecord("api-document-detail", result.document_id);
-    } catch {
-      showToast("Could not upload the document.", "error");
+    } catch (err) {
+      // ApiError.message is already a user-safe sentence (field detail for a
+      // 422, a specific reason for 4xx/5xx) — showing it beats a flat "could
+      // not upload" that hides why a validation error happened.
+      showToast(err instanceof Error ? err.message : "Could not upload the document.", "error");
     }
   });
 
