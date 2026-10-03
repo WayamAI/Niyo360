@@ -41,11 +41,14 @@ describe("AppIcon (existing SVG/currentColor path, unchanged)", () => {
 });
 
 describe("customIcons registry (type-safe custom-icon lookup table)", () => {
-  it("is empty — no asset has passed the alpha-transparency bar yet", () => {
+  it("contains exactly the registered placeholder entries", () => {
     // A real assertion, not a placeholder: this is expected to fail loudly
-    // the moment the first entry is added without a matching test update,
-    // which is the point — it keeps this file honest about what exists.
-    expect(Object.keys(customIcons)).toEqual([]);
+    // the moment an entry is added or removed without a matching test
+    // update, which is the point — it keeps this file honest about what
+    // exists. "regulatory-authority" is an opaque placeholder (no asset has
+    // passed the alpha-transparency bar), wired in per explicit
+    // product-owner instruction — see customRegistry.ts.
+    expect(Object.keys(customIcons)).toEqual(["regulatory-authority"]);
   });
 });
 
@@ -123,17 +126,18 @@ describe("ResolveIconRef (discriminated dispatch between the two icon families)"
     expect(html).toContain('aria-label="Search"');
   });
 
-  it("cannot construct a custom IconRef while the registry is empty (type-level guarantee)", () => {
-    // CustomIconName is `never` until a real asset is registered in
-    // customRegistry.ts, so this object literal intentionally fails to
-    // typecheck. `npm run typecheck` (tsc) is what actually enforces this --
-    // if this line ever stopped erroring (e.g. someone widened CustomIconName
-    // without meaning to), tsc reports "unused @ts-expect-error directive"
-    // and fails the build. The runtime assertion below just confirms the
-    // dispatch logic itself still works once TS's type-check layer is
-    // bypassed, which is exactly the scenario the type system is here to
-    // prevent in real code.
-    // @ts-expect-error -- see comment above; name "placeholder" is not a valid CustomIconName
+  it("dispatches a custom ref to CustomIcon's raster rendering", () => {
+    const ref: IconRef = { type: "custom", name: "regulatory-authority" };
+    const html = renderToStaticMarkup(<ResolveIconRef icon={ref} />);
+    expect(html).toContain("<img");
+    expect(html).not.toContain('stroke="currentColor"');
+  });
+
+  it("rejects a custom ref name not present in the registry (type-level guarantee)", () => {
+    // CustomIconName is now a union of registered keys, not `never` — but an
+    // unregistered name must still fail to typecheck. `npm run typecheck`
+    // (tsc) is what actually enforces this.
+    // @ts-expect-error -- "placeholder" is not a registered CustomIconName
     const invalidCustomRef: IconRef = { type: "custom", name: "placeholder" };
     expect(invalidCustomRef.type).toBe("custom");
   });

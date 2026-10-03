@@ -20,17 +20,19 @@
  * Vite at build time exactly like the brand marks in Logo.tsx — never a
  * literal string typed in at the call site, and never a remote URL.
  *
- * Empty today: no asset in Icons/ has passed the alpha-transparency bar yet
- * (see docs/design/icon-system/icon-reexport-checklist.md — all 19 are
- * JPEGs with a checkerboard baked into opaque pixels, not real alpha).
- * Entries are added one at a time, each as its own integration commit, e.g.:
- *
- *   import regulatoryAuthority from "@/assets/icons/custom/icon-regulatory-authority.png";
- *
- *   export const customIcons = {
- *     "regulatory-authority": regulatoryAuthority,
- *   } as const satisfies Record<string, string>;
+ * No asset has passed the alpha-transparency bar yet (see
+ * docs/design/icon-system/icon-reexport-checklist.md — all 19 original
+ * JPEGs and the later re-exported PNGs are opaque, checkerboard baked into
+ * pixels, not real alpha). `regulatory-authority` below is a deliberate
+ * exception: it is wired in as an opaque placeholder per explicit
+ * product-owner instruction, not because it passed verification. See
+ * docs/design/icon-system/icon-integration-inventory.md for the dated note.
+ * Entries are added one at a time, each as its own integration commit.
  */
-export const customIcons = {} as const satisfies Record<string, string>;
+import regulatoryAuthority from "@/assets/icons/custom/icon-regulatory-authority.png";
+
+export const customIcons = {
+  "regulatory-authority": regulatoryAuthority,
+} as const satisfies Record<string, string>;
 
 export type CustomIconName = keyof typeof customIcons;
