@@ -255,3 +255,228 @@ Impact of 3–8: a user scanning the sidebar cannot rely on icon shape to distin
 - **Export format and filename convention:** flat, clean SVG — no embedded raster images, no unnecessary `<g>` wrapper nesting, a single `viewBox="0 0 24 24"`, paths using `stroke="currentColor"` (never a hardcoded hex), `fill="none"` on the root unless a path specifically needs a fill accent per the fill-vs-outline rule above. Filename convention: `icon-{kebab-case-id}.svg` (e.g., `icon-impact-assessment.svg`), matching the Icon ID column in §B/§I exactly so the mapping table stays mechanically correct.
 
 ---
+
+## G. Google Flow generation briefs
+
+### Reusable style preamble
+
+Paste this before every individual brief below, every generation session, so results stay consistent across separate sessions:
+
+> **PARIVART icon family — style preamble.** Generate a single pictogram icon for an enterprise regulatory-compliance software product. Flat, line-based, outline-only construction — no fills except where explicitly noted, no gradients, no shadows, no 3D shading, no photorealism, no color (the icon must work as a single-color silhouette that inherits its color from surrounding text). 24×24 artboard, 2px padding on all sides (20×20 live area), 1.75px stroke weight, round line caps and round line joins, paths aligned to a 2px grid. Maximum 4–5 distinct path segments — this is a restrained, minimal enterprise-software pictogram, not an illustration. The icon must remain legible when scaled down to 12px, so avoid fine detail, thin internal gaps under 1.5px, or more than one small secondary element. Export as clean SVG: single `viewBox="0 0 24 24"`, `fill="none"` on the root, strokes using `currentColor`, no embedded raster images, no unnecessary group nesting. Do not use real-world logos, brand marks, flags, religious symbols, or any photorealistic reference. Do not add a background shape, frame, or container around the glyph unless specified in the individual brief.
+
+### Individual briefs
+
+Each brief below gives only what's unique to that icon — stroke/fill/size/format rules are the preamble above, applied identically to all 19.
+
+---
+
+**1. `regulatory-authority`** — Regulatory Authority
+- *Context:* the issuing body of a regulation (e.g., a national health/medical-device authority); appears in sidebar nav and authority records.
+- *Meaning:* "an official institution," not a generic company or shield.
+- *Visual metaphor:* a classical institutional façade — a simple pediment/column motif, suggesting "government or regulatory body" without any specific national symbol.
+- *Silhouette and composition:* a triangular pediment line over 2–3 short vertical column strokes resting on a single horizontal base line. Fully enclosed, roughly square proportions within the live area.
+- *Shape/geometry:* straight lines only, no curves except the overall rounded stroke caps.
+- *Relationship to other icons:* must not use a shield shape (reserved for `control` and `risk-indicator`) or a generic building/office silhouette.
+- *Avoid:* real flags, national emblems, a generic "bank" or "courthouse" cliché beyond the simple column motif, any text or lettering.
+- *Output:* SVG, `icon-regulatory-authority.svg`.
+
+---
+
+**2. `regulatory-source`** — Regulatory Source
+- *Context:* an ingestion feed/channel documents are pulled from (an authority's website, an RSS feed, an API); sidebar nav ("Sources"), source records.
+- *Meaning:* "things flow in from an external channel into the system."
+- *Visual metaphor:* a funnel or an antenna/signal motif receiving something.
+- *Silhouette and composition:* a simple funnel shape (two converging diagonal lines meeting a short vertical spout) with one small dot or short arc above it suggesting an incoming signal.
+- *Shape/geometry:* mostly straight diagonal lines, one small arc permitted for the "signal" element.
+- *Relationship to other icons:* must look distinct from `regulatory-change` (item 5) — this icon is about intake/channel, not about a document's content changing.
+- *Avoid:* a literal antenna/radio-tower illustration, a Wi-Fi symbol (too generic/consumer-tech), satellite dishes.
+- *Output:* SVG, `icon-regulatory-source.svg`.
+
+---
+
+**3. `regulatory-document`** — Regulatory Document
+- *Context:* a single ingested regulatory document; sidebar nav ("Documents"), document list/detail, upload screen.
+- *Meaning:* "an official regulatory text," specifically — not any generic file.
+- *Visual metaphor:* a page with a folded top-right corner (the baseline "document" cue) plus 2–3 short horizontal lines suggesting dense official text (not a blank page).
+- *Silhouette and composition:* rectangular page outline, folded corner, 2 short horizontal rule lines in the lower half.
+- *Relationship to other icons:* must be visually distinguishable from `evidence` (item 17) and `portfolio-product` (item 7), which currently incorrectly share this exact glyph — this version keeps the text-rule-line detail; evidence and product must NOT reuse it.
+- *Avoid:* a blank/empty page (too generic), a document with a magnifying glass (reserved conceptually for `impact-delta-report`).
+- *Output:* SVG, `icon-regulatory-document.svg`.
+
+---
+
+**4. `document-processing`** — Document Processing
+- *Context:* the pipeline state of a document being parsed/analyzed; optional status-badge icon pairing on the document detail/list screens.
+- *Meaning:* "the system is actively transforming this document" — distinct from a static record and distinct from the generic `settings` gear.
+- *Visual metaphor:* a page outline (simplified, no fold/rule-lines, to stay distinct from `regulatory-document`) with a small circular arrow or pulse mark overlapping one corner, suggesting active transformation.
+- *Silhouette and composition:* simplified rectangular page, one small partial-circle arrow motif overlapping the bottom-right corner.
+- *Relationship to other icons:* the partial-circle motif must look different from the `refresh`/`RefreshCw` interface icon's full circular arrow — keep this one partial/smaller so it reads as "status," not "click to reload."
+- *Avoid:* a full refresh/sync icon (would be confused with the interface `refresh` action), a progress bar or percentage mark (the backend doesn't expose a percentage — don't imply one visually).
+- *Output:* SVG, `icon-document-processing.svg`.
+
+---
+
+**5. `regulatory-change`** — Regulatory Change
+- *Context:* an extracted change from a document — the atomic unit of regulatory intelligence; sidebar nav ("Regulatory Changes"), change list/detail.
+- *Meaning:* "something in a regulation changed" — the bridge between a source document and its downstream obligations.
+- *Visual metaphor:* a page outline with a single branching/forking line breaking out of its edge, suggesting a change point emerging from a document.
+- *Silhouette and composition:* simplified rectangular page (no fold, no rule-lines — distinct from `regulatory-document`), one diagonal line breaking outward from the top-right edge, ending in a short perpendicular tick (like a small delta/branch mark).
+- *Relationship to other icons:* must sit visually "between" `regulatory-document` (plain, enclosed) and `impact-delta-report` (the eventual output) — this one is the only domain icon with a line breaking the page's own boundary.
+- *Avoid:* a literal delta (Δ) glyph (too mathematical/foreign to the rest of the family), scissors/cut imagery.
+- *Output:* SVG, `icon-regulatory-change.svg`.
+
+---
+
+**6. `obligation`** — Obligation
+- *Context:* a specific compliance requirement derived from a change; sidebar nav ("Obligations"), obligation list, change-detail panel.
+- *Meaning:* "a requirement that must be satisfied" — distinct from the generic interface `flag` (which stays separate for "flag this row" actions).
+- *Visual metaphor:* a single pennant/banner shape with one short checkmark-like tick inside it, suggesting "a marked requirement," not an alert.
+- *Silhouette and composition:* a simple right-pointing pennant/triangle flag on a short vertical pole, with one small diagonal tick inside the flag's body.
+- *Relationship to other icons:* must look different from the plain interface `flag` (no pole, or different proportions) and from `audit-trail`'s multi-line list motif (item 18) — obligation is singular/pointed, audit is a sequence.
+- *Avoid:* multiple stacked flags, a checklist with multiple boxes (that's closer to `control`/`audit-trail`'s territory), alarm/siren imagery.
+- *Output:* SVG, `icon-obligation.svg`.
+
+---
+
+**7. `portfolio-product`** — Portfolio Product
+- *Context:* a company product/device tracked in the portfolio; sidebar nav ("Products"), product list/detail.
+- *Meaning:* "a physical/manufactured thing the company makes" — must NOT read as "paperwork," unlike the glyph it currently shares with documents.
+- *Visual metaphor:* a simple labeled box/package outline — a rectangle with one horizontal band near the top (a label strap), not a page.
+- *Silhouette and composition:* a rectangle (slightly wider than tall, suggesting a package, not a page) with one horizontal line near the top third representing a label band.
+- *Relationship to other icons:* must look nothing like `regulatory-document`/`evidence` — no folded corner, no page proportions (taller than wide).
+- *Avoid:* a literal pill/capsule or medical-device illustration (too specific — PARIVART serves more than medical devices), a shopping-box/retail cliché.
+- *Output:* SVG, `icon-portfolio-product.svg`.
+
+---
+
+**8. `portfolio-market`** — Portfolio Market
+- *Context:* a geographic market the company operates in; sidebar nav ("Markets", "Market Heatmap"), portfolio/heatmap screens.
+- *Meaning:* "a geographic/regional market," not a literal map.
+- *Visual metaphor:* a simplified map-pin or a single rounded region outline with one small dot/pin marker — abstract, not tied to any real country's shape.
+- *Silhouette and composition:* one rounded, irregular blob/region outline (abstract, not resembling a real continent) with a small filled dot near its center as the only permitted fill accent.
+- *Relationship to other icons:* keep this abstract enough that it never reads as a specific real country or disputed territory.
+- *Avoid:* any recognizable real-world country/region outline, a globe-with-grid-lines (too generic/corporate-stock-icon), literal pin-drop map-app icon (overused convention — make it flatter/simpler than that).
+- *Output:* SVG, `icon-portfolio-market.svg`.
+
+---
+
+**9. `portfolio-process`** — Portfolio Process
+- *Context:* an internal business process tracked in the portfolio; sidebar nav ("Processes"), process list/detail.
+- *Meaning:* "a sequence of steps," distinct from `impact-assessment`'s "things intersecting" concept, which it currently incorrectly shares a glyph with.
+- *Visual metaphor:* two or three small connected nodes in a simple line (a minimal flowchart fragment).
+- *Silhouette and composition:* 2–3 small circles connected by straight line segments in a simple left-to-right sequence.
+- *Relationship to other icons:* must not look like stacked/overlapping shapes (that's `impact-assessment`'s territory) — this one is explicitly sequential/linear.
+- *Avoid:* a full flowchart with branches/decision diamonds (too complex for this scale), gears (reserved conceptually for `settings`/system concepts).
+- *Output:* SVG, `icon-portfolio-process.svg`.
+
+---
+
+**10. `control`** — Compliance Control
+- *Context:* a compliance control record; sidebar nav ("Controls"), controls list/detail.
+- *Meaning:* "a structural check that must pass" — static/structural, distinct from `human-review`'s person-driven decision concept, which it currently shares a shield glyph with.
+- *Visual metaphor:* a shield outline with a single checkmark inside — but the shield must be visually distinct from `risk-indicator`'s shield (item 14): give control's shield a flatter, more geometric top edge, and risk's a more angular/pointed top, so the two are never confused even though both use shield language.
+- *Silhouette and composition:* a flat-topped shield outline with one centered checkmark tick.
+- *Relationship to other icons:* the only icon permitted a checkmark-in-shield combination — `human-review` must use a person motif instead, not a shield.
+- *Avoid:* a padlock (too security/IT-specific, wrong domain), a shield with a cross (medical/religious connotation, inappropriate for a generic compliance concept).
+- *Output:* SVG, `icon-control.svg`.
+
+---
+
+**11. `registration`** — Regulatory Registration
+- *Context:* a product's regulatory registration/filing record; sidebar nav ("Registrations"), registrations list.
+- *Meaning:* "an official filed/certified record," distinct from `audit-trail`'s chronological-log concept, which it currently shares a glyph with.
+- *Visual metaphor:* a document outline with a circular stamp/seal mark overlapping its bottom-right corner.
+- *Silhouette and composition:* simplified page outline (no fold, no rule-lines — distinct from `regulatory-document`) with one small circle (the seal) overlapping the corner, containing one short tick or line (not a full design) to suggest a stamp without over-detailing.
+- *Relationship to other icons:* the only icon with a circular "seal" accent — `regulatory-document` and `evidence` must not use this motif.
+- *Avoid:* a literal wax-seal illustration (too ornate/historical for this flat system), a badge/medal ribbon (reads as "achievement," wrong meaning).
+- *Output:* SVG, `icon-registration.svg`.
+
+---
+
+**12. `impact-assessment`** — Impact Assessment
+- *Context:* PARIVART's core analytical record, linking a regulatory change to portfolio entities; sidebar nav ("Impact Assessments"), impact list/detail, impact-analysis screen. **This must be the single most distinctive icon in the family** — it is the product's primary analytical concept.
+- *Meaning:* "where a regulatory change intersects the company's portfolio."
+- *Visual metaphor:* two overlapping shapes (e.g., two rounded squares or circles) with their overlap region as the only filled accent in the icon — literally depicting "an intersection."
+- *Silhouette and composition:* two same-size rounded shapes offset so they overlap by roughly a third of their area; the overlapping lens-shaped region is the one permitted small fill accent in this icon (everything else stays outline-only).
+- *Relationship to other icons:* the ONLY icon in the family permitted this two-shapes-overlapping composition and the only one with an intentional fill accent beyond a single dot — this exclusivity is deliberate, reinforcing that Impact Assessment is the product's central concept.
+- *Avoid:* a generic Venn-diagram cliché with three circles (keep it to exactly two shapes), a magnifying glass (reserved for `impact-delta-report`), a chart/graph motif (reserved conceptually for dashboard metrics, not this icon).
+- *Output:* SVG, `icon-impact-assessment.svg`.
+
+---
+
+**13. `impact-delta-report`** — Impact Delta Report
+- *Context:* the exported deliverable summarizing an impact assessment; sidebar nav (×2: "Impact Delta Reports", "Impact Reports"), report list/detail/generate.
+- *Meaning:* "a document that explains what changed and what to do about it" — the product's signature output.
+- *Visual metaphor:* a document outline (plain, no fold/rule-lines) with a small magnifying-glass motif overlapping its bottom-right corner, continuing the existing (sound) "document + inspection" concept from the current `FileSearch` glyph, rebuilt in this family's construction style.
+- *Silhouette and composition:* simplified page outline, one small circle with a short diagonal handle line (magnifying glass) overlapping the corner.
+- *Relationship to other icons:* the magnifying-glass accent is reserved exclusively for this icon — `regulatory-document`/`evidence`/`registration` must not reuse it (they use fold-lines, plain, and seal accents respectively).
+- *Avoid:* a bar-chart or graph inside the page (too close to generic "report" stock-icon cliché and to dashboard iconography), a download arrow (that's the separate, retained-conventional `download` interface icon).
+- *Output:* SVG, `icon-impact-delta-report.svg`.
+
+---
+
+**14. `risk-indicator`** — Risk Indicator
+- *Context:* a risk-level callout inside impact-assessment rationale and risk badges.
+- *Meaning:* "elevated risk requiring attention" — a badge/callout concept, not a nav destination.
+- *Visual metaphor:* a shield outline (angular/pointed top, to stay visually distinct from `control`'s flat-topped shield) with a short vertical exclamation tick and a small dot beneath it, inside.
+- *Silhouette and composition:* pointed-top shield outline, one vertical line + one small dot centered inside (a minimal exclamation mark).
+- *Relationship to other icons:* the only icon permitted an exclamation-mark-in-shield combination; must read as clearly distinct from `control`'s checkmark-in-shield at the same small size — this is the pairing most likely to be confused, so the top-edge shape difference (flat vs. pointed) is load-bearing, not decorative.
+- *Avoid:* a full exclamation-triangle (too close to the retained-conventional `warning`/`escalation` glyphs), a skull-and-crossbones or any literal hazard symbol (too alarming for a routine compliance-risk rating).
+- *Output:* SVG, `icon-risk-indicator.svg`.
+
+---
+
+**15. `human-review`** — Human Review
+- *Context:* a review decision record; sidebar nav ("Human Review"), reviews list, record-decision dialog.
+- *Meaning:* "a person made a decision" — explicitly human/judgment-based, distinct from `control`'s automated/structural check, which it currently shares a shield glyph with.
+- *Visual metaphor:* a simple person silhouette (head + shoulders arc) with a small checkmark tick beside it.
+- *Silhouette and composition:* a circle (head) above a single rounded arc (shoulders), with a small separate checkmark tick positioned to the upper-right of the figure.
+- *Relationship to other icons:* the only icon using a person silhouette besides the generic interface `user`/`assign` icons — keep this one's checkmark accent to visually differentiate it from plain `user` (which has no accent) and from `assign`'s `UserPlus` plus-sign accent.
+- *Avoid:* a full body figure (keep it head-and-shoulders only, consistent with how compact the rest of the family is), a gavel/scales-of-justice (too literally "legal," overreaching PARIVART's actual review workflow).
+- *Output:* SVG, `icon-human-review.svg`.
+
+---
+
+**16. `action`** — Remediation Action
+- *Context:* a remediation task raised from a review or impact assessment; sidebar nav ("Actions"), actions list/detail, raise-action dialog. **High priority to resolve** — currently shares the alarm-triangle glyph with `escalation`, which is the collision most likely to cause real confusion since actions are routine, not urgent.
+- *Meaning:* "a task to complete" — routine and procedural, explicitly NOT an alarm state.
+- *Visual metaphor:* a checkbox (empty square) with a short arrow pointing into it from the left, suggesting "incoming task to check off."
+- *Silhouette and composition:* a small rounded-square outline (the checkbox) with a short horizontal arrow (line + small arrowhead) approaching its left edge.
+- *Relationship to other icons:* must share NO visual language with `escalation` (item 19) — no triangle, no exclamation mark, nothing suggesting urgency.
+- *Avoid:* any triangle shape, any exclamation mark, a literal to-do-list-with-multiple-items (keep it to one single checkbox, not a list — that would compete with `control`/`audit-trail`).
+- *Output:* SVG, `icon-action.svg`.
+
+---
+
+**17. `evidence`** — Evidence
+- *Context:* supporting evidence attached to an action or review; sidebar nav ("Evidence"), evidence list/detail, attach-evidence dialog.
+- *Meaning:* "proof attached to a record" — distinct from `regulatory-document` (an external source) and `portfolio-product` (an internal asset), both of which it currently incorrectly shares a glyph with.
+- *Visual metaphor:* a document outline (plain, no fold/rule-lines) with a small paperclip shape overlapping its top-left corner.
+- *Silhouette and composition:* simplified page outline, one small paperclip loop (a simple rounded rectangle bent into a clip shape) overlapping the top edge.
+- *Relationship to other icons:* the paperclip accent is reserved exclusively for this icon.
+- *Avoid:* a staple (too similar to a paperclip in silhouette at small size — pick one, use the paperclip), a camera/photo icon (evidence isn't always a photo — keep it document-based and medium-agnostic).
+- *Output:* SVG, `icon-evidence.svg`.
+
+---
+
+**18. `audit-trail`** — Audit Trail
+- *Context:* the chronological event log; sidebar nav ("Audit Trail"), audit trail screen.
+- *Meaning:* "a sequential record of events over time," distinct from `registration`'s single-stamped-record concept, which it currently shares a glyph with.
+- *Visual metaphor:* a short vertical timeline — a single vertical line with 3 small perpendicular ticks/dots at intervals along it, like a simplified timeline or ledger spine.
+- *Silhouette and composition:* one vertical line with three short horizontal ticks branching off it at even intervals (top, middle, bottom).
+- *Relationship to other icons:* the only icon using a vertical-timeline composition — must not resemble `control`'s checklist-in-shield or `obligation`'s single pennant-tick.
+- *Avoid:* a literal clock face (too close to the retained-conventional `clock` interface icon), a full horizontal list-with-checkboxes (too close to `control`'s territory).
+- *Output:* SVG, `icon-audit-trail.svg`.
+
+---
+
+**19. `escalation`** — Escalation
+- *Context:* an SLA/urgency alert in the dedicated escalations workflow; sidebar nav ("Escalations"), dashboard alert row, escalations screen. **High priority to resolve** — currently shares its exact glyph with the generic `warning` feedback icon, which this brief must visibly distinguish.
+- *Meaning:* "a tracked, named urgency record" — more severe and more specific than a generic transient warning toast.
+- *Visual metaphor:* a triangle (acknowledging the urgency convention users already expect) but with a small clock/flare tick replacing the plain exclamation mark that `warning` already uses, so the two are never pixel-for-pixel identical.
+- *Silhouette and composition:* an outlined triangle (flatter/more rounded corners than a sharp hazard-sign triangle, to visually soften it relative to `warning`) with a short curved tick (like a small flare or partial clock-hand) inside instead of a straight exclamation line.
+- *Relationship to other icons:* must NOT be pixel-identical to the retained-conventional `warning` (`AlertTriangle`) — the internal mark is the required point of difference; must also not resemble `action`'s checkbox-and-arrow motif.
+- *Avoid:* an exact exclamation-triangle (that's `warning`'s glyph — reusing it recreates the exact defect this brief exists to fix), a siren/bell (too close to the retained `notification` bell icon).
+- *Output:* SVG, `icon-escalation.svg`.
+
+---
