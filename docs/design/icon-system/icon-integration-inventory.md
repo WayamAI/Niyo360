@@ -1,6 +1,10 @@
 # Icon Integration Inventory — Session Findings
 
-**Status: BLOCKED at the asset level. Zero icons integrated this session.** This is not a partial-progress report hiding behind caveats — it's the accurate outcome of inspecting every supplied asset against the actual rendering requirements of `src/components/icons/AppIcon.tsx`. The reason is explained in full below, with the exact technical defect, before any mapping or integration work.
+**Status (2026-10-03 follow-up session): one icon wired in as an explicit opaque placeholder.** 18 new PNGs appeared in `Icons/` since the original findings below were written — re-verified with `scripts/verify-png-alpha.mjs` and found to have the identical defect as the original JPEGs: 8-bit RGB (colour type 2), no alpha channel at all; the checkerboard is still baked into opaque pixels, just re-encoded as PNG rather than JPEG. This does not unblock option 2 in "What would unblock this" below.
+
+Per explicit product-owner instruction ("whatever is there, put that in the icon placeholder"), `Icons/Sculptural_3D_regulatory_icon_2K_20261003142854.png` (row 1 of the table below) was copied to `src/assets/icons/custom/icon-regulatory-authority.png` and wired into `customIcons`/the Sidebar "Authorities" nav item as-is, opaque background and all. This is a deliberate, documented exception to this document's own findings, not a silent reversal of them — the next real fix is still a genuine alpha re-export of this same asset.
+
+**Original status: BLOCKED at the asset level. Zero icons integrated this session.** This is not a partial-progress report hiding behind caveats — it's the accurate outcome of inspecting every supplied asset against the actual rendering requirements of `src/components/icons/AppIcon.tsx`. The reason is explained in full below, with the exact technical defect, before any mapping or integration work.
 
 ## Critical finding: every asset has a blocking technical defect
 
