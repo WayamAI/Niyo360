@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/shared/States";
 import { ValueSignal } from "@/components/shared/Atoms";
 import { ApiState } from "@/components/shared/ApiState";
 import { clockOf, entityLabel, eventLabel } from "@/components/screens/api/auditFormat";
+import { demoNow } from "@/lib/demo-clock";
 import { useAuditEvents } from "@/hooks/useApiQueries";
 import { useProducts } from "@/hooks/useApiQueries";
 import { useMarkets } from "@/hooks/useApiQueries";
@@ -226,7 +227,11 @@ export function Dashboard() {
         actions={
           <>
             <span className="type-body-md tabular rounded-md border border-stroke-default bg-action px-2.5 py-1 font-mono text-fg-tertiary">
-              22 May 2025
+              {demoNow().toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
             </span>
             <Button
               variant="secondary"
