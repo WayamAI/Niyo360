@@ -9,6 +9,7 @@ import { Drawer } from "@/components/shared/Drawer";
 import { useRunSource, useSources, useSourceRuns } from "@/hooks/useApiQueries";
 import { useApp } from "@/context/AppContext";
 import { ApiError, type IngestionStatus, type Source } from "@/services/api";
+import { CreateSourceDialog } from "./CreateSourceDialog";
 
 /**
  * Regulatory sources, from GET /api/v1/regulatory/sources/.
@@ -22,6 +23,7 @@ export function SourcesScreen() {
   const runSource = useRunSource();
   const { showToast } = useApp();
   const [historySource, setHistorySource] = useState<Source | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   function run(source: Source) {
     runSource.mutate(source.id, {
@@ -147,6 +149,9 @@ export function SourcesScreen() {
           <>
             <ApiCount query={query} />
             <ApiRefresh query={query} />
+            <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+              Add source
+            </Button>
           </>
         }
       />
@@ -173,6 +178,7 @@ export function SourcesScreen() {
       </PageBody>
 
       <SourceRunsDrawer source={historySource} onClose={() => setHistorySource(null)} />
+      <CreateSourceDialog open={createOpen} onClose={() => setCreateOpen(false)} />
     </>
   );
 }
