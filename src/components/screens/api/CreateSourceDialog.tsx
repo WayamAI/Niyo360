@@ -3,7 +3,7 @@ import { Modal } from "@/components/shared/Drawer";
 import { Button } from "@/components/shared/Button";
 import { useApp } from "@/context/AppContext";
 import { asApiError, useAuthorities, useCreateSource } from "@/hooks/useApiQueries";
-import type { SourceType } from "@/services/api";
+import type { SourceCreate, SourceType } from "@/services/api";
 
 /**
  * Creates a regulatory source, POST /api/v1/regulatory/sources/.
@@ -31,6 +31,49 @@ const TYPE_HELP: Record<SourceType, string> = {
     "Fetches this single JSON endpoint on each run and stores the response as one document. Not a crawler — it never follows a link found in the response.",
   DOCUMENT: "No URL to poll. Documents are added to this source by uploading them directly.",
 };
+
+/**
+ * Only RSS/HTML/API/WEB_SERVICE have a URL to poll; DOCUMENT sources don't.
+ * Pulled out of the component so form-gating logic is unit-testable without
+ * a DOM (this project has no jsdom/happy-dom — see icons.test.tsx).
+ */
+export function sourceNeedsUrl(type: SourceType): boolean {
+  return type !== "DOCUMENT";
+}
+
+export function canSubmitSource(fields: {
+  name: string;
+  authorityId: string;
+  sourceType: SourceType;
+  url: string;
+}): boolean {
+  const { name, authorityId, sourceType, url } = fields;
+  return (
+    name.trim().length > 0 &&
+    authorityId.length > 0 &&
+    (!sourceNeedsUrl(sourceType) || url.trim().length > 0)
+  );
+}
+
+/** The exact request body sent to POST /api/v1/regulatory/sources/. */
+export function buildSourceCreatePayload(fields: {
+  name: string;
+  authorityId: string;
+  sourceType: SourceType;
+  url: string;
+  description: string;
+}): SourceCreate {
+  const { name, authorityId, sourceType, url, description } = fields;
+  return {
+    name: name.trim(),
+    authority_id: authorityId,
+    source_type: sourceType,
+    connector_type: sourceType,
+    url: sourceNeedsUrl(sourceType) ? url.trim() : null,
+    description: description.trim() ? description.trim() : null,
+    enabled: true,
+  };
+}
 
 export function CreateSourceDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { showToast } = useApp();
@@ -63,22 +106,13 @@ export function CreateSourceDialog({ open, onClose }: { open: boolean; onClose: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const needsUrl = sourceType !== "DOCUMENT";
-  const canSubmit =
-    name.trim().length > 0 && authorityId.length > 0 && (!needsUrl || url.trim().length > 0);
+  const needsUrl = sourceNeedsUrl(sourceType);
+  const canSubmit = canSubmitSource({ name, authorityId, sourceType, url });
 
   function submit() {
     if (!canSubmit) return;
     createSource.mutate(
-      {
-        name: name.trim(),
-        authority_id: authorityId,
-        source_type: sourceType,
-        connector_type: sourceType,
-        url: needsUrl ? url.trim() : null,
-        description: description.trim() ? description.trim() : null,
-        enabled: true,
-      },
+      buildSourceCreatePayload({ name, authorityId, sourceType, url, description }),
       {
         onSuccess: (source) => {
           showToast(`Source "${source.name}" created.`, "success");
