@@ -507,6 +507,15 @@ export function useRunSource() {
   });
 }
 
+export function useCreateSource() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: regulatoryApi.sources.create,
+    retry: false,
+    onSuccess: () => invalidate(client, queryKeys.regulatory.all),
+  });
+}
+
 export function useAnalyzeImpact() {
   const client = useQueryClient();
   return useMutation({
