@@ -16,7 +16,8 @@ import { useApp } from "@/context/AppContext";
 import { useActions, useImpactAssessment, useImpactItems, useReviews } from "@/hooks/useApiQueries";
 import { usePortfolioNames } from "@/hooks/usePortfolioNames";
 import { parseEvidence } from "@/services/api/matchEvidence";
-import type { ImpactItem, ImpactLevel } from "@/services/api";
+import type { ImpactItem } from "@/services/api";
+import { LEVEL_VARIANT } from "@/components/screens/api/intelligenceFormat";
 
 /**
  * Impact assessment detail, from GET /api/v1/impact/{assessment_id}, with the
@@ -24,18 +25,6 @@ import type { ImpactItem, ImpactLevel } from "@/services/api";
  *
  * Tabs follow the right rail's markup, as the report drill-in does.
  */
-
-const LEVEL_VARIANT: Record<
-  ImpactLevel,
-  "critical" | "high-risk" | "medium-risk" | "low-risk" | "neutral" | "pending"
-> = {
-  HIGH: "high-risk",
-  MEDIUM: "medium-risk",
-  LOW: "low-risk",
-  POTENTIALLY_AFFECTED: "pending",
-  REQUIRES_REVIEW: "pending",
-  NO_MATCH: "neutral",
-};
 
 const TABS = [
   { id: "overview", label: "Overview" },

@@ -6,6 +6,21 @@
  * `react-refresh/only-export-components` is warning about.
  */
 
+import type { ImpactLevel } from "@/services/api";
+
+/** Badge variant per impact level, shared by the impact list and drill-in. */
+export const LEVEL_VARIANT: Record<
+  ImpactLevel,
+  "critical" | "high-risk" | "medium-risk" | "low-risk" | "neutral" | "pending"
+> = {
+  HIGH: "high-risk",
+  MEDIUM: "medium-risk",
+  LOW: "low-risk",
+  POTENTIALLY_AFFECTED: "pending",
+  REQUIRES_REVIEW: "pending",
+  NO_MATCH: "neutral",
+};
+
 /** Humanises an enum-shaped value: LABELING_CHANGE -> Labeling change. */
 export function label(value: string): string {
   const words = value.replace(/_/g, " ").toLowerCase();
