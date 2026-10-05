@@ -131,7 +131,15 @@ export function Login() {
  */
 function LoginVisualPanel() {
   return (
-    <div className="relative hidden overflow-hidden bg-[radial-gradient(circle_at_20%_20%,var(--brand)_0%,transparent_55%),radial-gradient(circle_at_80%_75%,var(--data-accent)_0%,transparent_50%),var(--surface-page-inverse,#1a1410)] lg:block lg:flex-1">
+    <div
+      className="relative hidden overflow-hidden lg:block lg:flex-1"
+      style={{
+        background:
+          "radial-gradient(circle at 20% 20%, var(--brand) 0%, transparent 55%), " +
+          "radial-gradient(circle at 80% 75%, var(--data-accent) 0%, transparent 50%), " +
+          "#1a1410",
+      }}
+    >
       <svg
         aria-hidden="true"
         className="absolute inset-0 h-full w-full opacity-30"
