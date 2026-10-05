@@ -20,19 +20,49 @@
  * Vite at build time exactly like the brand marks in Logo.tsx — never a
  * literal string typed in at the call site, and never a remote URL.
  *
- * No asset has passed the alpha-transparency bar yet (see
- * docs/design/icon-system/icon-reexport-checklist.md — all 19 original
- * JPEGs and the later re-exported PNGs are opaque, checkerboard baked into
- * pixels, not real alpha). `regulatory-authority` below is a deliberate
- * exception: it is wired in as an opaque placeholder per explicit
- * product-owner instruction, not because it passed verification. See
- * docs/design/icon-system/icon-integration-inventory.md for the dated note.
- * Entries are added one at a time, each as its own integration commit.
+ * All 17 entries below have real alpha transparency, verified with
+ * scripts/verify-png-alpha.mjs — generated via Canva on a flat magenta
+ * chroma-key background, then matted to genuine alpha locally (hue-based
+ * chroma key, not brightness-distance, so magenta shadow gradients don't
+ * get misclassified as opaque content — see docs/design/icon-system/
+ * icon-integration-inventory.md for the dated history of this set).
  */
 import regulatoryAuthority from "@/assets/icons/custom/icon-regulatory-authority.png";
+import regulatoryDocument from "@/assets/icons/custom/icon-regulatory-document.png";
+import documentProcessing from "@/assets/icons/custom/icon-document-processing.png";
+import portfolioMarket from "@/assets/icons/custom/icon-portfolio-market.png";
+import action from "@/assets/icons/custom/icon-action.png";
+import obligation from "@/assets/icons/custom/icon-obligation.png";
+import evidence from "@/assets/icons/custom/icon-evidence.png";
+import control from "@/assets/icons/custom/icon-control.png";
+import riskIndicator from "@/assets/icons/custom/icon-risk-indicator.png";
+import registration from "@/assets/icons/custom/icon-registration.png";
+import regulatoryChange from "@/assets/icons/custom/icon-regulatory-change.png";
+import escalation from "@/assets/icons/custom/icon-escalation.png";
+import portfolioProcess from "@/assets/icons/custom/icon-portfolio-process.png";
+import humanReview from "@/assets/icons/custom/icon-human-review.png";
+import auditTrail from "@/assets/icons/custom/icon-audit-trail.png";
+import portfolioProduct from "@/assets/icons/custom/icon-portfolio-product.png";
+import impactAssessment from "@/assets/icons/custom/icon-impact-assessment.png";
 
 export const customIcons = {
   "regulatory-authority": regulatoryAuthority,
+  "regulatory-document": regulatoryDocument,
+  "document-processing": documentProcessing,
+  "portfolio-market": portfolioMarket,
+  action,
+  obligation,
+  evidence,
+  control,
+  "risk-indicator": riskIndicator,
+  registration,
+  "regulatory-change": regulatoryChange,
+  escalation,
+  "portfolio-process": portfolioProcess,
+  "human-review": humanReview,
+  "audit-trail": auditTrail,
+  "portfolio-product": portfolioProduct,
+  "impact-assessment": impactAssessment,
 } as const satisfies Record<string, string>;
 
 export type CustomIconName = keyof typeof customIcons;

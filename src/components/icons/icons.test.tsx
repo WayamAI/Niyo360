@@ -41,14 +41,32 @@ describe("AppIcon (existing SVG/currentColor path, unchanged)", () => {
 });
 
 describe("customIcons registry (type-safe custom-icon lookup table)", () => {
-  it("contains exactly the registered placeholder entries", () => {
+  it("contains exactly the registered entries", () => {
     // A real assertion, not a placeholder: this is expected to fail loudly
     // the moment an entry is added or removed without a matching test
     // update, which is the point — it keeps this file honest about what
-    // exists. "regulatory-authority" is an opaque placeholder (no asset has
-    // passed the alpha-transparency bar), wired in per explicit
-    // product-owner instruction — see customRegistry.ts.
-    expect(Object.keys(customIcons)).toEqual(["regulatory-authority"]);
+    // exists. All 17 entries have real alpha transparency, verified with
+    // scripts/verify-png-alpha.mjs — see customRegistry.ts and
+    // docs/design/icon-system/icon-integration-inventory.md.
+    expect(Object.keys(customIcons)).toEqual([
+      "regulatory-authority",
+      "regulatory-document",
+      "document-processing",
+      "portfolio-market",
+      "action",
+      "obligation",
+      "evidence",
+      "control",
+      "risk-indicator",
+      "registration",
+      "regulatory-change",
+      "escalation",
+      "portfolio-process",
+      "human-review",
+      "audit-trail",
+      "portfolio-product",
+      "impact-assessment",
+    ]);
   });
 });
 
