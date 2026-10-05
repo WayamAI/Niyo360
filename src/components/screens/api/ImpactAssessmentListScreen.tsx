@@ -1,6 +1,7 @@
 import { PageBody, PageHeader } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { StatusBadge, type StatusTone } from "@/components/shared/Badge";
+import { Badge, StatusBadge, type StatusTone } from "@/components/shared/Badge";
+import { LEVEL_VARIANT } from "@/components/screens/api/intelligenceFormat";
 import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Button } from "@/components/shared/Button";
@@ -40,16 +41,49 @@ export function ImpactAssessmentListScreen() {
         if (!row.status) return <span className="text-fg-quaternary">—</span>;
 
         const status = row.status;
+        // REVIEWED is the only signed-off state, so it is the only green one.
+        // COMPLETED means the analysis finished and is *waiting* on a human
+        // decision -- showing it as success made the one assessment that needs
+        // attention look healthier than the four already reviewed.
         const tone: StatusTone =
-          status === "COMPLETED"
+          status === "REVIEWED"
             ? "success"
             : status === "FAILED"
               ? "error"
               : status === "PENDING" || status === "ANALYZING"
-                ? "warning"
-                : "neutral";
+                ? "info"
+                : status === "COMPLETED" || status === "REQUIRES_REVIEW"
+                  ? "warning"
+                  : "neutral";
         return <StatusBadge tone={tone}>{status}</StatusBadge>;
       },
+    },
+    {
+      // Without these two the list is three pairs of near-identical rows: the
+      // same change analysed twice, with nothing to say which analysis is the
+      // current one or that reanalysis moved the level from LOW to MEDIUM.
+      key: "overall_impact_level",
+      header: "Impact",
+      value: (row) => row.overall_impact_level ?? null,
+      render: (row) =>
+        row.overall_impact_level ? (
+          <Badge variant={LEVEL_VARIANT[row.overall_impact_level]}>
+            {row.overall_impact_level}
+          </Badge>
+        ) : (
+          <span className="text-fg-quaternary">—</span>
+        ),
+    },
+    {
+      key: "analysis_version",
+      header: "Version",
+      value: (row) => row.analysis_version ?? null,
+      render: (row) =>
+        row.analysis_version == null ? (
+          <span className="text-fg-quaternary">—</span>
+        ) : (
+          <span className="tabular font-mono text-fg-tertiary">v{row.analysis_version}</span>
+        ),
     },
     {
       key: "created_at",
