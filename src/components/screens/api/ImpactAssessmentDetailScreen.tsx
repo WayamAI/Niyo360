@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { ApiRecord, ApiRefresh, ApiState } from "@/components/shared/ApiState";
-import { Badge } from "@/components/shared/Badge";
+import { Badge, StatusBadge } from "@/components/shared/Badge";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Drawer } from "@/components/shared/Drawer";
 import { Button } from "@/components/shared/Button";
@@ -17,7 +17,10 @@ import { useActions, useImpactAssessment, useImpactItems, useReviews } from "@/h
 import { usePortfolioNames } from "@/hooks/usePortfolioNames";
 import { parseEvidence } from "@/services/api/matchEvidence";
 import type { ImpactItem } from "@/services/api";
-import { LEVEL_VARIANT } from "@/components/screens/api/intelligenceFormat";
+import {
+  ASSESSMENT_STATUS_TONE,
+  LEVEL_VARIANT,
+} from "@/components/screens/api/intelligenceFormat";
 
 /**
  * Impact assessment detail, from GET /api/v1/impact/{assessment_id}, with the
@@ -211,9 +214,9 @@ export function ImpactAssessmentDetailScreen() {
                   <Panel title="Assessment details" description="Configuration and core metrics.">
                     <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
                       <Field label="Status">
-                        <Badge variant={assessment.status === "COMPLETED" ? "complete" : "pending"}>
+                        <StatusBadge tone={ASSESSMENT_STATUS_TONE[assessment.status] ?? "neutral"}>
                           {assessment.status}
-                        </Badge>
+                        </StatusBadge>
                       </Field>
                       <Field label="Overall impact">
                         <span className="inline-flex items-center gap-1.5">

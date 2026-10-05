@@ -1,7 +1,10 @@
 import { PageBody, PageHeader } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
-import { Badge, StatusBadge, type StatusTone } from "@/components/shared/Badge";
-import { LEVEL_VARIANT } from "@/components/screens/api/intelligenceFormat";
+import { Badge, StatusBadge } from "@/components/shared/Badge";
+import {
+  ASSESSMENT_STATUS_TONE,
+  LEVEL_VARIANT,
+} from "@/components/screens/api/intelligenceFormat";
 import { AppIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Button } from "@/components/shared/Button";
@@ -41,21 +44,9 @@ export function ImpactAssessmentListScreen() {
         if (!row.status) return <span className="text-fg-quaternary">—</span>;
 
         const status = row.status;
-        // REVIEWED is the only signed-off state, so it is the only green one.
-        // COMPLETED means the analysis finished and is *waiting* on a human
-        // decision -- showing it as success made the one assessment that needs
-        // attention look healthier than the four already reviewed.
-        const tone: StatusTone =
-          status === "REVIEWED"
-            ? "success"
-            : status === "FAILED"
-              ? "error"
-              : status === "PENDING" || status === "ANALYZING"
-                ? "info"
-                : status === "COMPLETED" || status === "REQUIRES_REVIEW"
-                  ? "warning"
-                  : "neutral";
-        return <StatusBadge tone={tone}>{status}</StatusBadge>;
+        return (
+          <StatusBadge tone={ASSESSMENT_STATUS_TONE[status] ?? "neutral"}>{status}</StatusBadge>
+        );
       },
     },
     {
