@@ -100,7 +100,7 @@ const SCREENS = {
 export function Shell() {
   const { currentScreen } = useApp();
   const [navOpen, setNavOpen] = useState(false);
-  const [navCollapsed, setNavCollapsed] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(true);
   const Screen = SCREENS[currentScreen] ?? Dashboard;
 
   return (
