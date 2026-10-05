@@ -4,7 +4,7 @@ import { ApiRecord, ApiRefresh } from "@/components/shared/ApiState";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
 import { Panel, SplitRow } from "@/components/shared/Panel";
-import { AppIcon } from "@/components/icons";
+import { AppIcon, CustomIcon } from "@/components/icons";
 import { useApp } from "@/context/AppContext";
 import { useDocument, useProcessDocument, useSources } from "@/hooks/useApiQueries";
 import type { DocumentProcessingStatus } from "@/services/api";
@@ -113,9 +113,14 @@ export function DocumentDetailScreen() {
                     <span className="type-body-md text-fg-primary">{doc.title}</span>
                   </Field>
                   <Field label="Processing status">
-                    <Badge variant={statusVariant(doc.processing_status)}>
-                      {doc.processing_status}
-                    </Badge>
+                    <span className="inline-flex items-center gap-1.5">
+                      {statusVariant(doc.processing_status) === "in-progress" && (
+                        <CustomIcon name="document-processing" size="xs" aria-hidden />
+                      )}
+                      <Badge variant={statusVariant(doc.processing_status)}>
+                        {doc.processing_status}
+                      </Badge>
+                    </span>
                   </Field>
                   <Field label="Type">{doc.document_type}</Field>
                   <Field label="Language">{doc.language}</Field>

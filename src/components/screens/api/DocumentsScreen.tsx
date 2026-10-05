@@ -1,7 +1,7 @@
 import { PageBody, PageHeader } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
-import { AppIcon } from "@/components/icons";
+import { AppIcon, CustomIcon } from "@/components/icons";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
 import { Button } from "@/components/shared/Button";
 import { useApp } from "@/context/AppContext";
@@ -50,9 +50,10 @@ export function DocumentsScreen() {
         if (!row.processing_status) return <span className="text-fg-quaternary">—</span>;
 
         const status = row.processing_status;
+        const midPipeline = status !== "ANALYZED" && status !== "PARSED" && status !== "FAILED";
         return (
           <span
-            className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${
+            className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-medium ${
               status === "ANALYZED" || status === "PARSED"
                 ? // PARSED is also a terminal success: the backend's honest
                   // "deterministic extraction done, no AI pass available"
@@ -64,6 +65,7 @@ export function DocumentsScreen() {
                     "warning-bg text-warning-icon"
             }`}
           >
+            {midPipeline && <CustomIcon name="document-processing" size="xs" aria-hidden />}
             {status}
           </span>
         );
