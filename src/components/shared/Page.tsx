@@ -175,9 +175,13 @@ const SOURCE_COPY: Record<DataSource, { label: string; title: string; className:
 };
 
 /**
- * Marks a block of the UI as live or illustrative.
+ * Marks a block of the UI as live. Illustrative sections render no tag, per
+ * product decision — removed on request; the underlying `source` prop still
+ * distinguishes mock-data blocks in code even though the UI no longer labels
+ * them.
  */
 export function DataSourceTag({ source }: { source: DataSource }) {
+  if (source === "illustrative") return null;
   const copy = SOURCE_COPY[source];
   return (
     <span
