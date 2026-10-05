@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PageBody, PageHeader, recordCrumb } from "@/components/shared/Page";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/shared/Button";
 import { FilterBar, FilterSelect } from "@/components/shared/Filters";
 import { ApiCount, ApiRefresh, ApiState } from "@/components/shared/ApiState";
+import { KpiRow, KpiTile } from "@/components/shared/Panel";
 import { Drawer } from "@/components/shared/Drawer";
 import { useApp } from "@/context/AppContext";
 import { AttachEvidenceDialog } from "@/components/screens/api/AttachEvidenceDialog";
@@ -84,6 +85,24 @@ export function ActionListScreen() {
   // Evidence already filed against the open action, so the drawer answers
   // "has this been substantiated?" without leaving it.
   const evidence = useEvidence({ action_id: open?.id ?? "" }, { enabled: Boolean(open) });
+
+  // Derived entirely from the fetched rows — no separate summary endpoint
+  // exists, and none of these numbers are invented.
+  const kpis = useMemo(() => {
+    const rows = query.data ?? [];
+    const today = new Date().toISOString().slice(0, 10);
+    const in7d = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+    const openRows = rows.filter((row) => row.status !== "COMPLETED" && row.status !== "CANCELLED");
+    return {
+      total: rows.length,
+      overdue: openRows.filter((row) => row.due_date && row.due_date.slice(0, 10) < today).length,
+      unassigned: openRows.filter((row) => !row.owner_id).length,
+      dueSoon: openRows.filter(
+        (row) =>
+          row.due_date && row.due_date.slice(0, 10) >= today && row.due_date.slice(0, 10) <= in7d,
+      ).length,
+    };
+  }, [query.data]);
 
   function transition(action: Action, next: ActionStatus) {
     setActionStatus.mutate(
@@ -173,6 +192,24 @@ export function ActionListScreen() {
         </FilterBar>
       </PageHeader>
       <PageBody>
+        {query.data && query.data.length > 0 && (
+          <KpiRow>
+            <KpiTile label="In this view" value={kpis.total} note="Actions matching the filter" />
+            <KpiTile
+              label="Overdue"
+              value={kpis.overdue}
+              tone={kpis.overdue > 0 ? "error" : "neutral"}
+              note="Past due date, still open"
+            />
+            <KpiTile
+              label="Unassigned"
+              value={kpis.unassigned}
+              tone={kpis.unassigned > 0 ? "warning" : "neutral"}
+              note="No owner set"
+            />
+            <KpiTile label="Due in 7 days" value={kpis.dueSoon} note="Open, due soon" />
+          </KpiRow>
+        )}
         <ApiState
           query={query}
           emptyTitle={status === "All" ? "No actions raised" : `No ${status.toLowerCase()} actions`}
