@@ -294,6 +294,7 @@ export function Dashboard() {
               value={stats.products}
               note="In your portfolio"
               tone="neutral"
+              mark={<AppIcon name="document" size="sm" className="text-quaternary" />}
               onClick={() => navigateTo("api-products")}
             />
             <KpiTile
@@ -301,6 +302,7 @@ export function Dashboard() {
               value={stats.markets}
               note="Operating regions"
               tone="neutral"
+              mark={<AppIcon name="map" size="sm" className="text-quaternary" />}
               onClick={() => navigateTo("api-markets")}
             />
             <KpiTile
@@ -308,6 +310,7 @@ export function Dashboard() {
               value={stats.processes}
               note="CMC workflows"
               tone="neutral"
+              mark={<AppIcon name="layers" size="sm" className="text-quaternary" />}
               onClick={() => navigateTo("api-processes")}
             />
             <KpiTile
@@ -315,6 +318,7 @@ export function Dashboard() {
               value={stats.authorities}
               note="Monitored bodies"
               tone="neutral"
+              mark={<AppIcon name="validator" size="sm" className="text-quaternary" />}
               onClick={() => navigateTo("api-authorities")}
             />
             <KpiTile
@@ -322,6 +326,7 @@ export function Dashboard() {
               value={stats.sources}
               note="Active feed endpoints"
               tone="neutral"
+              mark={<AppIcon name="feed" size="sm" className="text-quaternary" />}
               onClick={() => navigateTo("api-sources")}
             />
           </div>
