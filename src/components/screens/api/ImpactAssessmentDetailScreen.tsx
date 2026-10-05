@@ -6,6 +6,7 @@ import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Drawer } from "@/components/shared/Drawer";
 import { Button } from "@/components/shared/Button";
 import { Panel } from "@/components/shared/Panel";
+import { CustomIcon } from "@/components/icons";
 import {
   RecordDecisionDialog,
   REVIEWABLE_STATUSES,
@@ -226,9 +227,14 @@ export function ImpactAssessmentDetailScreen() {
                         </Badge>
                       </Field>
                       <Field label="Overall impact">
-                        <Badge variant={LEVEL_VARIANT[assessment.overall_impact_level]}>
-                          {assessment.overall_impact_level}
-                        </Badge>
+                        <span className="inline-flex items-center gap-1.5">
+                          {assessment.overall_impact_level === "HIGH" && (
+                            <CustomIcon name="risk-indicator" size="xs" aria-hidden />
+                          )}
+                          <Badge variant={LEVEL_VARIANT[assessment.overall_impact_level]}>
+                            {assessment.overall_impact_level}
+                          </Badge>
+                        </span>
                       </Field>
                       <Field label="Confidence">
                         <Mono>{percent(assessment.overall_confidence)}</Mono>
