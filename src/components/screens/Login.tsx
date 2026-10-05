@@ -7,8 +7,10 @@ import { BrandLockup } from "@/components/shared/Logo";
 /**
  * Sign-in.
  *
- * Deliberately plain: a logo, one card, two fields. The only decoration is the
- * mark itself. Authentication states are explicit — invalid input is reported
+ * Split-screen: a visual panel and the form. The visual panel is CSS-only
+ * (gradient + node motif on brand tokens) rather than a stretched image —
+ * nothing in the repo's icon assets is shaped or licensed for a full-bleed
+ * hero crop. Authentication states are explicit — invalid input is reported
  * inline against the field that caused it, never as a raw error string.
  */
 export function Login() {
